@@ -24,7 +24,19 @@ public class SpawnPlayerOnSceneLoad : MonoBehaviour
         GameObject spawn = GameObject.FindGameObjectWithTag(spawnTag);
         if (spawn == null) return;
 
-        player.transform.position = spawn.transform.position;
-        player.transform.rotation = spawn.transform.rotation;
+        Rigidbody rb = player.GetComponent<Rigidbody>();
+
+        if (rb != null && !rb.isKinematic)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+
+            rb.position = spawn.transform.position;
+            rb.rotation = spawn.transform.rotation;
+        }
+        else
+        {
+            player.transform.SetPositionAndRotation(spawn.transform.position, spawn.transform.rotation);
+        }
     }
 }
