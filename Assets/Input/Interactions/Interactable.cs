@@ -16,7 +16,7 @@ public class Interactable : MonoBehaviour
         DisableOutline();
     }
 
-    public void Interact()
+    public virtual void Interact()
     {
         onInteraction.Invoke();
     }
