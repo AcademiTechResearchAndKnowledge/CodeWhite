@@ -3,15 +3,14 @@ using UnityEngine.InputSystem;
 
 public class PlayerInteraction : MonoBehaviour
 {
-
     public float playerReach = 3f;
     Interactable currentInteractable;
 
     void Update()
     {
         CheckInteraction();
-        if (Keyboard.current.fKey.isPressed && currentInteractable != null)
-        {
+        if (Keyboard.current.fKey.wasPressedThisFrame && currentInteractable != null)
+        {  
             currentInteractable.Interact();
         }
     }
@@ -25,12 +24,11 @@ public class PlayerInteraction : MonoBehaviour
             if (hit.collider.tag == "Interactable")
             {
                 Interactable newInteractable = hit.collider.GetComponent<Interactable>();
-
-                if (currentInteractable && newInteractable != currentInteractable) 
+                if (currentInteractable && newInteractable != currentInteractable)
                 {
                     currentInteractable.DisableOutline();
                 }
-                
+
                 if (newInteractable.enabled)
                 {
                     SetNewCurrentInteractable(newInteractable);
@@ -57,10 +55,10 @@ public class PlayerInteraction : MonoBehaviour
         currentInteractable.EnableOutline();
     }
 
-    void DisableCurrentInteractable() 
+    void DisableCurrentInteractable()
     {
-        if (currentInteractable) 
-        { 
+        if (currentInteractable)
+        {
             currentInteractable.DisableOutline();
             currentInteractable = null;
         }

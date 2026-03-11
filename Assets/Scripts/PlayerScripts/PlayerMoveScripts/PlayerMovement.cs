@@ -7,6 +7,8 @@ public class PlayerMovement : MonoBehaviour
 
     public float moveSpeed = 5f;
     public float jumpForce = 5f;
+    public int anxiety = 0;
+    public int lightRange = 0;
 
     public Transform groundCheck;
     public float groundDistance = 0.4f;
