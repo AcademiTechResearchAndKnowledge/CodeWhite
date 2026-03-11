@@ -2,8 +2,9 @@ using UnityEngine;
 
 public class objectZoom : MonoBehaviour
 {
-    [Header("MainHandler Reference")]
-    [SerializeField] private DigitalClock mainObjHandler;
+    [Header("Interactable Object")]
+    [SerializeField] private MonoBehaviour interactableObject;
+    private IZoomInteractable mainObjHandler;
 
     [Header("Camera Settings")]
     public Camera playerCamera;
@@ -27,6 +28,14 @@ public class objectZoom : MonoBehaviour
     {
         if (playerCamera == null)
             playerCamera = Camera.main;
+
+        // Convert MonoBehaviour to interface
+        if (interactableObject != null)
+            mainObjHandler = interactableObject as IZoomInteractable;
+
+        // Optional auto-detect if not assigned
+        if (mainObjHandler == null)
+            mainObjHandler = GetComponent<IZoomInteractable>();
     }
 
     void LateUpdate()
@@ -35,6 +44,9 @@ public class objectZoom : MonoBehaviour
 
         if (isInPuzzle)
         {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+
             playerCamera.transform.position = Vector3.MoveTowards(
                 playerCamera.transform.position,
                 cameraFocus.position,
@@ -54,6 +66,7 @@ public class objectZoom : MonoBehaviour
         }
         else if (returningCamera)
         {
+            Cursor.visible = false;
             playerCamera.transform.localPosition = Vector3.MoveTowards(
                 playerCamera.transform.localPosition,
                 savedLocalPos,
@@ -91,7 +104,9 @@ public class objectZoom : MonoBehaviour
         canInteract = false;
 
         isInPuzzle = !isInPuzzle;
-        mainObjHandler.isInteracting = isInPuzzle;
+
+        if (mainObjHandler != null)
+            mainObjHandler.IsInteracting = isInPuzzle;
 
         if (isInPuzzle)
             EnterPuzzle();
@@ -118,8 +133,7 @@ public class objectZoom : MonoBehaviour
             playerController.enabled = false;
         }
 
-        if (mainObjHandler != null)
-            mainObjHandler.StartInteraction();
+        mainObjHandler?.StartInteraction();
     }
 
     private void ExitPuzzle()
@@ -129,12 +143,13 @@ public class objectZoom : MonoBehaviour
         if (playerController != null)
             playerController.enabled = true;
 
-        if (mainObjHandler != null)
-            mainObjHandler.StopInteraction();
+        mainObjHandler?.StopInteraction();
     }
 
     private void StopPlayerInstantly()
     {
+        if (playerController == null) return;
+
         Rigidbody rb = playerController.GetComponent<Rigidbody>();
         if (rb != null)
         {
