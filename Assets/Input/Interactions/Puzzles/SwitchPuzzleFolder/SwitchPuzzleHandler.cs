@@ -1,9 +1,8 @@
 using UnityEngine;
-using TMPro;
 
 public class SwitchPuzzleHandler : MonoBehaviour
 {
-    [SerializeField] public TextMeshPro textAnswer;
+
     public static SwitchPuzzleHandler Instance;
    
     [Header("Correct Switch (Randomized)")]
