@@ -4,18 +4,26 @@ using UnityEngine.InputSystem;
 public class PlayerMovement : MonoBehaviour
 {
     public Transform body;
-
-    public float moveSpeed = 5f;
-    public float jumpForce = 5f;
+    
+    public float moveSpeed;
+    public float jumpForce;
 
     public Transform groundCheck;
     public float groundDistance = 0.4f;
     public LayerMask groundMask;
 
+    private PlayerStatus playerStatus;
     private Rigidbody rb;
     private Vector2 moveInput;
     private bool isGrounded;
     private PlayerInput playerInput;
+    
+    void Start()
+    {
+        playerStatus = GameObject.Find("Player").GetComponent<PlayerStatus>();
+        moveSpeed = playerStatus.getStat("SPD");
+        jumpForce = playerStatus.getStat("JMP");
+    }
 
     void Awake()
     {

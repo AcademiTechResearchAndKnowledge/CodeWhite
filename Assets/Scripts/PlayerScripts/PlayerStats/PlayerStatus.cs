@@ -2,20 +2,21 @@ using System;
 using UnityEngine;
 using System.Collections.Generic;
 
-public class NewMonoBehaviourScript : MonoBehaviour
+public class PlayerStatus : MonoBehaviour
 {
-    private Dictionary<string, int> playerStat = new Dictionary<string, int>();
-    void Start()
+    private Dictionary<string, float> playerStat = new Dictionary<string, float>
     {
-        this.playerStat.Add("ANX", 100);
-        this.playerStat.Add("STA", 100);
-        this.playerStat.Add("SPD", 100);
-        this.playerStat.Add("JMP", 100);
+        {"ANX", 100f}, {"STA", 100f}, {"SPD", 5f}, {"JMP", 5f}
+    };
+
+    void Update() 
+    {
+        
     }
     //Setter Functions
-    public void addStat(string type, int constant)
+    public void addStat(string type, float constant)
     {
-        foreach (var Key in this.playerStat)
+        foreach (var Key in playerStat)
         {
             if (Key.Key == type)
             {
@@ -24,9 +25,9 @@ public class NewMonoBehaviourScript : MonoBehaviour
         }
         ;
     }
-    public void subtractStat(string type, int constant)
+    public void subtractStat(string type, float constant)
     {
-        foreach (var Key in this.playerStat)
+        foreach (var Key in playerStat)
         {
             if (Key.Key == type)
             {
@@ -36,13 +37,13 @@ public class NewMonoBehaviourScript : MonoBehaviour
         ;
     }
     //Getter Function
-    public int getStat(string type)
+    public float getStat(string type)
     {
-        foreach (var Key in this.playerStat)
+        foreach (var Key in playerStat)
         {
             if (Key.Key == type)
             {
-                return this.playerStat[type];
+                return playerStat[type];
             }
         }
         ;
