@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -7,6 +8,7 @@ public class PlayerMovement : MonoBehaviour
     
     public float moveSpeed;
     public float jumpForce;
+    public float stamina;
 
     public Transform groundCheck;
     public float groundDistance = 0.4f;
@@ -21,6 +23,7 @@ public class PlayerMovement : MonoBehaviour
     void Start()
     {
         playerStatus = GameObject.Find("Player").GetComponent<PlayerStatus>();
+        stamina = playerStatus.getStat("STA");
         moveSpeed = playerStatus.getStat("SPD");
         jumpForce = playerStatus.getStat("JMP");
     }
@@ -33,6 +36,22 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
+        if (Convert.ToBoolean(this.moveInput[0]) || Convert.ToBoolean(this.moveInput[1])
+            && this.stamina != 0) {
+            this.stamina -= 0.02f;
+            this.moveSpeed -= 0.0010f;
+        } else if (this.stamina < playerStatus.getStat("STA") && this.moveSpeed < playerStatus.getStat("SPD")) {
+            if (this.stamina < 0 || this.moveSpeed < 0)
+            {
+                this.moveInput = new Vector2(0,0);
+                this.stamina = 0;
+                this.moveSpeed = 0;
+            }
+            this.stamina += 0.1f;
+            this.moveSpeed += 0.005f;
+        }
+        print(stamina);
+        print(moveSpeed);
         CheckGround();
     }
 
@@ -56,7 +75,7 @@ public class PlayerMovement : MonoBehaviour
 
     void OnMovement(InputValue value)
     {
-        moveInput = value.Get<Vector2>();
+        this.moveInput = value.Get<Vector2>();
     }
 
     void MovePlayer ()
