@@ -24,6 +24,7 @@ public class DigitalClock : MonoBehaviour
     {   
         if (oZ.isInPuzzle) isInteracting = true;
         if (!oZ.isInPuzzle) isInteracting = false;
+        
         // Only allow control if player is interacting
         if (!isInteracting) return;
 

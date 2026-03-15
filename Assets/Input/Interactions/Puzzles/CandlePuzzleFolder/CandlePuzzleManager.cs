@@ -16,6 +16,11 @@ public class PuzzleManager : MonoBehaviour
     public int candlesLit = 0;
     public int candlesToFinish = 3;
 
+    private GameObject spawnedLighter;
+
+    // Track previous drawer to avoid repeats
+    private DrawerInteract previousDrawer;
+
     void Awake()
     {
         instance = this;
@@ -28,10 +33,24 @@ public class PuzzleManager : MonoBehaviour
 
     public void RandomizeDrawer()
     {
-        int randomIndex = Random.Range(0, drawers.Length);
+        if (drawers.Length == 0) return;
+
+        int randomIndex;
+
+        // Keep picking a new drawer until it's different from the previous one
+        do
+        {
+            randomIndex = Random.Range(0, drawers.Length);
+        } 
+        while (drawers[randomIndex] == previousDrawer && drawers.Length > 1);
+
+        previousDrawer = drawers[randomIndex];
         currentDrawer = drawers[randomIndex];
 
         Debug.Log("Correct drawer is: " + currentDrawer.name);
+
+        // Spawn the lighter on the new drawer
+        SpawnLighter(currentDrawer.transform.position, Quaternion.identity);
     }
 
     public void SpawnLighter(Vector3 position, Quaternion rotation)
@@ -42,14 +61,15 @@ public class PuzzleManager : MonoBehaviour
             return;
         }
 
-        // Instantiate the lighter prefab
-        GameObject lighter = Instantiate(lighterPrefab, position, rotation);
-        lighter.tag = "Interactable";
+        if (spawnedLighter != null)
+            Destroy(spawnedLighter);
+
+        spawnedLighter = Instantiate(lighterPrefab, position, rotation);
+        spawnedLighter.tag = "Interactable";
 
         Debug.Log("Lighter spawned on drawer: " + currentDrawer.name);
     }
 
-    // Call this when a candle is lit
     public void CandleLit()
     {
         candlesLit++;
@@ -61,13 +81,11 @@ public class PuzzleManager : MonoBehaviour
             return;
         }
 
-        // Choose new drawer for next lighter
         RandomizeDrawer();
     }
 
     void PuzzleFinished()
     {
         Debug.Log("Puzzle Finished! All candles are lit!");
-        // Here you can trigger the Eye or next event
     }
 }
