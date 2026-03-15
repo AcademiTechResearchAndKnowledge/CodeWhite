@@ -11,7 +11,7 @@ public class PlayerLook : MonoBehaviour
     private float xRotation = 0f;
     private Vector2 lookInput;
 
-    private int ignoreFrames = 3;
+    private int ignoreFrames = 5;
 
     void Start()
     {
