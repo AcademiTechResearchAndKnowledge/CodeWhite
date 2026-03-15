@@ -16,7 +16,7 @@ public class objectZoom : MonoBehaviour
     [SerializeField] public PlayerMovement playerController;
     [SerializeField] public PlayerLook playerlookCamera;
 
-    private bool isInPuzzle = false;
+    public bool isInPuzzle = false;
     private bool canInteract = true;
 
     private Vector3 savedLocalPos;

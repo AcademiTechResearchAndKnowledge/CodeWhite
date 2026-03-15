@@ -21,7 +21,9 @@ public class DigitalClock : MonoBehaviour
     }
 
     void Update()
-    {
+    {   
+        if (oZ.isInPuzzle) isInteracting = true;
+        if (!oZ.isInPuzzle) isInteracting = false;
         // Only allow control if player is interacting
         if (!isInteracting) return;
 
