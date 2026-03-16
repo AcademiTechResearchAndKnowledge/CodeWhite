@@ -7000,7 +7000,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77027a2d324be61419548c4a4a94d1c9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WoodItem
-  itemId: Wood
+  itemData: {fileID: 0}
   amount: 1
 --- !u!114 &1604335362
 MonoBehaviour:
@@ -8532,6 +8532,7 @@ GameObject:
   - component: {fileID: 1818043144}
   - component: {fileID: 1818043139}
   - component: {fileID: 1818043141}
+  - component: {fileID: 1818043147}
   - component: {fileID: 1818043140}
   - component: {fileID: 1818043142}
   - component: {fileID: 1818043143}
@@ -8603,6 +8604,8 @@ MonoBehaviour:
   body: {fileID: 1550990462}
   moveSpeed: 5
   jumpForce: 5
+  sprintMultiplier: 1.3
+  exhaustedMultiplier: 0.5
   groundCheck: {fileID: 1916739885}
   groundDistance: 0.4
   groundMask:
@@ -8716,6 +8719,25 @@ MonoBehaviour:
   cursorTexture: {fileID: 2800000, guid: 145c4fecfb0766349a3c4f0632be2fe4, type: 3}
   hotspot: {x: 0, y: 0}
   cursorMode: 0
+--- !u!114 &1818043147
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1818043134}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4397570f77107a540bab1af9e00983d4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerStats
+  anxiety: 0
+  maxAnxiety: 100
+  stamina: 100
+  speedStat: 100
+  maxStamina: 100
+  staminaDrainRate: 20
+  staminaRegenRate: 12
 --- !u!1 &1916739884
 GameObject:
   m_ObjectHideFlags: 0
