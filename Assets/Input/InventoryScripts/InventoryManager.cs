@@ -188,4 +188,35 @@ public class InventoryManager : MonoBehaviour
             hotbarUI.Refresh(slots, selectedSlot);
         }
     }
+
+    public void DropSelectedItem(Vector3 dropPosition)
+    {
+        InventorySlot slot = GetSelectedSlot();
+
+        if (slot == null || slot.IsEmpty())
+        {
+            Debug.Log("No item selected to drop.");
+            return;
+        }
+
+        ItemData item = slot.item;
+
+        if (item.worldPrefab == null)
+        {
+            Debug.LogWarning(item.itemName + " has no worldPrefab assigned.");
+            return;
+        }
+
+        Instantiate(item.worldPrefab, dropPosition, Quaternion.Euler(90f, 0f, 0f));
+        Debug.Log("Dropped " + item.itemName);
+
+        slot.amount--;
+
+        if (slot.amount <= 0)
+        {
+            slot.Clear();
+        }
+
+        RefreshUI();
+    }
 }
