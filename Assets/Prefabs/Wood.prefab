@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 8077562968107986336}
   - component: {fileID: 3706722269749979028}
   - component: {fileID: 6051864342810406268}
+  - component: {fileID: 7798262835503658658}
   m_Layer: 6
   m_Name: Wood
   m_TagString: Interactable
@@ -30,7 +31,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7476076759490890297}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.71124446, y: 0.008742751, z: 0.035823256, w: 0.70197695}
+  m_LocalRotation: {x: -0.7112438, y: 0.008742125, z: 0.035818342, w: 0.7019778}
   m_LocalPosition: {x: 2.25, y: 1.09, z: -4.87}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -177,3 +178,30 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WoodItem
   itemData: {fileID: 11400000, guid: cbdb5ab1dd5871f40bffb18b1d3796e4, type: 2}
   amount: 1
+--- !u!54 &7798262835503658658
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7476076759490890297}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
