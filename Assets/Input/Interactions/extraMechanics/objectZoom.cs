@@ -1,4 +1,5 @@
 using UnityEngine;
+using Unity.Cinemachine;
 
 public class objectZoom : MonoBehaviour
 {
@@ -6,11 +7,9 @@ public class objectZoom : MonoBehaviour
     [SerializeField] private MonoBehaviour interactableObject;
     private IZoomInteractable mainObjHandler;
 
-    [Header("Camera Settings")]
-    public Camera playerCamera;
-    public Transform cameraFocus;
-    [Range(1f, 20f)] public float moveSpeed = 5f;
-    [Range(1f, 360f)] public float rotateSpeed = 180f;
+    [Header("Cinemachine Cameras")]
+    public CinemachineCamera playerVCam;
+    public CinemachineCamera puzzleVCam;
 
     [Header("Player Settings")]
     [SerializeField] public PlayerMovement playerController;
@@ -19,82 +18,18 @@ public class objectZoom : MonoBehaviour
     public bool isInPuzzle = false;
     private bool canInteract = true;
 
-    private Vector3 savedLocalPos;
-    private Quaternion savedLocalRot;
-
-    private bool returningCamera = false;
-
     void Start()
     {
-        if (playerCamera == null)
-            playerCamera = Camera.main;
-
-        // Convert MonoBehaviour to interface
+        
         if (interactableObject != null)
             mainObjHandler = interactableObject as IZoomInteractable;
 
-        // Optional auto-detect if not assigned
         if (mainObjHandler == null)
             mainObjHandler = GetComponent<IZoomInteractable>();
-    }
 
-    void LateUpdate()
-    {
-        if (playerCamera == null || cameraFocus == null) return;
-
-        if (isInPuzzle)
-        {
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
-
-            playerCamera.transform.position = Vector3.MoveTowards(
-                playerCamera.transform.position,
-                cameraFocus.position,
-                moveSpeed * Time.deltaTime
-            );
-
-            Vector3 targetEuler = cameraFocus.rotation.eulerAngles;
-            targetEuler.z = 0f;
-
-            Quaternion targetRot = Quaternion.Euler(targetEuler);
-
-            playerCamera.transform.rotation = Quaternion.RotateTowards(
-                playerCamera.transform.rotation,
-                targetRot,
-                rotateSpeed * Time.deltaTime
-            );
-        }
-        else if (returningCamera)
-        {
-            Cursor.visible = false;
-            playerCamera.transform.localPosition = Vector3.MoveTowards(
-                playerCamera.transform.localPosition,
-                savedLocalPos,
-                moveSpeed * Time.deltaTime
-            );
-
-            playerCamera.transform.localRotation = Quaternion.RotateTowards(
-                playerCamera.transform.localRotation,
-                savedLocalRot,
-                rotateSpeed * Time.deltaTime
-            );
-
-            if (Vector3.Distance(playerCamera.transform.localPosition, savedLocalPos) < 0.01f &&
-                Quaternion.Angle(playerCamera.transform.localRotation, savedLocalRot) < 0.5f)
-            {
-                playerCamera.transform.localPosition = savedLocalPos;
-                playerCamera.transform.localRotation = savedLocalRot;
-
-                returningCamera = false;
-
-                if (playerlookCamera != null)
-                    playerlookCamera.enabled = true;
-            }
-        }
-
-        // Absolute roll lock safeguard
-        Vector3 rot = playerCamera.transform.eulerAngles;
-        playerCamera.transform.rotation = Quaternion.Euler(rot.x, rot.y, 0f);
+        // Default state
+        playerVCam.Priority.Value = 20;
+        puzzleVCam.Priority.Value = -10;
     }
 
     public void InteractZoomObj()
@@ -102,7 +37,6 @@ public class objectZoom : MonoBehaviour
         if (!canInteract) return;
 
         canInteract = false;
-
         isInPuzzle = !isInPuzzle;
 
         if (mainObjHandler != null)
@@ -118,11 +52,12 @@ public class objectZoom : MonoBehaviour
 
     private void EnterPuzzle()
     {
-        if (playerCamera != null)
-        {
-            savedLocalPos = playerCamera.transform.localPosition;
-            savedLocalRot = playerCamera.transform.localRotation;
-        }
+        // Switch camera
+        puzzleVCam.Priority.Value = 20;
+        playerVCam.Priority.Value = 0;
+
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
 
         if (playerlookCamera != null)
             playerlookCamera.enabled = false;
@@ -138,10 +73,18 @@ public class objectZoom : MonoBehaviour
 
     private void ExitPuzzle()
     {
-        returningCamera = true;
+        // Switch back
+        playerVCam.Priority.Value = 20;
+        puzzleVCam.Priority.Value = 0;
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
 
         if (playerController != null)
             playerController.enabled = true;
+
+        if (playerlookCamera != null)
+            playerlookCamera.enabled = true;
 
         mainObjHandler?.StopInteraction();
     }
