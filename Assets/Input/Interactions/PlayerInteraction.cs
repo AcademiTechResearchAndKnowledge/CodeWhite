@@ -10,7 +10,8 @@ public class PlayerInteraction : MonoBehaviour
     void Update()
     {
         CheckInteraction();
-        if (Keyboard.current.fKey.isPressed && currentInteractable != null)
+
+        if (Keyboard.current.fKey.wasPressedThisFrame && currentInteractable != null)
         {
             currentInteractable.Interact();
         }
