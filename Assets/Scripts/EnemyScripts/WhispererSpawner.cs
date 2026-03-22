@@ -9,6 +9,9 @@ public class WhispererSpawner : MonoBehaviour
         // Spawn in a random predetermined area (location of its children)
         Transform spawner = transform.GetChild(Random.Range(0, transform.childCount));
 
-        Instantiate(Whisperer, spawner.position, Quaternion.identity);
+        Whisperer.transform.position = spawner.position;
+        Whisperer.SetActive(true);
+
     }
+
 }

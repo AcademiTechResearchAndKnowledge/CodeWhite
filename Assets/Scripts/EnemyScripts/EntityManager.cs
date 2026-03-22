@@ -1,8 +1,12 @@
 using UnityEngine;
 
-public class MobManager : MonoBehaviour
+public class EntityManager : MonoBehaviour
 {
+    [SerializeField]
+    private AudioClip WhispererWhisper;
+
     PuzzleManager puzzleManager;
+    AudioSource audioSource;
     int whispererStage = 1;
 
     private void OnEnable()
@@ -18,6 +22,7 @@ public class MobManager : MonoBehaviour
     private void Awake()
     {
         puzzleManager = GameObject.Find("PuzzleManager").GetComponent<PuzzleManager>();
+        audioSource = GetComponent<AudioSource>();
     }
 
     bool whispererSpawned = false;
@@ -33,7 +38,11 @@ public class MobManager : MonoBehaviour
             {
                 case 1:
                     // Play Whispering Audio
+                    audioSource.clip = WhispererWhisper;
+                    audioSource.Play();
+
                     Debug.Log("Whisperer whispers to you");
+
                     break;
                 case 2:
                     // Flicker Lights
