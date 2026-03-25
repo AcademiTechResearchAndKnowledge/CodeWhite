@@ -17,6 +17,8 @@ public class PuzzleManager : MonoBehaviour
     public int candlesToFinish = 3;
 
     private GameObject spawnedLighter;
+    public GameObject entity_1;
+    public Transform entity_1_spawn;
 
     // Track previous drawer to avoid repeats
     private DrawerInteract previousDrawer;
@@ -75,11 +77,17 @@ public class PuzzleManager : MonoBehaviour
         candlesLit++;
         Debug.Log("Candles lit: " + candlesLit);
 
+        if (candlesLit == 1)
+        {
+            Instantiate(entity_1, entity_1_spawn.position, entity_1_spawn.rotation);
+        }
+
         if (candlesLit >= candlesToFinish)
         {
             PuzzleFinished();
             return;
         }
+        if (candlesLit == 1)
 
         RandomizeDrawer();
     }

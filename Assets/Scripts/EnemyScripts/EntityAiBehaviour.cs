@@ -3,7 +3,7 @@ using UnityEngine.AI;
 
 public class EntityAi : MonoBehaviour
 {
-    [SerializeField] private Transform movePositionTransform;
+    [SerializeField] public Transform movePositionTransform;
     private NavMeshAgent navMeshAgent;
     private void Awake()
     {
@@ -11,7 +11,11 @@ public class EntityAi : MonoBehaviour
     }
 
     private void Update()
-    {
-        navMeshAgent.destination = movePositionTransform.position;
+    {   
+        if(movePositionTransform)
+        {
+            navMeshAgent.destination = movePositionTransform.position;
+        }
+        
     }
 }
