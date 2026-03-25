@@ -4763,15 +4763,25 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
   body: {fileID: 2012941100}
+  cameraHolder: {fileID: 0}
   moveSpeed: 5
   jumpForce: 5
   sprintMultiplier: 1.5
   exhaustedMultiplier: 0.5
+  crouchHeight: 1
+  crouchCenterY: 0.5
+  crouchBodyOffset: -0.5
+  crouchCameraOffset: -0.5
+  crouchSpeedMultiplier: 0.5
   groundCheck: {fileID: 130501593}
   groundDistance: 0.4
   groundMask:
     serializedVersion: 2
     m_Bits: 64
+  ceilingMask:
+    serializedVersion: 2
+    m_Bits: 0
+  isCrouching: 0
 --- !u!114 &928576149
 MonoBehaviour:
   m_ObjectHideFlags: 0

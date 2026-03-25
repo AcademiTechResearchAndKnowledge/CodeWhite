@@ -3,29 +3,35 @@ using System.Collections.Generic;
 
 public class doorsGen : MonoBehaviour
 {
-    [Header("Prefabs")]
     public GameObject blackDoorPrefab;
     public GameObject rainbowDoorPrefab;
     public GameObject whiteDoorPrefab;
     public GameObject keyPrefab;
 
-    [Header("Parents")]
-    public Transform doorsParent;   // assign empty object to group doors
-    public Transform keysParent;    // optional, for keys
-
-    [Header("Floor")]
+    public Transform doorsParent;
+    public Transform keysParent;
     public Transform floor;
 
-    [Header("Generation Settings")]
-    public int totalDoors = 20; // total number of doors including special doors
+    public int totalDoors = 20;
     public float spawnAreaSize = 50f;
     public float minDistanceBetweenDoors = 5f;
+
+    public Material portalMaterialBase;
+    public Material idlePortalMaterial;
+    public Transform playerTransform;
 
     private List<Vector3> usedPositions = new List<Vector3>();
     private float floorTop;
 
     void Start()
     {
+        if (playerTransform == null)
+        {
+            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null)
+                playerTransform = playerObj.transform;
+        }
+
         Collider floorCollider = floor.GetComponent<Collider>();
         floorTop = floorCollider.bounds.max.y;
 
@@ -35,98 +41,139 @@ public class doorsGen : MonoBehaviour
 
     void SpawnDoors()
     {
-        // Randomly pick which indices will be special doors
+        List<GameObject> blackDoors = new List<GameObject>();
+
         int rainbowIndex = Random.Range(0, totalDoors);
         int whiteIndex = Random.Range(0, totalDoors);
-
-        // Make sure rainbow and white are not the same
         while (whiteIndex == rainbowIndex)
-        {
             whiteIndex = Random.Range(0, totalDoors);
-        }
 
         for (int i = 0; i < totalDoors; i++)
         {
-            Vector3 randomXZ = GetValidRandomPosition();
-            if (randomXZ == Vector3.zero) continue; // skip if not valid
+            Vector3 pos = GetValidRandomPosition();
+            if (pos == Vector3.zero) continue;
 
             GameObject prefabToSpawn = blackDoorPrefab;
-
             if (i == rainbowIndex) prefabToSpawn = rainbowDoorPrefab;
             else if (i == whiteIndex) prefabToSpawn = whiteDoorPrefab;
 
-            float randomRotation = Random.Range(0f, 360f);
-
-            // Instantiate at floorTop first
             GameObject door = Instantiate(
                 prefabToSpawn,
-                new Vector3(randomXZ.x, floorTop, randomXZ.z),
-                Quaternion.Euler(0, randomRotation, 0),
+                new Vector3(pos.x, 0f, pos.z),
+                Quaternion.Euler(0, Random.Range(0f, 360f), 0),
                 doorsParent
             );
 
-            // Adjust Y so bottom touches floor
-            Collider doorCollider = door.GetComponent<Collider>();
-            if (doorCollider != null)
-            {
-                float bottomOffset = doorCollider.bounds.min.y - door.transform.position.y;
-                door.transform.position = new Vector3(door.transform.position.x, floorTop - bottomOffset, door.transform.position.z);
-            }
+            AdjustToFloor(door);
+            usedPositions.Add(pos);
 
-            usedPositions.Add(randomXZ);
+            if (prefabToSpawn == blackDoorPrefab)
+                blackDoors.Add(door);
         }
 
-        Debug.Log("Doors spawned! Rainbow and White doors included.");
+        // Pair black doors
+        for (int i = 0; i < blackDoors.Count; i += 2)
+        {
+            if (i + 1 >= blackDoors.Count) break;
+            SetupPortalPair(blackDoors[i], blackDoors[i + 1]);
+        }
+    }
+
+    void SetupPortalPair(GameObject doorA, GameObject doorB)
+    {
+        Camera camA = new GameObject("PortalCam_A").AddComponent<Camera>();
+        Camera camB = new GameObject("PortalCam_B").AddComponent<Camera>();
+
+        camA.enabled = false;
+        camB.enabled = false;
+
+        RenderTexture texA = new RenderTexture(1024, 1024, 24);
+        RenderTexture texB = new RenderTexture(1024, 1024, 24);
+
+        camA.targetTexture = texA;
+        camB.targetTexture = texB;
+
+        Camera mainCam = Camera.main;
+        if (mainCam != null)
+        {
+            camA.fieldOfView = mainCam.fieldOfView;
+            camB.fieldOfView = mainCam.fieldOfView;
+            camA.nearClipPlane = mainCam.nearClipPlane;
+            camB.nearClipPlane = mainCam.nearClipPlane;
+            camA.farClipPlane = mainCam.farClipPlane;
+            camB.farClipPlane = mainCam.farClipPlane;
+        }
+
+        PortalDoor pA = doorA.GetComponent<PortalDoor>() ?? doorA.AddComponent<PortalDoor>();
+        PortalDoor pB = doorB.GetComponent<PortalDoor>() ?? doorB.AddComponent<PortalDoor>();
+
+        pA.portalCamera = camA;
+        pB.portalCamera = camB;
+
+        pA.linkedDoor = pB;
+        pB.linkedDoor = pA;
+
+        pA.player = playerTransform;
+        pB.player = playerTransform;
+
+        pA.portalMaterialBase = portalMaterialBase;
+        pB.portalMaterialBase = portalMaterialBase;
+
+        pA.idlePortalMaterial = idlePortalMaterial;
+        pB.idlePortalMaterial = idlePortalMaterial;
+    }
+
+    void AdjustToFloor(GameObject obj)
+    {
+        Collider col = obj.GetComponentInChildren<Collider>();
+        if (col != null)
+        {
+            float halfHeight = col.bounds.extents.y;
+            obj.transform.position = new Vector3(
+                obj.transform.position.x,
+                floorTop + halfHeight,
+                obj.transform.position.z
+            );
+        }
     }
 
     void SpawnKey()
     {
-        Vector3 randomXZ = GetValidRandomPosition();
-        if (randomXZ == Vector3.zero) return;
+        Vector3 pos = GetValidRandomPosition();
+        if (pos == Vector3.zero) return;
 
-        GameObject key = Instantiate(
-            keyPrefab,
-            new Vector3(randomXZ.x, floorTop, randomXZ.z),
-            Quaternion.identity,
-            keysParent
-        );
-
-        Collider keyCollider = key.GetComponent<Collider>();
-        if (keyCollider != null)
-        {
-            float bottomOffset = keyCollider.bounds.min.y - key.transform.position.y;
-            key.transform.position = new Vector3(key.transform.position.x, floorTop - bottomOffset, key.transform.position.z);
-        }
-
-        Debug.Log("Key spawned at random location!");
+        GameObject key = Instantiate(keyPrefab, pos, Quaternion.identity, keysParent);
+        AdjustToFloor(key);
     }
 
     Vector3 GetValidRandomPosition()
     {
         int attempts = 0;
+
         while (attempts < 100)
         {
             attempts++;
+
             Vector3 pos = new Vector3(
                 Random.Range(-spawnAreaSize, spawnAreaSize),
                 0,
                 Random.Range(-spawnAreaSize, spawnAreaSize)
             );
 
-            bool farEnough = true;
+            bool valid = true;
+
             foreach (Vector3 used in usedPositions)
             {
                 if (Vector3.Distance(pos, used) < minDistanceBetweenDoors)
                 {
-                    farEnough = false;
+                    valid = false;
                     break;
                 }
             }
 
-            if (farEnough) return pos;
+            if (valid) return pos;
         }
 
-        Debug.LogWarning("Failed to find valid spawn position after 100 attempts");
         return Vector3.zero;
     }
 }
