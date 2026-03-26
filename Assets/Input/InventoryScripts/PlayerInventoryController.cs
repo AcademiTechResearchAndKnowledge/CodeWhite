@@ -3,6 +3,8 @@ using UnityEngine.InputSystem;
 
 public class PlayerInventoryController : MonoBehaviour
 {
+    public Transform dropPoint;
+
     private void Update()
     {
         if (InventoryManager.Instance == null) return;
@@ -10,6 +12,7 @@ public class PlayerInventoryController : MonoBehaviour
         HandleScrollSelection();
         HandleNumberSelection();
         HandleUseInput();
+        HandleDropInput();
     }
 
     void HandleScrollSelection()
@@ -55,6 +58,17 @@ public class PlayerInventoryController : MonoBehaviour
         if (Keyboard.current.eKey.wasPressedThisFrame)
         {
             InventoryManager.Instance.UseSelectedItem();
+        }
+    }
+
+    void HandleDropInput()
+    {
+        if (Keyboard.current == null) return;
+
+        if (Keyboard.current.qKey.wasPressedThisFrame)
+        {
+            Vector3 spawnPosition = Camera.main.transform.position + Camera.main.transform.forward * 1.5f;
+            InventoryManager.Instance.DropSelectedItem(spawnPosition);
         }
     }
 }

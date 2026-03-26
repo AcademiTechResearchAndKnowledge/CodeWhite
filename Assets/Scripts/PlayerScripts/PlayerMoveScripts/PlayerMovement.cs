@@ -75,16 +75,10 @@ public class PlayerMovement : MonoBehaviour
         if (isSprinting && isActuallyMoving && playerStats.HasStamina())
         {
             playerStats.DrainStamina(playerStats.GetDrainRate() * Time.deltaTime);
-            Debug.Log("Draining Stamina | Current Stamina: " + playerStats.Stamina);
         }
         else if (!isSprinting)
         {
             playerStats.RegenerateStamina(playerStats.GetRegenRate() * Time.deltaTime);
-            Debug.Log("Regenerating Stamina | Current Stamina: " + playerStats.Stamina);
-        }
-        else if (isSprinting && !isActuallyMoving)
-        {
-            Debug.Log("Stamina Frozen | Current Stamina: " + playerStats.Stamina);
         }
     }
 

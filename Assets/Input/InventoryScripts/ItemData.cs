@@ -32,4 +32,7 @@ public class ItemData : ScriptableObject
     public StatType statType = StatType.None;
     public ItemEffectType effectType = ItemEffectType.None;
     public float statAmount = 0f;
+
+    [Header("Drop")]
+    public GameObject worldPrefab;
 }

@@ -56,10 +56,12 @@ public class PlayerInteraction : MonoBehaviour
     {
         currentInteractable = newInteractable;
         currentInteractable.EnableOutline();
+        HUDInteractController.Instance.EnableInteractionText(currentInteractable.message);
     }
 
     void DisableCurrentInteractable() 
     {
+        HUDInteractController.Instance.DisableInteractionText();
         if (currentInteractable) 
         { 
             currentInteractable.DisableOutline();

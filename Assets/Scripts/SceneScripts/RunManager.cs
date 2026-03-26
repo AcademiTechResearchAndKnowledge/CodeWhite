@@ -2,32 +2,36 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+[System.Serializable]
+public class StageGroup
+{
+    [Tooltip("The boss stage number for this group. Example: 10, 20, 30.")]
+    public int bossStageNumber;
+
+    [Tooltip("Normal scenes used before the boss stage. Example: for boss stage 10, these are used for stages 1-9.")]
+    public List<string> normalScenes = new();
+
+    [Tooltip("Fixed boss scene that will always load on this exact stage number.")]
+    public string bossScene;
+}
+
 public class RunManager : MonoBehaviour
 {
     public static RunManager Instance { get; private set; }
-
-    [Header("Rules")]
-    [Tooltip("Example: 3 means stages 3, 6, 9... are boss stages.")]
-    [Min(1)]
-    public int bossEveryXStages = 3;
 
     [Header("Tutorial")]
     public bool playTutorialFirstRun = true;
     public string tutorialSceneName = "T_Intro";
 
-    [Header("Level Pools")]
-    public List<string> easyLevels = new();
-    public List<string> mediumLevels = new();
-    public List<string> hardLevels = new();
-
-    [Header("Boss Pool")]
-    public List<string> bossLevels = new();
+    [Header("Stage Groups")]
+    [Tooltip("Example: bossStageNumber 10 = stages 1-9 random from normalScenes, then stage 10 loads bossScene.")]
+    public List<StageGroup> stageGroups = new();
 
     [Header("Anti-repeat")]
     public bool avoidImmediateRepeat = true;
 
     // Run State
-    public int StageIndex { get; private set; } = 0; // 0 before first stage; 1 = first stage; etc.
+    public int StageIndex { get; private set; } = 0; // 0 before first stage
     public bool TutorialDone { get; private set; } = false;
 
     private string lastLoadedScene = "";
@@ -47,7 +51,7 @@ public class RunManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Start a new run from menu or a new game button.
+    /// Start a new run from menu or new game button.
     /// </summary>
     public void StartNewRun()
     {
@@ -59,12 +63,11 @@ public class RunManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Loads the next stage based on rules (tutorial once, boss every X).
-    /// Call this from your portal trigger.
+    /// Loads the next stage based on your 10-stage group logic.
     /// </summary>
     public void LoadNextStage()
     {
-        // Tutorial only once (never included in random pools)
+        // Play tutorial once first
         if (playTutorialFirstRun && !TutorialDone && !string.IsNullOrEmpty(tutorialSceneName))
         {
             TutorialDone = true;
@@ -72,56 +75,97 @@ public class RunManager : MonoBehaviour
             return;
         }
 
-        // Move to the next stage number
+        // Advance stage
         StageIndex++;
 
-        bool isBossStage = (bossEveryXStages > 0) && (StageIndex % bossEveryXStages == 0);
-
-        string sceneToLoad = isBossStage ? PickBossScene() : PickNormalScene();
+        string sceneToLoad = GetSceneForCurrentStage();
 
         if (string.IsNullOrEmpty(sceneToLoad))
         {
-            Debug.LogError("RunManager: Could not pick a scene. Check your level lists (easy/medium/hard/boss).");
+            Debug.LogError($"RunManager: No scene found for Stage {StageIndex}. Check your Stage Groups in the Inspector.");
             return;
         }
 
         LoadSceneSafe(sceneToLoad);
     }
 
+    private string GetSceneForCurrentStage()
+    {
+        StageGroup group = GetGroupForStage(StageIndex);
+
+        if (group == null)
+        {
+            Debug.LogError($"RunManager: No StageGroup matches Stage {StageIndex}.");
+            return "";
+        }
+
+        // Boss stage (10, 20, 30, etc.)
+        if (StageIndex == group.bossStageNumber)
+        {
+            if (string.IsNullOrEmpty(group.bossScene))
+            {
+                Debug.LogError($"RunManager: Boss scene is missing for boss stage {group.bossStageNumber}.");
+                return "";
+            }
+
+            return group.bossScene;
+        }
+
+        // Normal stage inside that block
+        return PickFromList(group.normalScenes);
+    }
+
+    private StageGroup GetGroupForStage(int stage)
+    {
+        if (stageGroups == null || stageGroups.Count == 0)
+            return null;
+
+        // Example:
+        // stage 1-10  -> group with bossStageNumber = 10
+        // stage 11-20 -> group with bossStageNumber = 20
+        // stage 21-30 -> group with bossStageNumber = 30
+
+        foreach (var group in stageGroups)
+        {
+            if (group == null) continue;
+
+            int startStage = group.bossStageNumber - 9;
+            int endStage = group.bossStageNumber;
+
+            if (stage >= startStage && stage <= endStage)
+                return group;
+        }
+
+        return null;
+    }
+
     private void LoadSceneSafe(string sceneName)
     {
-        // Optional: avoid loading the exact same scene again immediately
+        if (string.IsNullOrEmpty(sceneName))
+        {
+            Debug.LogError("RunManager: Tried to load an empty scene name.");
+            return;
+        }
+
+        // Avoid immediate repeat only for normal scenes
         if (avoidImmediateRepeat && sceneName == SceneManager.GetActiveScene().name)
         {
-            // try to pick a different one once
             string alt = TryPickDifferent(sceneName);
-            if (!string.IsNullOrEmpty(alt)) sceneName = alt;
+            if (!string.IsNullOrEmpty(alt))
+                sceneName = alt;
         }
 
         lastLoadedScene = sceneName;
         SceneManager.LoadScene(sceneName);
     }
 
-    private string PickNormalScene()
-    {
-        // Simple difficulty ramp (adjust however you want)
-        // stages 10: easy, 20: medium, 20+: hard
-        if (StageIndex <= 10) return PickFromList(easyLevels);
-        if (StageIndex <= 20) return PickFromList(mediumLevels);
-        return PickFromList(hardLevels);
-    }
-
-    private string PickBossScene()
-    {
-        return PickFromList(bossLevels);
-    }
-
     private string PickFromList(List<string> list)
     {
-        if (list == null || list.Count == 0) return "";
+        if (list == null || list.Count == 0)
+            return "";
 
-        // Filter out tutorial name if someone accidentally put it in a list
         List<string> candidates = new();
+
         foreach (var s in list)
         {
             if (string.IsNullOrEmpty(s)) continue;
@@ -129,17 +173,22 @@ public class RunManager : MonoBehaviour
             candidates.Add(s);
         }
 
-        if (candidates.Count == 0) return "";
+        if (candidates.Count == 0)
+            return "";
 
         if (avoidImmediateRepeat)
         {
-            // Try a few times to avoid repeating current scene
             string current = SceneManager.GetActiveScene().name;
-            for (int i = 0; i < 8; i++)
+
+            List<string> filtered = new();
+            foreach (var s in candidates)
             {
-                string pick = candidates[Random.Range(0, candidates.Count)];
-                if (pick != current) return pick;
+                if (s != current)
+                    filtered.Add(s);
             }
+
+            if (filtered.Count > 0)
+                return filtered[Random.Range(0, filtered.Count)];
         }
 
         return candidates[Random.Range(0, candidates.Count)];
@@ -147,19 +196,23 @@ public class RunManager : MonoBehaviour
 
     private string TryPickDifferent(string sameScene)
     {
-        // Try to pick another scene from the correct pool (boss vs normal)
-        bool isBossStage = (bossEveryXStages > 0) && (StageIndex % bossEveryXStages == 0);
-        List<string> pool = isBossStage ? bossLevels : (StageIndex <= 2 ? easyLevels : (StageIndex <= 4 ? mediumLevels : hardLevels));
+        StageGroup group = GetGroupForStage(StageIndex);
+        if (group == null || group.normalScenes == null || group.normalScenes.Count <= 1)
+            return "";
 
-        if (pool == null || pool.Count <= 1) return "";
+        List<string> valid = new();
 
-        for (int i = 0; i < 10; i++)
+        foreach (var s in group.normalScenes)
         {
-            string pick = pool[Random.Range(0, pool.Count)];
-            if (!string.IsNullOrEmpty(pick) && pick != sameScene && pick != tutorialSceneName)
-                return pick;
+            if (string.IsNullOrEmpty(s)) continue;
+            if (s == sameScene) continue;
+            if (!string.IsNullOrEmpty(tutorialSceneName) && s == tutorialSceneName) continue;
+            valid.Add(s);
         }
 
-        return "";
+        if (valid.Count == 0)
+            return "";
+
+        return valid[Random.Range(0, valid.Count)];
     }
 }
