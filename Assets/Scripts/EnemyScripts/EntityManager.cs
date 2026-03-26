@@ -2,6 +2,9 @@ using UnityEngine;
 
 public class EntityManager : MonoBehaviour
 {
+    public delegate void OnWhisperFlicker();
+    public static event OnWhisperFlicker onWhisperFlicker;
+
     [SerializeField]
     private AudioClip WhispererWhisper;
 
@@ -46,6 +49,7 @@ public class EntityManager : MonoBehaviour
                     break;
                 case 2:
                     // Flicker Lights
+                    onWhisperFlicker?.Invoke();
                     Debug.Log("Lights flicker around you");
                     break;
                 case 3:
