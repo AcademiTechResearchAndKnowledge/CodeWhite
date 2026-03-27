@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 public class Flashlight : MonoBehaviour
 {
     [SerializeField] private InputActionReference toggleAction;
-    [SerializeField] private Light torchLight;
+    [SerializeField] public Light torchLight;
 
     private void Awake()
     {

@@ -11,20 +11,37 @@ public class AnalogClock : MonoBehaviour
     public Collider hourCollider;
     public Collider minuteCollider;
 
+    public GameObject submitButtonUI;
+
     private bool draggingHour = false;
     private bool draggingMinute = false;
     private int hours = 12;
     private int minutes = 0;
 
+    public objectZoom objzoom;
+
     void Start()
     {
         if (mainCamera == null)
             mainCamera = Camera.main;
+
+        SetPuzzleActive(false);
         UpdateClockVisuals();
     }
 
     void Update()
     {
+        
+        //if (!objzoom.isInPuzzle) return;
+        if (objzoom.isInPuzzle == true)
+        {
+             SetPuzzleActive(true);
+        }
+        else
+        {
+             SetPuzzleActive(false);
+        }
+       
         HandleDragging();
     }
 
@@ -60,12 +77,19 @@ public class AnalogClock : MonoBehaviour
 
         if (draggingHour || draggingMinute)
         {
-            Plane rotationPlane = new Plane(Vector3.forward, draggingHour ? hourPivot.position : minutePivot.position);
+            Transform hand = draggingHour ? hourPivot : minutePivot;
+
+            Plane rotationPlane = new Plane(transform.forward, hand.position);
+
             if (rotationPlane.Raycast(ray, out float distance))
             {
                 Vector3 hitPoint = ray.GetPoint(distance);
-                Transform hand = draggingHour ? hourPivot : minutePivot;
-                Vector3 dir = hitPoint - hand.position;
+
+                Vector3 localPoint = transform.InverseTransformPoint(hitPoint);
+                Vector3 localCenter = transform.InverseTransformPoint(hand.position);
+
+                Vector3 dir = localPoint - localCenter;
+
                 float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg - 90f;
 
                 if (draggingHour)
@@ -73,7 +97,8 @@ public class AnalogClock : MonoBehaviour
                 else
                     angle = Mathf.Round(angle / 6f) * 6f;
 
-                hand.localRotation = Quaternion.Euler(0, 0, angle);
+                hand.localRotation = Quaternion.Euler(0f, 0f, angle);
+
                 UpdateTimeFromHands();
             }
         }
@@ -87,24 +112,32 @@ public class AnalogClock : MonoBehaviour
         float hourRot = hourPivot.localEulerAngles.z;
         hours = Mathf.RoundToInt(hourRot / 30f) % 12;
         if (hours == 0) hours = 12;
-
-
-
-        CheckPuzzle();
     }
 
-    private void CheckPuzzle()
+    public void SubmitTime()
     {
+        if (!objzoom.isInPuzzle) return;
+
         if (hours == targetHour && minutes == targetMinute)
             Debug.Log("Puzzle Done");
+        else
+            Debug.Log("Wrong Time");
+    }
+
+    public void SetPuzzleActive(bool state)
+    {
+        objzoom.isInPuzzle = state;
+
+        if (submitButtonUI != null)
+            submitButtonUI.SetActive(state);
     }
 
     private void UpdateClockVisuals()
     {
         float minuteRotation = minutes * 6f;
         float hourRotation = (hours % 12) * 30f + minutes * 0.5f;
-        minutePivot.localRotation = Quaternion.Euler(0, 0, minuteRotation);
-        hourPivot.localRotation = Quaternion.Euler(0, 0, hourRotation);
-        Debug.Log($"Time: {hours:00}:{minutes:00} | HourRot: {hourRotation:F1} | MinuteRot: {minuteRotation:F1}");
+
+        minutePivot.localRotation = Quaternion.Euler(0f, 0f, minuteRotation);
+        hourPivot.localRotation = Quaternion.Euler(0f, 0f, hourRotation);
     }
 }

@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class CandleInteract : Interactable
 {
-    //public GameObject flame;
+    public GameObject flame;
     private bool isLit = false;
 
     public override void Interact()
@@ -16,7 +16,7 @@ public class CandleInteract : Interactable
         }
 
         isLit = true;
-        //flame.SetActive(true);
+        flame.SetActive(true);
 
         LighterItem.hasLighter = false;
 

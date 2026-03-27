@@ -14,22 +14,27 @@ public class objectZoom : MonoBehaviour
     [Header("Player Settings")]
     [SerializeField] public PlayerMovement playerController;
     [SerializeField] public PlayerLook playerlookCamera;
+    public Flashlight fl;
 
     public bool isInPuzzle = false;
     private bool canInteract = true;
 
+    private Rigidbody playerRb;
+
     void Start()
     {
-        
         if (interactableObject != null)
             mainObjHandler = interactableObject as IZoomInteractable;
 
         if (mainObjHandler == null)
             mainObjHandler = GetComponent<IZoomInteractable>();
 
-        // Default state
+        // Default camera priorities
         playerVCam.Priority.Value = 20;
         puzzleVCam.Priority.Value = -10;
+
+        if (playerController != null)
+            playerRb = playerController.GetComponent<Rigidbody>();
     }
 
     public void InteractZoomObj()
@@ -59,32 +64,50 @@ public class objectZoom : MonoBehaviour
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
+        // Disable player look
         if (playerlookCamera != null)
             playerlookCamera.enabled = false;
 
+        // Freeze player and disable movement
         if (playerController != null)
         {
             StopPlayerInstantly();
             playerController.enabled = false;
         }
 
+        if (fl != null){
+            fl.torchLight.enabled = false;
+            fl.enabled = false;
+            
+        }
+
+
         mainObjHandler?.StartInteraction();
     }
 
     private void ExitPuzzle()
     {
-        // Switch back
+        // Switch camera back
         playerVCam.Priority.Value = 20;
         puzzleVCam.Priority.Value = 0;
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
+        // Re-enable player look
+        if (playerlookCamera != null)
+            playerlookCamera.enabled = true;
+
+        // Unfreeze player and re-enable movement
         if (playerController != null)
             playerController.enabled = true;
 
-        if (playerlookCamera != null)
-            playerlookCamera.enabled = true;
+        if (playerRb != null)
+            playerRb.isKinematic = false;
+
+        if (fl != null)
+            fl.enabled = true;
+        
 
         mainObjHandler?.StopInteraction();
     }
@@ -93,17 +116,12 @@ public class objectZoom : MonoBehaviour
     {
         if (playerController == null) return;
 
-        Rigidbody rb = playerController.GetComponent<Rigidbody>();
-        if (rb != null)
+        // Freeze Rigidbody to prevent movement/jumping
+        if (playerRb != null)
         {
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
-        }
-
-        CharacterController cc = playerController.GetComponent<CharacterController>();
-        if (cc != null)
-        {
-            cc.Move(Vector3.zero);
+            playerRb.linearVelocity = Vector3.zero;
+            playerRb.angularVelocity = Vector3.zero;
+            playerRb.isKinematic = true;
         }
     }
 
