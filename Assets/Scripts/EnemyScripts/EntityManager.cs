@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class EntityManager : MonoBehaviour
@@ -8,27 +9,59 @@ public class EntityManager : MonoBehaviour
     [SerializeField]
     private AudioClip WhispererWhisper;
 
+    [SerializeField]
+    private int flashlightLifetime = 10;
+
+    WhispererSpawner spawner;
     PuzzleManager puzzleManager;
     AudioSource audioSource;
     int whispererStage = 1;
 
     private void OnEnable()
     {
+        // TODO: Implement a method against spam on off flashlight
+        // TODO: Refactor Code
+        Flashlight.onFlashlightOn += StartSpawnTimer;
+        Flashlight.onFlashlightOff += StopSpawnTimer;
         CandleInteract.onCandleLit += TriggerWhisperer;
     }
 
     private void OnDisable()
     {
+        Flashlight.onFlashlightOn -= StartSpawnTimer;
+        Flashlight.onFlashlightOff -= StopSpawnTimer;
         CandleInteract.onCandleLit -= TriggerWhisperer;
     }
 
     private void Awake()
     {
+        spawner = GameObject.Find("WhispererSpawner").GetComponent<WhispererSpawner>();
         puzzleManager = GameObject.Find("PuzzleManager").GetComponent<PuzzleManager>();
         audioSource = GetComponent<AudioSource>();
     }
 
     bool whispererSpawned = false;
+
+    Coroutine spawnTimerRoutine;
+
+    void StartSpawnTimer()
+    {
+        spawnTimerRoutine = StartCoroutine(SpawnTimerRoutine());
+    }
+
+    void StopSpawnTimer()
+    {
+        Debug.Log("Flash TIMER STOPPED");
+        StopCoroutine(spawnTimerRoutine);
+    }
+
+    IEnumerator SpawnTimerRoutine()
+    {
+        Debug.Log("Flash TIMER STARTED");
+        yield return new WaitForSeconds(flashlightLifetime);
+        TriggerWhisperer();
+        StartSpawnTimer();
+    }
 
     void TriggerWhisperer()
     {
@@ -55,7 +88,6 @@ public class EntityManager : MonoBehaviour
                 case 3:
                     // Spawn Whisperer
                     Debug.Log("Whisperer is now here");
-                    WhispererSpawner spawner = GameObject.Find("WhispererSpawner").GetComponent<WhispererSpawner>();
 
                     whispererSpawned = true;
                     spawner.SpawnWhisperer();
@@ -65,5 +97,10 @@ public class EntityManager : MonoBehaviour
 
             whispererStage++;
         }
+    }
+
+    void DespawnWhisperer()
+    {
+        spawner.DespawnWhisperer();
     }
 }

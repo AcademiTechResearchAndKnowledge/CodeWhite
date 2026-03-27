@@ -4,6 +4,12 @@ using System.Collections;
 
 public class Flashlight : MonoBehaviour
 {
+    public delegate void OnFlashlightOn();
+    public static event OnFlashlightOn onFlashlightOn;
+
+    public delegate void OnFlashlightOff();
+    public static event OnFlashlightOff onFlashlightOff;
+
     [SerializeField] private Light torchLight;
     [SerializeField] private float flickerDuration = 2f;
     [SerializeField] private float minFlickerInterval = 0.05f;
@@ -31,6 +37,15 @@ public class Flashlight : MonoBehaviour
         if (Mouse.current.rightButton.wasPressedThisFrame)
         {
             torchLight.enabled = !torchLight.enabled;
+
+            if (torchLight.enabled)
+            {
+                onFlashlightOn?.Invoke();
+            }
+            else
+            {
+                onFlashlightOff?.Invoke();
+            }
         }
 
         if (Keyboard.current.uKey.wasPressedThisFrame)
@@ -46,7 +61,7 @@ public class Flashlight : MonoBehaviour
             StopCoroutine(flickerRoutine);
         }
 
-        if(torchLight.enabled)
+        if (torchLight.enabled)
         {
             flickerRoutine = StartCoroutine(FlickerRoutine());
         }

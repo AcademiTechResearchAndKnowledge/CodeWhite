@@ -1047,7 +1047,6 @@ GameObject:
   - component: {fileID: 215573726}
   - component: {fileID: 215573723}
   - component: {fileID: 215573725}
-  - component: {fileID: 215573724}
   m_Layer: 0
   m_Name: LightTip
   m_TagString: Untagged
@@ -1120,18 +1119,6 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
---- !u!114 &215573724
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 215573722}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8dcc92a0aaa49d0439fab4a5f62ee939, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
 --- !u!114 &215573725
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5186,7 +5173,6 @@ GameObject:
   - component: {fileID: 1457673100}
   - component: {fileID: 1457673097}
   - component: {fileID: 1457673099}
-  - component: {fileID: 1457673098}
   m_Layer: 0
   m_Name: LightTip
   m_TagString: Untagged
@@ -5259,18 +5245,6 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
---- !u!114 &1457673098
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1457673096}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8dcc92a0aaa49d0439fab4a5f62ee939, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
 --- !u!114 &1457673099
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5361,6 +5335,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   WhispererWhisper: {fileID: 8300000, guid: 3495feb2d43f31d4aa0d576863a41a02, type: 3}
+  flashlightLifetime: 5
 --- !u!82 &1524935118
 AudioSource:
   m_ObjectHideFlags: 0

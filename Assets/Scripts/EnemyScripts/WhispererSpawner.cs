@@ -14,4 +14,9 @@ public class WhispererSpawner : MonoBehaviour
 
     }
 
+    public void DespawnWhisperer()
+    {
+        Whisperer.SetActive(false);
+    }
+
 }
