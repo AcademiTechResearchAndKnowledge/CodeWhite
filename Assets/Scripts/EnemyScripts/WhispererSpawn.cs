@@ -1,8 +1,10 @@
 using System.Collections;
 using UnityEngine;
 
-public class EntityManager : MonoBehaviour
+public class WhispererSpawn : MonoBehaviour
 {
+    public GameObject[] Spawners;
+
     public delegate void OnWhisperFlicker();
     public static event OnWhisperFlicker onWhisperFlicker;
 
@@ -90,7 +92,7 @@ public class EntityManager : MonoBehaviour
                     Debug.Log("Whisperer is now here");
 
                     whispererSpawned = true;
-                    spawner.SpawnWhisperer();
+                    Spawn();
                     whispererStage = 0;
                     break;
             }
@@ -99,8 +101,23 @@ public class EntityManager : MonoBehaviour
         }
     }
 
-    void DespawnWhisperer()
+    public void Spawn()
     {
-        spawner.DespawnWhisperer();
+        // Spawn in a random predetermined area (location of its children)
+        Transform spawner = Spawners[Random.Range(0, Spawners.Length)].transform;
+        transform.position = spawner.position;
+
+        // Enables Whisperer's Behavior
+        GetComponent<EntityAi>().enabled = true;
+        GetComponent<CapsuleCollider>().enabled = true;
+        GetComponent<MeshRenderer>().enabled = true;
+    }
+
+    public void Despawn()
+    {
+        // Disables Whisperer's Behavior
+        GetComponent<EntityAi>().enabled = false;
+        GetComponent<CapsuleCollider>().enabled = false;
+        GetComponent<MeshRenderer>().enabled = false;
     }
 }

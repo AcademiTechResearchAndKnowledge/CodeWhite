@@ -19,12 +19,12 @@ public class Flashlight : MonoBehaviour
 
     private void OnEnable()
     {
-        EntityManager.onWhisperFlicker += Flicker;
+        WhispererSpawn.onWhisperFlicker += Flicker;
     }
 
     private void OnDisable()
     {
-        EntityManager.onWhisperFlicker -= Flicker;
+        WhispererSpawn.onWhisperFlicker -= Flicker;
     }
 
     private void Awake()

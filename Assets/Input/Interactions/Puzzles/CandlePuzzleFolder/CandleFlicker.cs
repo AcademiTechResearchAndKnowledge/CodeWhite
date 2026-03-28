@@ -12,12 +12,12 @@ public class CandleFlicker : MonoBehaviour
 
     private void OnEnable()
     {
-        EntityManager.onWhisperFlicker += Flicker;
+        WhispererSpawn.onWhisperFlicker += Flicker;
     }
 
     private void OnDisable()
     {
-        EntityManager.onWhisperFlicker -= Flicker;
+        WhispererSpawn.onWhisperFlicker -= Flicker;
     }
 
     public void Flicker()
