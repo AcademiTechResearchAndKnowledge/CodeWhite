@@ -1215,7 +1215,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 347877224}
         m_TargetAssemblyTypeName: SwitchInteract, Assembly-CSharp
-        m_MethodName: FlipSwitch
+        m_MethodName: ToggleSwitch
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1470,7 +1470,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 442309718}
         m_TargetAssemblyTypeName: SwitchInteract, Assembly-CSharp
-        m_MethodName: FlipSwitch
+        m_MethodName: ToggleSwitch
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2436,7 +2436,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7b51643e7b5dec44da9b5a933e2cfd9c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SwitchPuzzleHandler
-  flippedSwitch: -1
+  flippedSwitches: 
   lightFX: {fileID: 1254084619}
 --- !u!1 &763322146
 GameObject:
@@ -5396,7 +5396,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 6623355177058345343}
         m_TargetAssemblyTypeName: SwitchInteract, Assembly-CSharp
-        m_MethodName: FlipSwitch
+        m_MethodName: ToggleSwitch
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -5591,7 +5591,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SubmitAnswerButton
   flippedRotation: {x: -89, y: 0, z: 0}
   defaultRotation: {x: -118, y: 0, z: 0}
-  allSwitches: []
 --- !u!4 &6977277655473499676
 Transform:
   m_ObjectHideFlags: 0
