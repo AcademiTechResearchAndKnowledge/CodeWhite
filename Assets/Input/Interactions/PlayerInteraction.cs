@@ -3,9 +3,18 @@ using UnityEngine.InputSystem;
 
 public class PlayerInteraction : MonoBehaviour
 {
-
     public float playerReach = 3f;
-    Interactable currentInteractable;
+
+    private Camera _cam;
+    private Interactable currentInteractable;
+
+    void Start()
+    {
+        _cam = Camera.main;
+
+        if (_cam == null)
+            Debug.LogError("PlayerInteraction: No camera tagged 'MainCamera' found.", this);
+    }
 
     void Update()
     {
@@ -19,19 +28,28 @@ public class PlayerInteraction : MonoBehaviour
 
     void CheckInteraction()
     {
+        if (_cam == null) return;
+
         RaycastHit hit;
-        Ray ray = new Ray(Camera.main.transform.position, Camera.main.transform.forward);
+        Ray ray = new Ray(_cam.transform.position, _cam.transform.forward);
+
         if (Physics.Raycast(ray, out hit, playerReach))
         {
-            if (hit.collider.tag == "Interactable")
+            if (hit.collider.CompareTag("Interactable"))
             {
-                Interactable newInteractable = hit.collider.GetComponent<Interactable>();
+                Interactable newInteractable = hit.collider.GetComponentInParent<Interactable>();
 
-                if (currentInteractable && newInteractable != currentInteractable) 
+                if (newInteractable == null)
+                {
+                    DisableCurrentInteractable();
+                    return;
+                }
+
+                if (currentInteractable != null && newInteractable != currentInteractable)
                 {
                     currentInteractable.DisableOutline();
                 }
-                
+
                 if (newInteractable.enabled)
                 {
                     SetNewCurrentInteractable(newInteractable);
@@ -54,16 +72,23 @@ public class PlayerInteraction : MonoBehaviour
 
     void SetNewCurrentInteractable(Interactable newInteractable)
     {
+        if (currentInteractable == newInteractable) return;
+
+        if (currentInteractable != null)
+        {
+            currentInteractable.DisableOutline();
+        }
+
         currentInteractable = newInteractable;
         currentInteractable.EnableOutline();
         HUDInteractController.Instance.EnableInteractionText(currentInteractable.message);
     }
 
-    void DisableCurrentInteractable() 
+    void DisableCurrentInteractable()
     {
         HUDInteractController.Instance.DisableInteractionText();
-        if (currentInteractable) 
-        { 
+        if (currentInteractable != null)
+        {
             currentInteractable.DisableOutline();
             currentInteractable = null;
         }

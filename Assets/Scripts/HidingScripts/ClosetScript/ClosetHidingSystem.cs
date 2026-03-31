@@ -1,37 +1,143 @@
+using System.Collections;
 using UnityEngine;
+using Unity.Cinemachine;
 
 public class ClosetHidingSystem : MonoBehaviour
 {
-    public GameObject VcamPlayer;
-    public GameObject VcamCloset;
-
-    public Transform player;
+    public CinemachineCamera closetCam;
     public Transform exitPoint;
-    public Rigidbody rb;
+    public Animator closetAnim;
+
+    private Transform player;
+    private PlayerReferences playerRefs;
 
     public bool InsideCloset = false;
+    public bool isTransitioning = false;
 
-    public void GoInsideCloset()
+    void Start()
     {
-        VcamCloset.SetActive(true);
-        VcamPlayer.SetActive(false);
-        InsideCloset = true;
+        FindPlayerReferences();
+
+        if (playerRefs != null && playerRefs.playerCam != null && closetCam != null)
+        {
+            playerRefs.playerCam.Priority = 100;
+            closetCam.Priority = 10;
+        }
     }
 
-    public void GoOutsideCloset()
+    void FindPlayerReferences()
     {
+        GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
+
+        if (playerObject == null)
+        {
+            Debug.LogError("No Player tagged object found.");
+            return;
+        }
+
+        player = playerObject.transform;
+        playerRefs = playerObject.GetComponent<PlayerReferences>();
+
+        if (playerRefs == null)
+        {
+            Debug.LogError("PlayerReferences is missing on the player.");
+            return;
+        }
+
+        if (playerRefs.playerCam == null)
+        {
+            Debug.LogError("playerCam is not assigned in PlayerReferences.");
+        }
+    }
+
+    public IEnumerator GoInsideCloset_CO()
+    {
+        if (isTransitioning || InsideCloset) yield break;
+
+        if (player == null || playerRefs == null)
+            FindPlayerReferences();
+
+        if (player == null || playerRefs == null || playerRefs.playerCam == null || closetCam == null)
+            yield break;
+
+        isTransitioning = true;
+
+        closetCam.Priority = 100;
+        playerRefs.playerCam.Priority = 10;
+
+        if (playerRefs.movementScript != null)
+            playerRefs.movementScript.enabled = false;
+
+        if (playerRefs.flashlightScript != null)
+            playerRefs.flashlightScript.enabled = false;
+
+        if (playerRefs.bodyMeshRenderer != null)
+            playerRefs.bodyMeshRenderer.enabled = false;
+
+        InsideCloset = true;
+
+        if (closetAnim != null)
+            closetAnim.SetInteger("C", 1);
+
+        yield return new WaitForSeconds(1f);
+
+        if (closetAnim != null)
+            closetAnim.SetInteger("C", 0);
+
+        isTransitioning = false;
+    }
+
+    public IEnumerator GoOutsideCloset_CO()
+    {
+        if (isTransitioning || !InsideCloset) yield break;
+
+        if (player == null || playerRefs == null)
+            FindPlayerReferences();
+
+        if (player == null || playerRefs == null || playerRefs.playerCam == null || closetCam == null)
+            yield break;
+
+        isTransitioning = true;
+
+        if (playerRefs.rb != null)
+        {
+            playerRefs.rb.linearVelocity = Vector3.zero;
+            playerRefs.rb.angularVelocity = Vector3.zero;
+            playerRefs.rb.isKinematic = true;
+        }
 
         player.position = exitPoint.position;
         player.rotation = exitPoint.rotation;
 
-        if (rb != null)
+        playerRefs.playerCam.Priority = 100;
+        closetCam.Priority = 10;
+
+        InsideCloset = false;
+
+        if (closetAnim != null)
+            closetAnim.SetInteger("C", 1);
+
+        yield return new WaitForSeconds(1f);
+
+        if (closetAnim != null)
+            closetAnim.SetInteger("C", 0);
+
+        if (playerRefs.movementScript != null)
+            playerRefs.movementScript.enabled = true;
+
+        if (playerRefs.flashlightScript != null)
+            playerRefs.flashlightScript.enabled = true;
+
+        if (playerRefs.bodyMeshRenderer != null)
+            playerRefs.bodyMeshRenderer.enabled = true;
+
+        if (playerRefs.rb != null)
         {
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
+            playerRefs.rb.isKinematic = false;
+            playerRefs.rb.linearVelocity = Vector3.zero;
+            playerRefs.rb.angularVelocity = Vector3.zero;
         }
 
-        VcamCloset.SetActive(false);
-        VcamPlayer.SetActive(true);
-        InsideCloset = false;
+        isTransitioning = false;
     }
 }
