@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.AI; // Required for NavMeshAgent
 
 public class SpriteDirectionalController : MonoBehaviour
 {
@@ -7,14 +8,31 @@ public class SpriteDirectionalController : MonoBehaviour
     [SerializeField] float backAngle = 135f;
 
     [Header("References")]
-    [SerializeField] Transform targetPlayer;
+    [SerializeField] PlayerReferences playerReference;
     [SerializeField] Transform body;
     [SerializeField] Animator animator;
     [SerializeField] SpriteRenderer spriteRenderer;
+    [SerializeField] NavMeshAgent navMeshAgent; // Added this reference!
+
+    private void Start()
+    {
+        if (playerReference == null)
+        {
+            playerReference = Object.FindFirstObjectByType<PlayerReferences>();
+        }
+
+        // Auto-assign NavMeshAgent if you forget to drag it in
+        if (navMeshAgent == null)
+        {
+            navMeshAgent = GetComponent<NavMeshAgent>();
+            if (navMeshAgent == null) navMeshAgent = GetComponentInParent<NavMeshAgent>();
+        }
+    }
 
     private void Update()
     {
-        Vector3 directionToPlayer = targetPlayer.position - body.position;
+        // --- 1. DETERMINE DIRECTION TO PLAYER ---
+        Vector3 directionToPlayer = playerReference.transform.position - body.position;
         directionToPlayer.y = 0f;
         directionToPlayer.Normalize();
 
@@ -38,8 +56,6 @@ public class SpriteDirectionalController : MonoBehaviour
         {
             animationDirection = new Vector2(1f, 0f);
 
-            // --- THE FIX IS HERE ---
-            // We swapped the 1 and -1 around!
             if (signedAngle < -0.1f)
             {
                 spriteRenderer.transform.localScale = new Vector3(1f, 1f, 1f);
@@ -56,7 +72,13 @@ public class SpriteDirectionalController : MonoBehaviour
             spriteRenderer.transform.localScale = new Vector3(1f, 1f, 1f);
         }
 
+        // --- 2. SEND DIRECTION TO ANIMATOR ---
         animator.SetFloat("moveX", animationDirection.x);
         animator.SetFloat("moveY", animationDirection.y);
+
+        // --- 3. SEND WALKING STATE TO ANIMATOR ---
+        // If the agent exists, is enabled, and is moving faster than 0.1, it's walking.
+        bool isMoving = navMeshAgent != null && navMeshAgent.enabled && navMeshAgent.velocity.magnitude > 0.1f;
+        animator.SetBool("isWalking", isMoving);
     }
 }

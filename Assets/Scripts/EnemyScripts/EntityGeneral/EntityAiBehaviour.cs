@@ -3,7 +3,6 @@ using UnityEngine.AI;
 
 public class EntityAi : MonoBehaviour
 {
-    // Changed back to public so PlayerActionDetector can access it!
     public Transform movePositionTransform;
 
     private NavMeshAgent navMeshAgent;

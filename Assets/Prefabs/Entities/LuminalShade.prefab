@@ -143,10 +143,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SpriteDirectionalController
   frontAngle: 45
   backAngle: 135
-  targetPlayer: {fileID: 0}
+  playerReference: {fileID: 0}
   body: {fileID: 1687433436891649694}
   animator: {fileID: 3039584898240923186}
   spriteRenderer: {fileID: 5384906854492918294}
+  navMeshAgent: {fileID: 7078547945305824700}
 --- !u!1 &5676473115568672394
 GameObject:
   m_ObjectHideFlags: 0

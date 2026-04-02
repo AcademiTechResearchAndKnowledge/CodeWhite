@@ -3,7 +3,7 @@ using UnityEngine;
 public class LIBentityHandler : MonoBehaviour
 {
     public LIBentity ent_AI;
-    public EntityWandering ent_WANDER;
+    public EntityWondering ent_WANDER;
     public PlayerMovement player_MOVEMENT;
 
     public void Update()
