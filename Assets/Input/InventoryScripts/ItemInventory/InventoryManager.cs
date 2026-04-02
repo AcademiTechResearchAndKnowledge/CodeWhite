@@ -219,4 +219,9 @@ public class InventoryManager : MonoBehaviour
 
         RefreshUI();
     }
+    public void DeselectAll()
+    {
+        selectedSlot = -1;
+        RefreshUI();
+    }
 }
