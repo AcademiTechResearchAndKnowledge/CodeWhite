@@ -25,7 +25,7 @@ Transform:
   m_GameObject: {fileID: 2719980854479910226}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -1, z: -0, w: 0}
-  m_LocalPosition: {x: 0.14, y: 1, z: 4.066}
+  m_LocalPosition: {x: 0.14, y: 1, z: 3.346}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -183,6 +183,37 @@ MonoBehaviour:
         DecelTime: 0.2
   PlayerIndex: -1
   AutoEnableInputs: 1
+--- !u!1 &7419913859322435894
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7504209768464129926}
+  m_Layer: 0
+  m_Name: StalkerFollow
+  m_TagString: PlayerFollow
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &7504209768464129926
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7419913859322435894}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.067, y: 0, z: 1.35}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2185102035767376803}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1862717575580408904
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -193,15 +224,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 0eacdba24a841cf44af5d8a150ebbf7f, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -37.28
+      value: -7.5216827
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 0eacdba24a841cf44af5d8a150ebbf7f, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.5
+      value: 0.50000006
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 0eacdba24a841cf44af5d8a150ebbf7f, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 13.136
+      value: -17.145565
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 0eacdba24a841cf44af5d8a150ebbf7f, type: 3}
       propertyPath: m_LocalRotation.w
@@ -296,6 +327,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: 0eacdba24a841cf44af5d8a150ebbf7f, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1849015810462891270}
+    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: 0eacdba24a841cf44af5d8a150ebbf7f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7504209768464129926}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 0eacdba24a841cf44af5d8a150ebbf7f, type: 3}
       insertIndex: -1
@@ -376,6 +410,7 @@ MonoBehaviour:
   closetCam: {fileID: 1655953943711075128}
   exitPoint: {fileID: 1849015810462891270}
   closetAnim: {fileID: 698201411383376119}
+  stalkerFollowTarget: {fileID: 7419913859322435894}
   InsideCloset: 0
   isTransitioning: 0
 --- !u!4 &2185102035767376803 stripped

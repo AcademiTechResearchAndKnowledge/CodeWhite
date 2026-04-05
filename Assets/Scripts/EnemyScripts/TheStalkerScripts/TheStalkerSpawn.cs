@@ -6,13 +6,12 @@ public class IdleOrClosetEnemySpawner : MonoBehaviour
     [SerializeField] private GameObject enemyPrefab;
 
     [Header("Player")]
-    [SerializeField] private Rigidbody playerRb;
+    [SerializeField] private PlayerReferences playerRefs;
     [SerializeField] private ClosetHidingSystem closetSystem;
 
     [Header("Spawn Timing")]
     [SerializeField] private float idleSpawnDelay = 10f;
     [SerializeField] private float closetSpawnDelay = 15f;
-    [SerializeField] private bool spawnOnlyOnce = true;
 
     [Header("Idle Check")]
     [SerializeField] private float idleSpeedThreshold = 0.1f;
@@ -25,18 +24,26 @@ public class IdleOrClosetEnemySpawner : MonoBehaviour
 
     private float idleTimer;
     private float closetTimer;
-    private bool hasSpawned;
+    private GameObject activeStalker;
+
+    private void Start()
+    {
+        playerRefs = FindAnyObjectByType<PlayerReferences>();
+
+        if (playerRefs == null)
+        {
+            Debug.LogError("IdleOrClosetEnemySpawner: Could not find PlayerReferences in the scene!");
+        }
+    }
 
     private void Update()
     {
-        if (spawnOnlyOnce && hasSpawned)
+        // If the stalker is currently in the scene, do not run the timers
+        if (activeStalker != null)
             return;
 
-        if (playerRb == null)
-        {
-            Debug.LogWarning("IdleOrClosetEnemySpawner: No player Rigidbody assigned.");
+        if (playerRefs == null || playerRefs.rb == null)
             return;
-        }
 
         CheckIdleTimer();
         CheckClosetTimer();
@@ -50,7 +57,7 @@ public class IdleOrClosetEnemySpawner : MonoBehaviour
             return;
         }
 
-        Vector3 flatVelocity = new Vector3(playerRb.linearVelocity.x, 0f, playerRb.linearVelocity.z);
+        Vector3 flatVelocity = new Vector3(playerRefs.rb.linearVelocity.x, 0f, playerRefs.rb.linearVelocity.z);
 
         if (flatVelocity.magnitude <= idleSpeedThreshold)
         {
@@ -58,7 +65,7 @@ public class IdleOrClosetEnemySpawner : MonoBehaviour
 
             if (idleTimer >= idleSpawnDelay)
             {
-                SpawnEnemy();
+                SpawnEnemy(isClosetSpawn: false);
             }
         }
         else
@@ -75,7 +82,7 @@ public class IdleOrClosetEnemySpawner : MonoBehaviour
 
             if (closetTimer >= closetSpawnDelay)
             {
-                SpawnEnemy();
+                SpawnEnemy(isClosetSpawn: true);
             }
         }
         else
@@ -84,60 +91,59 @@ public class IdleOrClosetEnemySpawner : MonoBehaviour
         }
     }
 
-    private void SpawnEnemy()
+    private void SpawnEnemy(bool isClosetSpawn)
     {
-        if (spawnOnlyOnce && hasSpawned)
-            return;
-
-        if (enemyPrefab == null)
+        if (enemyPrefab == null || spawnAreas == null || spawnAreas.Length == 0)
         {
-            Debug.LogWarning("IdleOrClosetEnemySpawner: No enemy prefab assigned.");
-            return;
-        }
-
-        if (spawnAreas == null || spawnAreas.Length == 0)
-        {
-            Debug.LogWarning("IdleOrClosetEnemySpawner: No spawn areas assigned.");
+            Debug.LogWarning("Missing Prefab or Spawn Areas.");
             return;
         }
 
         BoxCollider chosenArea = GetRandomSpawnArea();
-
-        if (chosenArea == null)
-        {
-            Debug.LogWarning("IdleOrClosetEnemySpawner: Chosen spawn area is null.");
-            return;
-        }
+        if (chosenArea == null) return;
 
         Vector3 spawnPos = GetRandomPointInBox(chosenArea);
 
-        Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
+        // Store the reference so the spawner knows the stalker is currently active
+        activeStalker = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
 
-        hasSpawned = true;
+        StalkerFollowScript stalkerScript = activeStalker.GetComponent<StalkerFollowScript>();
+
+        if (stalkerScript != null)
+        {
+            if (isClosetSpawn)
+            {
+                stalkerScript.InitializeForCloset(playerRefs, closetSystem);
+            }
+            else
+            {
+                stalkerScript.InitializeForIdle(playerRefs, idleSpeedThreshold);
+            }
+        }
+        else
+        {
+            Debug.LogError("Enemy prefab is missing the StalkerFollowScript!");
+        }
+
         idleTimer = 0f;
         closetTimer = 0f;
 
-        Debug.Log("Enemy spawned because player stayed still too long or stayed inside closet too long.");
+        Debug.Log($"Stalker spawned. Reason: {(isClosetSpawn ? "Closet" : "Idle")}");
     }
 
     private BoxCollider GetRandomSpawnArea()
     {
         BoxCollider[] validAreas = System.Array.FindAll(spawnAreas, area => area != null);
-
-        if (validAreas.Length == 0)
-            return null;
-
+        if (validAreas.Length == 0) return null;
         return validAreas[Random.Range(0, validAreas.Length)];
     }
 
     private Vector3 GetRandomPointInBox(BoxCollider box)
     {
         Bounds bounds = box.bounds;
-
         float randomX = Random.Range(bounds.min.x, bounds.max.x);
         float randomZ = Random.Range(bounds.min.z, bounds.max.z);
         float y = bounds.min.y + groundOffset;
-
         return new Vector3(randomX, y, randomZ);
     }
 }

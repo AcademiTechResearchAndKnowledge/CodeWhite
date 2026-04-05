@@ -8,6 +8,9 @@ public class ClosetHidingSystem : MonoBehaviour
     public Transform exitPoint;
     public Animator closetAnim;
 
+    [Header("Stalker Targeting")]
+    public GameObject stalkerFollowTarget;
+
     private Transform player;
     private PlayerReferences playerRefs;
 
@@ -22,6 +25,11 @@ public class ClosetHidingSystem : MonoBehaviour
         {
             playerRefs.playerCam.Priority = 100;
             closetCam.Priority = 10;
+        }
+
+        if (stalkerFollowTarget != null)
+        {
+            stalkerFollowTarget.SetActive(false);
         }
     }
 
@@ -76,6 +84,11 @@ public class ClosetHidingSystem : MonoBehaviour
 
         InsideCloset = true;
 
+        if (stalkerFollowTarget != null)
+        {
+            stalkerFollowTarget.SetActive(true);
+        }
+
         if (closetAnim != null)
             closetAnim.SetInteger("C", 1);
 
@@ -113,6 +126,11 @@ public class ClosetHidingSystem : MonoBehaviour
         closetCam.Priority = 10;
 
         InsideCloset = false;
+
+        if (stalkerFollowTarget != null)
+        {
+            stalkerFollowTarget.SetActive(false);
+        }
 
         if (closetAnim != null)
             closetAnim.SetInteger("C", 1);

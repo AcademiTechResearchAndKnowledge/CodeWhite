@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Entity1Spawn : MonoBehaviour
+public class WatcherSpawn : MonoBehaviour
 {
     [Header("Enemy")]
     [SerializeField] private GameObject enemyPrefab;
