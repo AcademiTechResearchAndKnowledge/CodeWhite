@@ -4,7 +4,7 @@ public class DrawerInteract : Interactable
 {
     public Transform lighterSpawnPoint;
 
-    // Remove the 'opened' flag or use it only for animation
+
 
 
     public override void Interact()

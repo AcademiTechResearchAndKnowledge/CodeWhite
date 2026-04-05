@@ -1,20 +1,39 @@
-using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class SubmitAnswerButton : MonoBehaviour
 {
-    public TMP_InputField inputField; // Drag your TMP Input Field here
+    public Vector3 flippedRotation = new Vector3(-45, 0, 0);
+    public Vector3 defaultRotation = Vector3.zero;
 
-    public void Submit()
+    private bool isFlipped = false;
+
+    void Start()
     {
-        // Convert the input field text to an int safely
-        if (int.TryParse(inputField.text, out int answerID))
+        Button button = GetComponent<Button>();
+        if (button != null)
+            button.onClick.AddListener(OnSubmit);
+    }
+
+    public void OnSubmit()
+    {
+        var handler = SwitchPuzzleHandler.Instance;
+
+        if (handler == null)
         {
-            SwitchPuzzleHandler.Instance.SubmitAnswer(answerID);
+            Debug.LogError("SwitchPuzzleHandler.Instance is null!");
+            return;
         }
-        else
+
+        if (!isFlipped)
         {
-            Debug.Log("Invalid input! Please enter a number.");
+            transform.localEulerAngles = flippedRotation;
+            isFlipped = true;
         }
+
+        handler.SubmitPuzzle();
+
+        transform.localEulerAngles = defaultRotation;
+        isFlipped = false;
     }
 }

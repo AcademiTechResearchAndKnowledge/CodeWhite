@@ -17,10 +17,11 @@ public class PortalDoor : MonoBehaviour
     [Header("Settings")]
     public float interactDistance = 10f;
     public float portalActiveTime = 5f;
-    public float backtrackBlockTime = 3f;
+    public float backtrackBlockTime = 1.5f;
 
     private bool portalActive = false;
     private bool recentlyUsed = false;
+
     private Renderer portalScreenRenderer;
 
     void Start()
@@ -31,6 +32,7 @@ public class PortalDoor : MonoBehaviour
         if (screen != null)
             portalScreenRenderer = screen.GetComponent<Renderer>();
 
+        // Create ONE material instance only
         if (portalMaterialBase != null)
             portalRenderMat = new Material(portalMaterialBase);
 
@@ -55,8 +57,10 @@ public class PortalDoor : MonoBehaviour
 
         if (dist <= interactDistance && !recentlyUsed)
         {
-            if (Keyboard.current.fKey.wasPressedThisFrame)
+            if (Keyboard.current.fKey.wasPressedThisFrame && !portalActive)
+            {
                 ActivatePortal();
+            }
         }
     }
 
@@ -65,31 +69,26 @@ public class PortalDoor : MonoBehaviour
         if (!portalActive || portalCamera == null || linkedDoor == null || player == null)
             return;
 
-
         TransformThroughPortalCamera();
         portalCamera.enabled = true;
     }
 
     void TransformThroughPortalCamera()
     {
-        if (Camera.main == null || linkedDoor == null) return;
+        if (Camera.main == null) return;
 
-        // Compute the relative position and rotation
         Vector3 relativePos = transform.InverseTransformPoint(Camera.main.transform.position);
         Quaternion relativeRot = Quaternion.Inverse(transform.rotation) * Camera.main.transform.rotation;
 
-        // Apply to linked portal
         portalCamera.transform.position = linkedDoor.transform.TransformPoint(relativePos);
         portalCamera.transform.rotation = linkedDoor.transform.rotation * relativeRot;
 
-
         portalCamera.transform.Rotate(0f, 180f, 0f);
 
-        // Assign the portal texture
-        if (portalScreenRenderer != null && portalMaterialBase != null)
+        if (portalScreenRenderer != null && portalRenderMat != null)
         {
-            portalScreenRenderer.material = new Material(portalMaterialBase);
-            portalScreenRenderer.material.mainTexture = portalCamera.targetTexture;
+            portalRenderMat.mainTexture = portalCamera.targetTexture;
+            portalScreenRenderer.material = portalRenderMat;
         }
     }
 
@@ -120,10 +119,12 @@ public class PortalDoor : MonoBehaviour
         {
             TeleportPlayer(player);
 
-            linkedDoor.recentlyUsed = true;
-            StartCoroutine(linkedDoor.ResetBacktrack(backtrackBlockTime));
-
+            // Block BOTH doors temporarily
             recentlyUsed = true;
+            linkedDoor.recentlyUsed = true;
+
+            StartCoroutine(ResetBacktrack(backtrackBlockTime));
+            StartCoroutine(linkedDoor.ResetBacktrack(backtrackBlockTime));
         }
     }
 
@@ -131,16 +132,16 @@ public class PortalDoor : MonoBehaviour
     {
         if (linkedDoor == null || player == null) return;
 
-
         Vector3 offset = player.position - transform.position;
-
 
         Vector3 forwardComponent = Vector3.Project(offset, transform.forward);
         Vector3 lateralComponent = offset - forwardComponent;
 
-        float forwardDistance = forwardComponent.magnitude; 
-        player.position = linkedDoor.transform.position + linkedDoor.transform.forward * forwardDistance + lateralComponent;
+        float forwardDistance = forwardComponent.magnitude;
 
+        player.position = linkedDoor.transform.position
+                        + linkedDoor.transform.forward * forwardDistance
+                        + lateralComponent;
 
         float deltaY = linkedDoor.transform.eulerAngles.y - transform.eulerAngles.y + 180f;
         player.Rotate(0f, deltaY, 0f, Space.World);
