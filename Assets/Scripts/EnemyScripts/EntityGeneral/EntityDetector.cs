@@ -65,6 +65,13 @@ public class EntityDetector : MonoBehaviour
         // Automatically check if the player is in ANY closet via their script
         if (playerHideInteract != null && playerHideInteract.IsHiding)
         {
+            // --- NEW: Check if we were JUST chasing the player before they hid ---
+            if (isLookingPlayer)
+            {
+                // Tell the wondering script to go to their last known position
+                entityWondering.InvestigateLocation(playerTransform.position);
+            }
+
             isLookingPlayer = false;
             entityAi.enabled = false;
             entityWondering.enabled = true;
@@ -98,6 +105,12 @@ public class EntityDetector : MonoBehaviour
         // Stop chase if beyond lose range
         if (distanceToPlayer > loseRange)
         {
+            // --- NEW: Also investigate if the player just runs out of distance naturally! ---
+            if (isLookingPlayer)
+            {
+                entityWondering.InvestigateLocation(playerTransform.position);
+            }
+
             isLookingPlayer = false;
             entityAi.enabled = false;
             entityWondering.enabled = true;

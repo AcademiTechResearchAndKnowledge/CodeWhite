@@ -50,6 +50,7 @@ public class ObjectiveInventoryManager : MonoBehaviour
             }
         }
 
+        // Check if we've hit the stack limit
         if (currentTotal >= item.maxStack)
         {
             Debug.Log("Objective stack is full!");
@@ -65,14 +66,24 @@ public class ObjectiveInventoryManager : MonoBehaviour
         }
         else // Or find a new empty slot
         {
+            bool foundEmptySlot = false; // <-- WE ADDED THIS TRACKER
+
             for (int i = 0; i < slots.Count; i++)
             {
                 if (slots[i].IsEmpty())
                 {
                     slots[i].item = item;
                     slots[i].amount = amountToAdd;
+                    foundEmptySlot = true; // <-- MARK AS FOUND
                     break;
                 }
+            }
+
+            // THE FIX: If it looped through all slots and found nothing, fail the pickup.
+            if (!foundEmptySlot)
+            {
+                Debug.Log("Inventory is completely full! No empty slots left.");
+                return false;
             }
         }
 
