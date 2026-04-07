@@ -2,6 +2,9 @@ using UnityEngine;
 
 public class CandleInteract : Interactable
 {
+    public delegate void OnCandleLit();
+    public static event OnCandleLit onCandleLit;
+
     public GameObject flame;
     private bool isLit = false;
 
@@ -22,6 +25,7 @@ public class CandleInteract : Interactable
 
         isLit = true;
         flame.SetActive(true);
+        onCandleLit?.Invoke();
 
         LighterPuzzleManager.instance.CandleLit();
     }
