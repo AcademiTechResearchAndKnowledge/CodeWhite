@@ -14,11 +14,16 @@ public class WhispererManager : MonoBehaviour
     private AudioClip Whisper;
 
     [SerializeField]
+    private int initialChanceToSpawn = 100;
+
+    [SerializeField]
     private int flashlightLifetime = 10;
 
     public GameObject[] Spawners;
 
     bool whispererSpawned = false;
+    GameObject spawnedEntity;
+    int chanceToSpawn;
 
     LighterPuzzleManager puzzleManager;
     AudioSource audioSource;
@@ -27,16 +32,15 @@ public class WhispererManager : MonoBehaviour
     {
         // TODO: Implement a method against spam on off flashlight
         // TODO: Refactor Variable Names (and the horrendous chance system, it works but is not reader friendly)
-        // TODO: Add Despawn Mechanic and reduce chance to spawn after spawning (most likely it'll be high after spawning)
-        Flashlight.onFlashlightOn += StartSpawnTimer;
-        Flashlight.onFlashlightOff += StopSpawnTimer;
+        Flashlight.onFlashlightOn += StartFlashTimer;
+        Flashlight.onFlashlightOff += StopFlashTimer;
         CandleInteract.onCandleLit += rollForTrigger;
     }
 
     private void OnDisable()
     {
-        Flashlight.onFlashlightOn -= StartSpawnTimer;
-        Flashlight.onFlashlightOff -= StopSpawnTimer;
+        Flashlight.onFlashlightOn -= StartFlashTimer;
+        Flashlight.onFlashlightOff -= StopFlashTimer;
         CandleInteract.onCandleLit -= rollForTrigger;
     }
 
@@ -44,14 +48,14 @@ public class WhispererManager : MonoBehaviour
     {
         puzzleManager = GameObject.Find("PuzzleManager").GetComponent<LighterPuzzleManager>();
         audioSource = GetComponent<AudioSource>();
+        chanceToSpawn = initialChanceToSpawn;
     }
 
     void rollForTrigger()
     {
         Debug.Log("Checking Trigger: Whisperer");
         // NOTE: add a decrease chance right after despawning
-        int triggerChance = puzzleManager.candlesLit;
-        if (Random.Range(0, 10) < 10 && !whispererSpawned)
+        if (Random.Range(0, 100) < chanceToSpawn && !whispererSpawned)
         {
             switch (Stage)
             {
@@ -74,23 +78,25 @@ public class WhispererManager : MonoBehaviour
 
                     whispererSpawned = true;
                     Spawn();
-                    Stage = 0;
+
+                    resetState();
                     break;
             }
 
             Stage++;
+            chanceToSpawn += 10;
         }
     }
 
     // FLASHLIGHT TRIGGER: Using the flashlight for more than flashlightLifetime initiates rollForTrigger()
     Coroutine spawnTimerRoutine;
 
-    void StartSpawnTimer()
+    void StartFlashTimer()
     {
         spawnTimerRoutine = StartCoroutine(SpawnTimerRoutine());
     }
 
-    void StopSpawnTimer()
+    void StopFlashTimer()
     {
         Debug.Log("Flash TIMER STOPPED");
         StopCoroutine(spawnTimerRoutine);
@@ -101,18 +107,28 @@ public class WhispererManager : MonoBehaviour
         Debug.Log("Flash TIMER STARTED");
         yield return new WaitForSeconds(flashlightLifetime);
         rollForTrigger();
-        StartSpawnTimer();
+        StartFlashTimer();
     }
 
 
+    [ContextMenu("Spawn Whisperer")]
     public void Spawn()
     {
         // Spawn in a random predetermined area (location of its children)
         Transform spawner = Spawners[Random.Range(0, Spawners.Length)].transform;
-        Instantiate(Entity, spawner.position, Quaternion.identity);
+        spawnedEntity = Instantiate(Entity, spawner.position, Quaternion.identity);
     }
 
+    [ContextMenu("Despawn Whisperer")]
     public void Despawn()
     {
+        whispererSpawned = false;
+        Destroy(spawnedEntity);
+    }
+
+    void resetState()
+    {
+        Stage = 1;
+        chanceToSpawn = initialChanceToSpawn;
     }
 }
