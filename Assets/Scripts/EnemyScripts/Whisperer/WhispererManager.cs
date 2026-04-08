@@ -33,8 +33,6 @@ public class WhispererManager : MonoBehaviour
 
     private void OnEnable()
     {
-        // TODO: Implement a method against spam on off flashlight
-        // TODO: Refactor Variable Names (and the horrendous chance system, it works but is not reader friendly)
         Flashlight.onFlashlightOn += StartFlashTimer;
         Flashlight.onFlashlightOff += StopFlashTimer;
         CandleInteract.onCandleLit += rollForTrigger;
