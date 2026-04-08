@@ -13,10 +13,10 @@ public class EntityDetector : MonoBehaviour
     public bool canHideFromEnemy;
     public float distanceToPlayer;
 
-    // Auto-Assigned References
     private Transform playerTransform;
     private PlayerMovement playerMovement;
     private ClosetHideInteract playerHideInteract;
+    private TableHideState playerTableState;
     private EntityAi entityAi;
     private EntityWondering entityWondering;
 
@@ -39,8 +39,8 @@ public class EntityDetector : MonoBehaviour
         {
             playerTransform = playerObj.transform;
             playerHideInteract = playerObj.GetComponent<ClosetHideInteract>();
+            playerTableState = playerObj.GetComponent<TableHideState>();
 
-            // Utilize your existing PlayerReferences script!
             PlayerReferences refs = playerObj.GetComponent<PlayerReferences>();
             if (refs != null)
             {
@@ -62,10 +62,16 @@ public class EntityDetector : MonoBehaviour
         // Player can hide only when farther than 12
         canHideFromEnemy = distanceToPlayer > hideAllowedRange;
 
-        // Automatically check if the player is in ANY closet via their script
-        if (playerHideInteract != null && playerHideInteract.IsHiding)
+        bool playerIsCrouching = playerMovement != null && playerMovement.isCrouching;
+
+        // --- NEW: Determine if the player is currently hidden ---
+        bool isHidingInCloset = playerHideInteract != null && playerHideInteract.IsHiding;
+        bool isHidingUnderTable = playerTableState != null && playerTableState.isUnderTable && playerIsCrouching;
+
+        // Automatically check if the player is in ANY closet OR crouching under a table
+        if (isHidingInCloset || isHidingUnderTable)
         {
-            // --- NEW: Check if we were JUST chasing the player before they hid ---
+            // Check if we were JUST chasing the player before they hid
             if (isLookingPlayer)
             {
                 // Tell the wondering script to go to their last known position
@@ -77,8 +83,6 @@ public class EntityDetector : MonoBehaviour
             entityWondering.enabled = true;
             return;
         }
-
-        bool playerIsCrouching = playerMovement != null && playerMovement.isCrouching;
 
         // Start chase if within detect range
         if (distanceToPlayer <= detectRange)
@@ -105,7 +109,6 @@ public class EntityDetector : MonoBehaviour
         // Stop chase if beyond lose range
         if (distanceToPlayer > loseRange)
         {
-            // --- NEW: Also investigate if the player just runs out of distance naturally! ---
             if (isLookingPlayer)
             {
                 entityWondering.InvestigateLocation(playerTransform.position);
