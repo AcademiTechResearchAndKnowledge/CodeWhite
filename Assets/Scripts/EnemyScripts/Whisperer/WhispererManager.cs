@@ -9,13 +9,17 @@ public class WhispererManager : MonoBehaviour
     [Header("Whisperer Settings")]
     public int Stage = 1;
     public GameObject Entity;
-    
+
     [SerializeField]
     private AudioClip Whisper;
 
+    [Header("Trigger Chances Settings")]
     [SerializeField]
     private int initialChanceToSpawn = 100;
+    [SerializeField]
+    private int chanceIncrementPerFail = 10;
 
+    [Header("Timer Settings")]
     [SerializeField]
     private int flashlightLifetime = 10;
 
@@ -25,7 +29,6 @@ public class WhispererManager : MonoBehaviour
     GameObject spawnedEntity;
     int chanceToSpawn;
 
-    LighterPuzzleManager puzzleManager;
     AudioSource audioSource;
 
     private void OnEnable()
@@ -46,7 +49,6 @@ public class WhispererManager : MonoBehaviour
 
     private void Awake()
     {
-        puzzleManager = GameObject.Find("PuzzleManager").GetComponent<LighterPuzzleManager>();
         audioSource = GetComponent<AudioSource>();
         chanceToSpawn = initialChanceToSpawn;
     }
@@ -54,8 +56,11 @@ public class WhispererManager : MonoBehaviour
     void rollForTrigger()
     {
         Debug.Log("Checking Trigger: Whisperer");
+        if (whispererSpawned)
+            return;
+
         // NOTE: add a decrease chance right after despawning
-        if (Random.Range(0, 100) < chanceToSpawn && !whispererSpawned)
+        if (Random.Range(0, 100) < chanceToSpawn)
         {
             switch (Stage)
             {
@@ -84,8 +89,13 @@ public class WhispererManager : MonoBehaviour
             }
 
             Stage++;
-            chanceToSpawn += 10;
         }
+        else
+        {
+            chanceToSpawn += chanceIncrementPerFail;
+        }
+
+        Debug.Log("Chance to spawn: " + chanceToSpawn);
     }
 
     // FLASHLIGHT TRIGGER: Using the flashlight for more than flashlightLifetime initiates rollForTrigger()
@@ -93,6 +103,7 @@ public class WhispererManager : MonoBehaviour
 
     void StartFlashTimer()
     {
+        Debug.Log("Flash TIMER STARTED");
         spawnTimerRoutine = StartCoroutine(SpawnTimerRoutine());
     }
 
@@ -104,7 +115,6 @@ public class WhispererManager : MonoBehaviour
 
     IEnumerator SpawnTimerRoutine()
     {
-        Debug.Log("Flash TIMER STARTED");
         yield return new WaitForSeconds(flashlightLifetime);
         rollForTrigger();
         StartFlashTimer();
