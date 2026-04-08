@@ -8,6 +8,9 @@ public class EntityDetector : MonoBehaviour
     public float loseRange = 15f;
     public float crouchSafeDistance = 3f;
 
+    [Tooltip("How far away from the player's last known position the entity should stop.")]
+    public float investigateStopDistance = 5f; // <-- NEW: Editable in the inspector
+
     [Header("State")]
     public bool isLookingPlayer;
     public bool canHideFromEnemy;
@@ -64,7 +67,7 @@ public class EntityDetector : MonoBehaviour
 
         bool playerIsCrouching = playerMovement != null && playerMovement.isCrouching;
 
-        // --- NEW: Determine if the player is currently hidden ---
+        // --- Determine if the player is currently hidden ---
         bool isHidingInCloset = playerHideInteract != null && playerHideInteract.IsHiding;
         bool isHidingUnderTable = playerTableState != null && playerTableState.isUnderTable && playerIsCrouching;
 
@@ -74,8 +77,8 @@ public class EntityDetector : MonoBehaviour
             // Check if we were JUST chasing the player before they hid
             if (isLookingPlayer)
             {
-                // Tell the wondering script to go to their last known position
-                entityWondering.InvestigateLocation(playerTransform.position);
+                // Tell the wondering script to go to the offset position instead of the exact position
+                entityWondering.InvestigateLocation(GetOffsetInvestigatePosition());
             }
 
             isLookingPlayer = false;
@@ -111,12 +114,22 @@ public class EntityDetector : MonoBehaviour
         {
             if (isLookingPlayer)
             {
-                entityWondering.InvestigateLocation(playerTransform.position);
+                // Tell the wondering script to go to the offset position
+                entityWondering.InvestigateLocation(GetOffsetInvestigatePosition());
             }
 
             isLookingPlayer = false;
             entityAi.enabled = false;
             entityWondering.enabled = true;
         }
+    }
+
+    private Vector3 GetOffsetInvestigatePosition()
+    {
+        Vector3 directionToPlayer = (playerTransform.position - transform.position).normalized;
+
+        float travelDistance = Mathf.Max(0f, distanceToPlayer - investigateStopDistance);
+
+        return transform.position + (directionToPlayer * travelDistance);
     }
 }
