@@ -1,24 +1,35 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Collections.Generic;
 
 public class AnalogClock : MonoBehaviour
 {
     public Transform hourPivot;
     public Transform minutePivot;
-    public int targetHour = 1;
-    public int targetMinute = 30;
     public Camera mainCamera;
     public Collider hourCollider;
     public Collider minuteCollider;
 
-    public GameObject submitButtonUI;
-
     private bool draggingHour = false;
     private bool draggingMinute = false;
-    private int hours = 12;
-    private int minutes = 0;
+    public int hours = 3;
+    public int minutes = 0;
 
     public objectZoom objzoom;
+
+
+    public static List<AnalogClock> allClocks = new List<AnalogClock>();
+    public static bool puzzleDone = false;
+
+    void Awake()
+    {
+        allClocks.Add(this);
+    }
+
+    void OnDestroy()
+    {
+        allClocks.Remove(this);
+    }
 
     void Start()
     {
@@ -31,17 +42,11 @@ public class AnalogClock : MonoBehaviour
 
     void Update()
     {
-        
-        //if (!objzoom.isInPuzzle) return;
-        if (objzoom.isInPuzzle == true)
-        {
-             SetPuzzleActive(true);
-        }
+        if (objzoom.isInPuzzle)
+            SetPuzzleActive(true);
         else
-        {
-             SetPuzzleActive(false);
-        }
-       
+            SetPuzzleActive(false);
+
         HandleDragging();
     }
 
@@ -112,27 +117,31 @@ public class AnalogClock : MonoBehaviour
         float hourRot = hourPivot.localEulerAngles.z;
         hours = Mathf.RoundToInt(hourRot / 30f) % 12;
         if (hours == 0) hours = 12;
+
+
+        CheckAllClocks();
     }
 
-    public void SubmitTime()
+    private void CheckAllClocks()
     {
-        if (!objzoom.isInPuzzle) return;
+        if (puzzleDone) return;
 
-        if (hours == targetHour && minutes == targetMinute)
-            Debug.Log("Puzzle Done");
-        else
-            Debug.Log("Wrong Time");
+        foreach (AnalogClock clock in allClocks)
+        {
+            if (clock.hours != 5 || clock.minutes != 0)
+                return;
+        }
+
+        puzzleDone = true;
+        Debug.Log("Puzzle Completed");
     }
 
     public void SetPuzzleActive(bool state)
     {
         objzoom.isInPuzzle = state;
-
-        if (submitButtonUI != null)
-            submitButtonUI.SetActive(state);
     }
 
-    private void UpdateClockVisuals()
+    public void UpdateClockVisuals()
     {
         float minuteRotation = minutes * 6f;
         float hourRotation = (hours % 12) * 30f + minutes * 0.5f;
