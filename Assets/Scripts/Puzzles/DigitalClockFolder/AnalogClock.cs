@@ -20,7 +20,7 @@ public class AnalogClock : MonoBehaviour
 
     public static List<AnalogClock> allClocks = new List<AnalogClock>();
     public static bool puzzleDone = false;
-
+    public bool allPuzzleDone = false;
     void Awake()
     {
         allClocks.Add(this);
@@ -130,8 +130,9 @@ public class AnalogClock : MonoBehaviour
         {
             if (clock.hours != 5 || clock.minutes != 0)
                 return;
+                 
         }
-
+        allPuzzleDone = true;
         puzzleDone = true;
         Debug.Log("Puzzle Completed");
     }
