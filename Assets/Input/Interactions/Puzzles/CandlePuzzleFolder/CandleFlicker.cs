@@ -1,22 +1,14 @@
-using UnityEngine;
-using UnityEngine.InputSystem;
 using System.Collections;
+using UnityEngine;
 
-public class Flashlight : MonoBehaviour
+public class CandleFlicker : MonoBehaviour
 {
-    public delegate void OnFlashlightOn();
-    public static event OnFlashlightOn onFlashlightOn;
-
-    public delegate void OnFlashlightOff();
-    public static event OnFlashlightOff onFlashlightOff;
-
+    [SerializeField] private Light torchLight;
     [SerializeField] private float flickerDuration = 2f;
     [SerializeField] private float minFlickerInterval = 0.05f;
     [SerializeField] private float maxFlickerInterval = 0.15f;
 
     private Coroutine flickerRoutine;
-    [SerializeField] private InputActionReference toggleAction;
-    [SerializeField] public Light torchLight;
 
     private void OnEnable()
     {
@@ -28,33 +20,6 @@ public class Flashlight : MonoBehaviour
         WhispererManager.onWhisperFlicker -= Flicker;
     }
 
-    private void Awake()
-    {
-        torchLight.enabled = false;
-    }
-
-    private void Update()
-    {
-        if (Mouse.current.rightButton.wasPressedThisFrame)
-        {
-            torchLight.enabled = !torchLight.enabled;
-
-            if (torchLight.enabled)
-            {
-                onFlashlightOn?.Invoke();
-            }
-            else
-            {
-                onFlashlightOff?.Invoke();
-            }
-        }
-
-        if (Keyboard.current.uKey.wasPressedThisFrame)
-        {
-            Flicker();
-        }
-    }
-
     public void Flicker()
     {
         if (flickerRoutine != null)
@@ -62,7 +27,10 @@ public class Flashlight : MonoBehaviour
             StopCoroutine(flickerRoutine);
         }
 
-        flickerRoutine = StartCoroutine(FlickerRoutine());
+        if (torchLight.enabled)
+        {
+            flickerRoutine = StartCoroutine(FlickerRoutine());
+        }
     }
 
     private IEnumerator FlickerRoutine()
