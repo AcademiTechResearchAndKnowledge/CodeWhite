@@ -9,7 +9,7 @@ public class EntityDetector : MonoBehaviour
     public float crouchSafeDistance = 3f;
 
     [Tooltip("How far away from the player's last known position the entity should stop.")]
-    public float investigateStopDistance = 5f; // <-- NEW: Editable in the inspector
+    public float investigateStopDistance = 5f;
 
     [Header("State")]
     public bool isLookingPlayer;

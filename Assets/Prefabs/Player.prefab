@@ -753,17 +753,19 @@ MonoBehaviour:
   sprintMultiplier: 1.5
   exhaustedMultiplier: 0.5
   crouchHeight: 1
-  crouchCenterY: 0.5
-  crouchSphereRadius: 0.5
-  crouchSphereCenterY: 0.5
-  crouchBodyOffset: -0.5
-  crouchCameraOffset: -0.5
+  crouchCapsuleRadius: 0.25
   crouchSpeedMultiplier: 0.5
+  crouchTransitionSpeed: 10
   groundCheck: {fileID: 5865876677150076168}
   groundDistance: 0.4
   groundMask:
     serializedVersion: 2
     m_Bits: 64
+  ceilingMask:
+    serializedVersion: 2
+    m_Bits: 0
+  sphereCol: {fileID: 4267777501834807491}
+  crouchSphereRadius: 0.5
   isCrouching: 0
 --- !u!114 &4411646609755205160
 MonoBehaviour:
