@@ -12,15 +12,16 @@ public class StalkerFollowScript : MonoBehaviour
     private enum SpawnReason { Idle, Closet }
     private SpawnReason spawnReason;
 
-    // This saves performance so we don't search for the tag every single frame
     private Transform cachedClosetTarget;
+
+    [Tooltip("The particle effect to spawn when the entity disappears.")]
+    [SerializeField] private GameObject despawnParticlePrefab;
 
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
     }
 
-    // Called by the spawner for an IDLE spawn
     public void InitializeForIdle(PlayerReferences refs, float threshold)
     {
         playerRefs = refs;
@@ -30,7 +31,6 @@ public class StalkerFollowScript : MonoBehaviour
         UpdateDestination();
     }
 
-    // Called by the spawner for a CLOSET spawn
     public void InitializeForCloset(PlayerReferences refs, ClosetHidingSystem closet)
     {
         playerRefs = refs;
@@ -48,10 +48,8 @@ public class StalkerFollowScript : MonoBehaviour
 
     private void UpdateDestination()
     {
-        // 1. If they are in the closet, hunt the "PlayerFollow" tag
         if (closetSystem != null && closetSystem.InsideCloset)
         {
-            // Find the tag only if we haven't found it yet to save processing power
             if (cachedClosetTarget == null)
             {
                 GameObject targetObj = GameObject.FindGameObjectWithTag("PlayerFollow");
@@ -61,13 +59,11 @@ public class StalkerFollowScript : MonoBehaviour
                 }
             }
 
-            // Move towards the closet camera/spot
             if (cachedClosetTarget != null)
             {
                 agent.SetDestination(cachedClosetTarget.position);
             }
         }
-        // 2. If they are NOT in the closet, hunt the actual player's transform directly
         else if (playerRefs != null)
         {
             agent.SetDestination(playerRefs.transform.position);
@@ -78,7 +74,6 @@ public class StalkerFollowScript : MonoBehaviour
     {
         if (spawnReason == SpawnReason.Idle)
         {
-            // Despawn if they were idling and started moving
             if (playerRefs != null && playerRefs.rb != null)
             {
                 Vector3 flatVelocity = new Vector3(playerRefs.rb.linearVelocity.x, 0f, playerRefs.rb.linearVelocity.z);
@@ -90,7 +85,6 @@ public class StalkerFollowScript : MonoBehaviour
         }
         else if (spawnReason == SpawnReason.Closet)
         {
-            // Despawn if they were in the closet and stepped out
             if (closetSystem != null && !closetSystem.InsideCloset)
             {
                 Despawn();
@@ -101,6 +95,16 @@ public class StalkerFollowScript : MonoBehaviour
     private void Despawn()
     {
         Debug.Log("Stalker despawning: Player moved or left the closet.");
+
+        if (despawnParticlePrefab != null)
+        {
+            Instantiate(despawnParticlePrefab, transform.position, transform.rotation);
+        }
+        else
+        {
+            Debug.LogWarning("Despawn Particle Prefab is not assigned on " + gameObject.name);
+        }
+
         Destroy(gameObject);
     }
 }

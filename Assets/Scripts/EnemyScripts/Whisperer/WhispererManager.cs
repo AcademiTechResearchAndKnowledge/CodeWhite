@@ -35,14 +35,14 @@ public class WhispererManager : MonoBehaviour
     {
         Flashlight.onFlashlightOn += StartFlashTimer;
         Flashlight.onFlashlightOff += StopFlashTimer;
-        CandleInteract.onCandleLit += rollForTrigger;
+        SimpleCandleInteract.onSimpleCandleLit += rollForTrigger;
     }
 
     private void OnDisable()
     {
         Flashlight.onFlashlightOn -= StartFlashTimer;
         Flashlight.onFlashlightOff -= StopFlashTimer;
-        CandleInteract.onCandleLit -= rollForTrigger;
+        SimpleCandleInteract.onSimpleCandleLit += rollForTrigger;
     }
 
     private void Awake()

@@ -4,12 +4,11 @@ using UnityEngine.InputSystem;
 public class PlayerInventoryController : MonoBehaviour
 {
     public Transform dropPoint;
-    public HandController handController; // NEW: Link your Hand here
+    public HandController handController;
 
     private int globalSlotIndex = 0;
     private const int MAX_TOTAL_SLOTS = 7;
 
-    // Tracks what the hand is currently showing to prevent running logic every frame
     private string currentDisplayedItem = "";
 
     private void Start()
@@ -26,7 +25,6 @@ public class PlayerInventoryController : MonoBehaviour
         HandleUseInput();
         HandleDropInput();
 
-        // NEW: Automatically syncs the 3D hand visual with the selected slot data
         CheckHandVisualUpdates();
     }
 
@@ -34,7 +32,6 @@ public class PlayerInventoryController : MonoBehaviour
     {
         string intendedItemName = "";
 
-        // Check Main Inventory
         if (globalSlotIndex < 5)
         {
             var slot = InventoryManager.Instance.GetSelectedSlot();
@@ -43,7 +40,6 @@ public class PlayerInventoryController : MonoBehaviour
                 intendedItemName = slot.item.itemName;
             }
         }
-        // Check Objective Inventory
         else
         {
             var slot = ObjectiveInventoryManager.Instance.GetSelectedSlot();
@@ -53,7 +49,6 @@ public class PlayerInventoryController : MonoBehaviour
             }
         }
 
-        // If the item in our selected slot changed, update the physical hand
         if (currentDisplayedItem != intendedItemName)
         {
             currentDisplayedItem = intendedItemName;

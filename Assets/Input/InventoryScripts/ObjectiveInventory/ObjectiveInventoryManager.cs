@@ -125,20 +125,7 @@ public class ObjectiveInventoryManager : MonoBehaviour
 
         if (slot == null || slot.IsEmpty()) return;
 
-        if (slot.item.worldPrefab != null)
-        {
-            Instantiate(slot.item.worldPrefab, dropPosition, Quaternion.Euler(90f, 0f, 0f));
-            Debug.Log("Dropped Objective: " + slot.item.itemName);
-        }
-
-        slot.amount--;
-
-        if (slot.amount <= 0)
-        {
-            slot.Clear();
-        }
-
-        RefreshUI();
+        Debug.Log("Cannot drop objective item: " + slot.item.itemName);
     }
 
     // Allows quest managers to delete specific items

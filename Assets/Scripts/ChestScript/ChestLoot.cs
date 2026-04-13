@@ -32,7 +32,6 @@ public class ChestLoot : Interactable
         if (isBusy)
             return;
 
-        // Call the base Interact method from your Interactable class
         base.Interact();
 
         if (chestAnimator == null)
@@ -55,21 +54,17 @@ public class ChestLoot : Interactable
     {
         isBusy = true;
 
-        // Transition from ChestIdle to ChestOpen
         chestAnimator.SetInteger("C", 1);
 
         if (!spawnOnlyOnce || !hasSpawned)
         {
-            // Wait for the specific moment in the animation to spawn the loot
             yield return new WaitForSeconds(lootSpawnDelay);
             SpawnRandomItem();
             hasSpawned = true;
         }
 
-        // Wait for the rest of the open animation to finish
         yield return new WaitForSeconds(animationStepDelay - lootSpawnDelay);
 
-        // Transition to ChestOpen_Idle
         chestAnimator.SetInteger("C", 2);
 
         isOpen = true;
@@ -80,12 +75,10 @@ public class ChestLoot : Interactable
     {
         isBusy = true;
 
-        // Transition from ChestOpen_Idle to ChestClose
         chestAnimator.SetInteger("C", 3);
 
         yield return new WaitForSeconds(animationStepDelay);
 
-        // Transition from ChestClose back to ChestIdle
         chestAnimator.SetInteger("C", 4);
 
 
@@ -119,13 +112,11 @@ public class ChestLoot : Interactable
 
         currentSpawnedItem = Instantiate(chosenItem, itemSpawnPoint.position, itemSpawnPoint.rotation);
 
-        // Parent the item to the spawn point so it moves with the chest lid/base if necessary
         currentSpawnedItem.transform.SetParent(itemSpawnPoint, true);
 
         Rigidbody rb = currentSpawnedItem.GetComponent<Rigidbody>();
         if (rb != null)
         {
-            // Freeze the physics so the item doesn't fly out or clip through the chest
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
             rb.isKinematic = true;
@@ -137,7 +128,6 @@ public class ChestLoot : Interactable
 
         if (itemCollider != null && chestCollider != null)
         {
-            // Prevent the spawned item from colliding with the chest itself
             Physics.IgnoreCollision(itemCollider, chestCollider, true);
         }
 

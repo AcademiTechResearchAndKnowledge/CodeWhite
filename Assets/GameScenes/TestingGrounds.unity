@@ -2257,6 +2257,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerInventoryController
   dropPoint: {fileID: 0}
+  handController: {fileID: 0}
 --- !u!114 &928576145
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2310,15 +2311,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
   body: {fileID: 2012941100}
+  cameraHolder: {fileID: 0}
   moveSpeed: 5
   jumpForce: 5
   sprintMultiplier: 1.5
   exhaustedMultiplier: 0.5
+  crouchHeight: 0.5
+  crouchCapsuleRadius: 0.25
+  crouchSpeedMultiplier: 0.5
+  crouchTransitionSpeed: 10
   groundCheck: {fileID: 130501593}
   groundDistance: 0.4
   groundMask:
     serializedVersion: 2
     m_Bits: 64
+  ceilingMask:
+    serializedVersion: 2
+    m_Bits: 0
+  sphereCol: {fileID: 0}
+  crouchSphereRadius: 0.05
+  isCrouching: 0
 --- !u!114 &928576149
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2428,6 +2440,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4e5f7b176a14ac43a1ca72d4d8cadc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Flashlight
+  flickerDuration: 2
+  minFlickerInterval: 0.05
+  maxFlickerInterval: 0.15
   toggleAction: {fileID: -975667680031538525, guid: c094b7c9ed3fde04197118f88082bd02, type: 3}
   torchLight: {fileID: 1384157923}
 --- !u!1001 &949266965
@@ -5177,63 +5192,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 612f7806a42824d4d88963b776c2860d, type: 3}
---- !u!1001 &1825905070426223910
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 4781221798196702540, guid: 861d91c50561ea747997cdd2a1ffc746, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 3.05
-      objectReference: {fileID: 0}
-    - target: {fileID: 4781221798196702540, guid: 861d91c50561ea747997cdd2a1ffc746, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4781221798196702540, guid: 861d91c50561ea747997cdd2a1ffc746, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -1.59
-      objectReference: {fileID: 0}
-    - target: {fileID: 4781221798196702540, guid: 861d91c50561ea747997cdd2a1ffc746, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 0.7071068
-      objectReference: {fileID: 0}
-    - target: {fileID: 4781221798196702540, guid: 861d91c50561ea747997cdd2a1ffc746, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0.7071068
-      objectReference: {fileID: 0}
-    - target: {fileID: 4781221798196702540, guid: 861d91c50561ea747997cdd2a1ffc746, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4781221798196702540, guid: 861d91c50561ea747997cdd2a1ffc746, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4781221798196702540, guid: 861d91c50561ea747997cdd2a1ffc746, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 90
-      objectReference: {fileID: 0}
-    - target: {fileID: 4781221798196702540, guid: 861d91c50561ea747997cdd2a1ffc746, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4781221798196702540, guid: 861d91c50561ea747997cdd2a1ffc746, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5382085084506835340, guid: 861d91c50561ea747997cdd2a1ffc746, type: 3}
-      propertyPath: m_Name
-      value: 2DItem
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 861d91c50561ea747997cdd2a1ffc746, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -5249,7 +5207,6 @@ SceneRoots:
   - {fileID: 561005056}
   - {fileID: 2095738335}
   - {fileID: 1592345750}
-  - {fileID: 1825905070426223910}
   - {fileID: 2095215379}
   - {fileID: 2105475466}
   - {fileID: 1354917320}
