@@ -59351,6 +59351,59 @@ Transform:
   - {fileID: 798509112}
   m_Father: {fileID: 325250623}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1291927338
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1291927340}
+  - component: {fileID: 1291927339}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!65 &1291927339
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1291927338}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.0131569, y: 1, z: 2.305905}
+  m_Center: {x: 0.0065784454, y: -0.1014334, z: 0.37006867}
+--- !u!4 &1291927340
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1291927338}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -15.95, y: 1.61126, z: 3.0500002}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1299341240
 GameObject:
   m_ObjectHideFlags: 0
@@ -60008,15 +60061,25 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
   body: {fileID: 922849784}
+  cameraHolder: {fileID: 0}
   moveSpeed: 2
   jumpForce: 3
   sprintMultiplier: 0.74
   exhaustedMultiplier: 0.5
+  crouchHeight: 1
+  crouchCenterY: 0.5
+  crouchBodyOffset: -0.5
+  crouchCameraOffset: -0.5
+  crouchSpeedMultiplier: 0.5
   groundCheck: {fileID: 57660855}
   groundDistance: 0.4
   groundMask:
     serializedVersion: 2
     m_Bits: 64
+  ceilingMask:
+    serializedVersion: 2
+    m_Bits: 0
+  isCrouching: 0
 --- !u!114 &1314865327
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -101059,3 +101122,4 @@ SceneRoots:
   - {fileID: 1998506964}
   - {fileID: 2034391505}
   - {fileID: 1314865330}
+  - {fileID: 1291927340}

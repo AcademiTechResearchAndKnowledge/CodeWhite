@@ -18,6 +18,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float crouchCameraOffset = -0.5f;
     [SerializeField] private float crouchSpeedMultiplier = 0.5f;
 
+    [SerializeField] private float climbingSpeed = 0.2f;
+
     public Transform groundCheck;
     public float groundDistance = 0.4f;
     public LayerMask groundMask;   // For ground
