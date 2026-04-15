@@ -17,9 +17,6 @@ public class Item1 : MonoBehaviour
         else
             Debug.LogWarning("[KeyItemPickup] portalSpawner not assigned."); //for debugging
 
-        // for debugging
-        Debug.Log($"Picked up {amount} {itemId}");
-
         // remove item
         Destroy(gameObject);
     }

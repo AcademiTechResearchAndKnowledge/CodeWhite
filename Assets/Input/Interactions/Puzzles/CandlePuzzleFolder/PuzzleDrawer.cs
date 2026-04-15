@@ -17,12 +17,14 @@ public class PuzzleDrawer : Interactable
     public float lootSpawnDelay = 0.2f;
 
     private bool isOpen = false;
-    private bool isBusy = false;
     private bool hasBeenSearched = false;
+
+    private Coroutine activeCoroutine;
+    private float lastInteractTime = 0f;
+    private float interactCooldown = 0.25f;
 
     void Start()
     {
-        // Register this specific drawer layer to the manager pool
         if (LighterPuzzleManager.instance != null)
         {
             LighterPuzzleManager.instance.RegisterDrawer(this);
@@ -31,24 +33,32 @@ public class PuzzleDrawer : Interactable
 
     public override void Interact()
     {
-        if (isBusy) return;
+        if (Time.time - lastInteractTime < interactCooldown)
+            return;
+
+        lastInteractTime = Time.time;
         base.Interact();
 
         if (drawerAnimator == null) return;
 
+        if (activeCoroutine != null)
+        {
+            StopCoroutine(activeCoroutine);
+        }
+
         if (!isOpen)
         {
-            StartCoroutine(OpenDrawerRoutine());
+            activeCoroutine = StartCoroutine(OpenDrawerRoutine());
         }
         else
         {
-            StartCoroutine(CloseDrawerRoutine());
+            activeCoroutine = StartCoroutine(CloseDrawerRoutine());
         }
     }
 
     IEnumerator OpenDrawerRoutine()
     {
-        isBusy = true;
+        isOpen = true;
 
         if (drawerType == DrawerType.TopDrawer)
         {
@@ -59,12 +69,10 @@ public class PuzzleDrawer : Interactable
             drawerAnimator.SetInteger("C", 5);
         }
 
-        // Only check for the lighter the VERY FIRST time this drawer is opened
+        yield return new WaitForSeconds(lootSpawnDelay);
+
         if (!hasBeenSearched)
         {
-            yield return new WaitForSeconds(lootSpawnDelay);
-
-            // Ask the manager if we should spawn the lighter here
             if (LighterPuzzleManager.instance.TrySpawnLighter(this))
             {
                 SpawnLighter();
@@ -72,18 +80,20 @@ public class PuzzleDrawer : Interactable
             hasBeenSearched = true;
         }
 
-        yield return new WaitForSeconds(animationStepDelay - lootSpawnDelay);
+        float waitTime = Mathf.Max(0, animationStepDelay - lootSpawnDelay);
+        yield return new WaitForSeconds(waitTime);
 
-        if (drawerType == DrawerType.TopDrawer) drawerAnimator.SetInteger("C", 2);
-        else drawerAnimator.SetInteger("C", 6);
+        if (drawerType == DrawerType.TopDrawer)
+            drawerAnimator.SetInteger("C", 2);
+        else
+            drawerAnimator.SetInteger("C", 6);
 
-        isOpen = true;
-        isBusy = false;
+        activeCoroutine = null;
     }
 
     IEnumerator CloseDrawerRoutine()
     {
-        isBusy = true;
+        isOpen = false;
 
         if (drawerType == DrawerType.TopDrawer)
         {
@@ -98,8 +108,7 @@ public class PuzzleDrawer : Interactable
             drawerAnimator.SetInteger("C", 8);
         }
 
-        isOpen = false;
-        isBusy = false;
+        activeCoroutine = null;
     }
 
     void SpawnLighter()
@@ -129,9 +138,9 @@ public class PuzzleDrawer : Interactable
 
         Debug.Log(gameObject.name + " spawned the lighter!");
     }
+
     public void ResetSearchState()
     {
-        // This allows the drawer to be searched again!
         hasBeenSearched = false;
     }
 }
