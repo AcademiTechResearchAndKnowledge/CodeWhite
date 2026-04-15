@@ -12,8 +12,8 @@ GameObject:
   - component: {fileID: 8488711540860797924}
   - component: {fileID: 33021051375026209}
   - component: {fileID: 4555186575194450287}
-  - component: {fileID: 7947594426311918181}
   - component: {fileID: 4769430457254657539}
+  - component: {fileID: 2038001846353497595}
   m_Layer: 0
   m_Name: Lighter
   m_TagString: Interactable
@@ -31,7 +31,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -2.49478, y: 0.5, z: -2.13}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.1, y: 0.1, z: 0.1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -111,34 +111,6 @@ MonoBehaviour:
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []
---- !u!114 &7947594426311918181
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 806739895448395368}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b831996db216de94eb96e3157cedf521, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LighterItem
-  message: 
-  onInteraction:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 7947594426311918181}
-        m_TargetAssemblyTypeName: LighterItem, Assembly-CSharp
-        m_MethodName: Interact
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
 --- !u!135 &4769430457254657539
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -160,3 +132,19 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &2038001846353497595
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 806739895448395368}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 65e3ee91c87667b4888d035e87768298, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LighterItem
+  message: 
+  onInteraction:
+    m_PersistentCalls:
+      m_Calls: []

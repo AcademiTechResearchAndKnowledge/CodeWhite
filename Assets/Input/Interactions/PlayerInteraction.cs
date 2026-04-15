@@ -37,7 +37,7 @@ public class PlayerInteraction : MonoBehaviour
         {
             if (hit.collider.CompareTag("Interactable"))
             {
-                Interactable newInteractable = hit.collider.GetComponent<Interactable>();
+                Interactable newInteractable = hit.collider.GetComponentInParent<Interactable>();
 
                 if (newInteractable == null)
                 {
@@ -72,12 +72,21 @@ public class PlayerInteraction : MonoBehaviour
 
     void SetNewCurrentInteractable(Interactable newInteractable)
     {
+        if (currentInteractable == newInteractable) return;
+
+        if (currentInteractable != null)
+        {
+            currentInteractable.DisableOutline();
+        }
+
         currentInteractable = newInteractable;
         currentInteractable.EnableOutline();
+        HUDInteractController.Instance.EnableInteractionText(currentInteractable.message);
     }
 
     void DisableCurrentInteractable()
     {
+        HUDInteractController.Instance.DisableInteractionText();
         if (currentInteractable != null)
         {
             currentInteractable.DisableOutline();

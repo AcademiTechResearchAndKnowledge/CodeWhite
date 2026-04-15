@@ -18,8 +18,6 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float crouchCameraOffset = -0.5f;
     [SerializeField] private float crouchSpeedMultiplier = 0.5f;
 
-    [SerializeField] private float climbingSpeed = 0.2f;
-
     public Transform groundCheck;
     public float groundDistance = 0.4f;
     public LayerMask groundMask;   // For ground
@@ -161,34 +159,34 @@ public class PlayerMovement : MonoBehaviour
         );
     }
 
-   bool IsCeilingAbove()
-{
-    float checkDistance = normalHeight + 0.1f;
-    float radius = col.radius * 0.8f;
-
-    // Use collider bounds top — always accurate regardless of center offset
-    Vector3 capsuleTop = new Vector3(transform.position.x, col.bounds.max.y + 0.01f, transform.position.z);
-
-    Vector3[] offsets = new Vector3[]
+    bool IsCeilingAbove()
     {
+        float checkDistance = normalHeight + 0.1f;
+        float radius = col.radius * 0.8f;
+
+        // Use collider bounds top — always accurate regardless of center offset
+        Vector3 capsuleTop = new Vector3(transform.position.x, col.bounds.max.y + 0.01f, transform.position.z);
+
+        Vector3[] offsets = new Vector3[]
+        {
         Vector3.zero,
         transform.forward  * radius,
         -transform.forward * radius,
         transform.right    * radius,
         -transform.right   * radius,
-    };
+        };
 
-    foreach (Vector3 offset in offsets)
-    {
-        if (Physics.Raycast(capsuleTop + offset, Vector3.up, out RaycastHit hit, checkDistance, ceilingMask, QueryTriggerInteraction.Ignore))
+        foreach (Vector3 offset in offsets)
         {
-            if (hit.collider != col)
-                return true;
+            if (Physics.Raycast(capsuleTop + offset, Vector3.up, out RaycastHit hit, checkDistance, ceilingMask, QueryTriggerInteraction.Ignore))
+            {
+                if (hit.collider != col)
+                    return true;
+            }
         }
-    }
 
-    return false;
-}
+        return false;
+    }
 
     void HandleStamina()
     {

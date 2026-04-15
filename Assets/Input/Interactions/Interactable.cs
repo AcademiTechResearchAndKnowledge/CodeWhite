@@ -1,34 +1,40 @@
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.UI;
 
+[RequireComponent(typeof(Outline))]
 public class Interactable : MonoBehaviour
 {
-    
-    Outline  outline;
+    private Outline outline;
     public string message;
-
     public UnityEvent onInteraction;
 
-    void Start()
+    private void Awake()
     {
         outline = GetComponent<Outline>();
+
+        if (outline == null)
+        {
+            Debug.LogWarning("No Outline component found on " + gameObject.name);
+            return;
+        }
+
         DisableOutline();
     }
 
     public virtual void Interact()
     {
-        onInteraction.Invoke();
+        onInteraction?.Invoke();
     }
 
-    public void DisableOutline() 
+    public void DisableOutline()
     {
-        outline.enabled = false; 
+        if (outline != null)
+            outline.enabled = false;
     }
 
-    public void EnableOutline() 
-    { 
-        outline.enabled = true;
+    public void EnableOutline()
+    {
+        if (outline != null)
+            outline.enabled = true;
     }
-    
 }
