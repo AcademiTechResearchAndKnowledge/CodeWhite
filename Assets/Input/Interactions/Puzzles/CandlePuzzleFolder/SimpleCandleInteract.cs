@@ -10,7 +10,6 @@ public class SimpleCandleInteract : Interactable
 
     public override void Interact()
     {
-        Debug.Log("TRACKER: Player clicked the simple candle!");
 
         isLit = !isLit;
 
@@ -19,11 +18,9 @@ public class SimpleCandleInteract : Interactable
         if (isLit == true)
         {
             onSimpleCandleLit?.Invoke();
-            Debug.Log("Simple Candle Lit!");
         }
         else
         {
-            Debug.Log("Simple Candle Extinguished!");
         }
     }
 }

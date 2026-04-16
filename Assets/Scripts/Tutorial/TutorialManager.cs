@@ -1,6 +1,6 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.InputSystem; // Make sure to add this namespace!
+using UnityEngine.InputSystem;
 using TMPro;
 
 public class TutorialManager : MonoBehaviour
@@ -23,7 +23,13 @@ public class TutorialManager : MonoBehaviour
     public CanvasGroup textCanvasGroup;
     public float fadeDuration = 0.5f;
 
+    [Header("Cinematic Settings")]
+    public CanvasGroup blackScreenCanvasGroup;
+    public float blackScreenFadeDuration = 2.0f;
+    public float startDelay = 1.0f;
+
     [Header("Game Object References")]
+    public PlayerReferences player; // Reference to freeze the player during the intro
     public Outline itemOutline;
     public Outline doorOutline;
 
@@ -32,19 +38,30 @@ public class TutorialManager : MonoBehaviour
 
     void Start()
     {
+        // Ensure outlines are off at the start
         if (itemOutline != null) itemOutline.enabled = false;
         if (doorOutline != null) doorOutline.enabled = false;
 
         textCanvasGroup.alpha = 0;
-        StartCoroutine(ShowMessage("WASD to walk"));
+
+        // Start the cinematic intro!
+        if (blackScreenCanvasGroup != null)
+        {
+            blackScreenCanvasGroup.alpha = 1; // Make sure it starts pitch black
+            StartCoroutine(IntroSequence());
+        }
+        else
+        {
+            // Fallback if you forget to assign the black screen
+            StartCoroutine(ShowMessage("WASD to walk"));
+        }
     }
 
     void Update()
     {
-        if (isFading) return;
+        if (isFading) return; // Don't check inputs while transitioning
 
-        // It is good practice in the new system to ensure the device exists 
-        // before checking it, preventing errors if a keyboard/mouse isn't plugged in.
+        // Ensure devices exist before checking to prevent errors
         bool hasKeyboard = Keyboard.current != null;
         bool hasMouse = Mouse.current != null;
 
@@ -61,7 +78,6 @@ public class TutorialManager : MonoBehaviour
                 break;
 
             case TutorialState.Flashlight:
-                // rightButton is the equivalent of GetMouseButtonDown(1)
                 if (hasMouse && Mouse.current.rightButton.wasPressedThisFrame)
                 {
                     if (itemOutline != null) itemOutline.enabled = true;
@@ -133,7 +149,49 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
-    // --- COROUTINES FOR FADING UI ---
+    // --- HELPER METHODS ---
+
+    private void TogglePlayerControls(bool state)
+    {
+        if (player == null) return;
+
+        if (player.movementScript != null) player.movementScript.enabled = state;
+        if (player.flashlightScript != null) player.flashlightScript.enabled = state;
+
+        // Disable the camera script so they can't look around in the dark
+        if (player.playerCam != null) player.playerCam.enabled = state;
+    }
+
+    // --- COROUTINES FOR SEQUENCES AND UI ---
+
+    private IEnumerator IntroSequence()
+    {
+        isFading = true;
+
+        // Disable controls before the fade starts
+        TogglePlayerControls(false);
+
+        // Wait a moment in the dark
+        yield return new WaitForSeconds(startDelay);
+
+        // Fade the black screen away
+        float timer = 0;
+        while (timer < blackScreenFadeDuration)
+        {
+            timer += Time.deltaTime;
+            blackScreenCanvasGroup.alpha = Mathf.Lerp(1, 0, timer / blackScreenFadeDuration);
+            yield return null;
+        }
+
+        blackScreenCanvasGroup.alpha = 0;
+        blackScreenCanvasGroup.gameObject.SetActive(false); // Turn off so it doesn't block UI clicks
+
+        // Re-enable controls once the fade is done
+        TogglePlayerControls(true);
+
+        isFading = false;
+        yield return StartCoroutine(ShowMessage("WASD to walk"));
+    }
 
     private IEnumerator ShowMessage(string message)
     {
