@@ -109,6 +109,7 @@ GameObject:
   - component: {fileID: 7056102068585018066}
   - component: {fileID: 4192864209516601053}
   - component: {fileID: 2610894288452618994}
+  - component: {fileID: 4384128254147776711}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -318,6 +319,22 @@ MonoBehaviour:
   blendDistance: 0
   weight: 1
   sharedProfile: {fileID: 11400000, guid: 60739d4d0b3abd34e8b5318d255c8517, type: 2}
+--- !u!114 &4384128254147776711
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2482385671022945450}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 24dff2bedc2452c49909f145add36205, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerGazeRaycast
+  gazeDistance: 3
+  interactableLayer:
+    serializedVersion: 2
+    m_Bits: 1024
 --- !u!1 &3947385659159009770
 GameObject:
   m_ObjectHideFlags: 0
