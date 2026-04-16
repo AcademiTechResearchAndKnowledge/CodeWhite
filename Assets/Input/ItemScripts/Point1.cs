@@ -6,9 +6,19 @@ public class Point1 : MonoBehaviour
     public string itemId = "KeyItem";
     public int amount = 1;
 
-    public void Pickup()
+    [Header("Detection")]
+    [SerializeField] private string playerTag = "Player";
+
+    private void OnTriggerEnter(Collider other)
     {
-        // Tell PointManager that a point was collected
+        if (!other.CompareTag(playerTag)) return;
+
+        Collect();
+    }
+
+    private void Collect()
+    {
+        // Tell PointManager
         if (PointManager.Instance != null)
         {
             PointManager.Instance.AddPoint();
@@ -20,12 +30,14 @@ public class Point1 : MonoBehaviour
 
         Debug.Log($"Picked up {amount} {itemId}");
 
-        // Destroy immediate parent (if it exists)
+        // Destroy parent (if exists)
         if (transform.parent != null)
         {
             Destroy(transform.parent.gameObject);
         }
-
-        Destroy(gameObject);
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 }

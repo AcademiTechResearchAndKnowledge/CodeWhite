@@ -66,9 +66,13 @@ public class PointManager : MonoBehaviour
 
             if (Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, raycastHeight * 2f, groundMask))
             {
-                Vector3 spawnPos = hit.point + Vector3.up * 0.1f;
+                Vector3 spawnPos = hit.point + Vector3.up * spawnHeight;
 
-                Instantiate(pointPrefab, spawnPos, Quaternion.identity);
+                float randomY = Random.Range(0f, 360f);
+                Quaternion randomRotation = Quaternion.Euler(0f, randomY, 0f);
+
+                Instantiate(pointPrefab, spawnPos, randomRotation);
+
                 Debug.Log("Spawned point on valid surface!");
                 return;
             }
