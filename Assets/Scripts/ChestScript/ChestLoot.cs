@@ -10,6 +10,13 @@ public class ChestLoot : Interactable
     [Header("Spawn Point")]
     public Transform itemSpawnPoint;
 
+    [Header("Jumpscare Entity Settings")]
+    [Tooltip("Drag the Entity Prefab here.")]
+    public GameObject entityPrefab;
+    [Range(0f, 1f)]
+    [Tooltip("Independent chance to spawn the entity (0.1 = 10% chance)")]
+    public float chanceToSpawnEntity = 0.1f;
+
     [Header("Possible Loot")]
     public GameObject[] possibleItems;
 
@@ -59,7 +66,7 @@ public class ChestLoot : Interactable
         if (!spawnOnlyOnce || !hasSpawned)
         {
             yield return new WaitForSeconds(lootSpawnDelay);
-            SpawnRandomItem();
+            SpawnContent();
             hasSpawned = true;
         }
 
@@ -81,13 +88,11 @@ public class ChestLoot : Interactable
 
         chestAnimator.SetInteger("C", 4);
 
-
-
         isOpen = false;
         isBusy = false;
     }
 
-    void SpawnRandomItem()
+    void SpawnContent()
     {
         if (itemSpawnPoint == null)
         {
@@ -95,9 +100,10 @@ public class ChestLoot : Interactable
             return;
         }
 
-        if (possibleItems == null || possibleItems.Length == 0)
+        if (entityPrefab != null && Random.value < chanceToSpawnEntity)
         {
-            Debug.LogWarning("No possibleItems assigned on " + gameObject.name);
+            InstantiateAndSetupObject(entityPrefab);
+            Debug.Log(gameObject.name + " spawned the Entity!");
             return;
         }
 
@@ -107,11 +113,20 @@ public class ChestLoot : Interactable
             return;
         }
 
+        if (possibleItems == null || possibleItems.Length == 0)
+        {
+            Debug.LogWarning("No possibleItems assigned on " + gameObject.name);
+            return;
+        }
+
         int randomIndex = Random.Range(0, possibleItems.Length);
-        GameObject chosenItem = possibleItems[randomIndex];
+        InstantiateAndSetupObject(possibleItems[randomIndex]);
+        Debug.Log(gameObject.name + " spawned " + possibleItems[randomIndex].name);
+    }
 
-        currentSpawnedItem = Instantiate(chosenItem, itemSpawnPoint.position, itemSpawnPoint.rotation);
-
+    void InstantiateAndSetupObject(GameObject prefabToSpawn)
+    {
+        currentSpawnedItem = Instantiate(prefabToSpawn, itemSpawnPoint.position, itemSpawnPoint.rotation);
         currentSpawnedItem.transform.SetParent(itemSpawnPoint, true);
 
         Rigidbody rb = currentSpawnedItem.GetComponent<Rigidbody>();
@@ -130,7 +145,5 @@ public class ChestLoot : Interactable
         {
             Physics.IgnoreCollision(itemCollider, chestCollider, true);
         }
-
-        Debug.Log(gameObject.name + " spawned " + chosenItem.name);
     }
 }

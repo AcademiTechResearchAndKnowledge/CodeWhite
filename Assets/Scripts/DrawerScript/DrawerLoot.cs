@@ -19,6 +19,13 @@ public class DrawerLoot : Interactable
     [Header("Spawn Point")]
     public Transform itemSpawnPoint;
 
+    [Header("Jumpscare Entity Settings")]
+    [Tooltip("Drag the Entity Prefab here.")]
+    public GameObject entityPrefab;
+    [Range(0f, 1f)]
+    [Tooltip("Independent chance to spawn the entity (0.1 = 10% chance)")]
+    public float chanceToSpawnEntity = 0.1f;
+
     [Header("Possible Loot")]
     public GameObject[] possibleItems;
 
@@ -36,13 +43,11 @@ public class DrawerLoot : Interactable
     private GameObject currentSpawnedItem;
     private Coroutine activeCoroutine;
 
-    // NEW: Adds physical "weight" so spamming doesn't look like a glitch
     private float lastInteractTime = 0f;
-    private float interactCooldown = 0.25f; // Adjust this to make the drawer feel heavier or lighter
+    private float interactCooldown = 0.25f;
 
     public override void Interact()
     {
-        // NEW: Cooldown check. If you press F faster than 0.25 seconds, it ignores the extra spam
         if (Time.time - lastInteractTime < interactCooldown)
             return;
 
@@ -81,7 +86,7 @@ public class DrawerLoot : Interactable
             if (!spawnOnlyOnce || !hasSpawned)
             {
                 yield return new WaitForSeconds(lootSpawnDelay);
-                SpawnRandomItem();
+                SpawnContent();
                 hasSpawned = true;
             }
 
@@ -97,7 +102,7 @@ public class DrawerLoot : Interactable
             if (!spawnOnlyOnce || !hasSpawned)
             {
                 yield return new WaitForSeconds(lootSpawnDelay);
-                SpawnRandomItem();
+                SpawnContent();
                 hasSpawned = true;
             }
 
@@ -130,16 +135,27 @@ public class DrawerLoot : Interactable
         activeCoroutine = null;
     }
 
-    void SpawnRandomItem()
+    void SpawnContent()
     {
         if (itemSpawnPoint == null) return;
-        if (possibleItems == null || possibleItems.Length == 0) return;
+
+        if (entityPrefab != null && Random.value < chanceToSpawnEntity)
+        {
+            InstantiateAndSetupObject(entityPrefab);
+            return;
+        }
+
         if (Random.value < chanceToSpawnNothing) return;
 
-        int randomIndex = Random.Range(0, possibleItems.Length);
-        GameObject chosenItem = possibleItems[randomIndex];
+        if (possibleItems == null || possibleItems.Length == 0) return;
 
-        currentSpawnedItem = Instantiate(chosenItem, itemSpawnPoint.position, itemSpawnPoint.rotation);
+        int randomIndex = Random.Range(0, possibleItems.Length);
+        InstantiateAndSetupObject(possibleItems[randomIndex]);
+    }
+
+    void InstantiateAndSetupObject(GameObject prefabToSpawn)
+    {
+        currentSpawnedItem = Instantiate(prefabToSpawn, itemSpawnPoint.position, itemSpawnPoint.rotation);
         currentSpawnedItem.transform.SetParent(itemSpawnPoint, true);
 
         Rigidbody rb = currentSpawnedItem.GetComponent<Rigidbody>();
