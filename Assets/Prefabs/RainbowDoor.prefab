@@ -11,9 +11,9 @@ GameObject:
   - component: {fileID: 8083514358587463326}
   - component: {fileID: 1550319843697861630}
   - component: {fileID: 1206812207463220512}
-  - component: {fileID: 4851293857730524770}
   - component: {fileID: 5411190847821011082}
   - component: {fileID: 236110427742683371}
+  - component: {fileID: 6107669427157828083}
   m_Layer: 0
   m_Name: RainbowDoor
   m_TagString: Interactable
@@ -93,35 +93,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &4851293857730524770
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8705075524114477771}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8a8b7e2e442141746a0f29ea98a0abc8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RainbowDoorInteractable
-  message: 
-  onInteraction:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 4851293857730524770}
-        m_TargetAssemblyTypeName: RainbowDoorInteractable, Assembly-CSharp
-        m_MethodName: Interact
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  entityTriggerDistance: 10
 --- !u!114 &5411190847821011082
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -161,3 +132,20 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &6107669427157828083
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8705075524114477771}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5d537bb43efdf94ab214568fc698773, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RainbowDoorInteractable
+  message: 
+  onInteraction:
+    m_PersistentCalls:
+      m_Calls: []
+  entityTriggerDistance: 10

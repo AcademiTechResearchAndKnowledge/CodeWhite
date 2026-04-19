@@ -85,7 +85,7 @@ public class objectZoom : MonoBehaviour
         mainObjHandler?.StartInteraction();
     }
 
-    private void ExitPuzzle()
+    public void ExitPuzzle()
     {
         // Switch camera back
         playerVCam.Priority.Value = 20;

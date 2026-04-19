@@ -10,7 +10,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 1e96889930e69ca4faa2610d07358561, type: 3}
       propertyPath: m_LocalScale.x
-      value: 1.38
+      value: 1.3799999
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1e96889930e69ca4faa2610d07358561, type: 3}
       propertyPath: m_LocalScale.y
@@ -22,31 +22,31 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1e96889930e69ca4faa2610d07358561, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -31
+      value: -7
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1e96889930e69ca4faa2610d07358561, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.5000002
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1e96889930e69ca4faa2610d07358561, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -37
+      value: 55
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1e96889930e69ca4faa2610d07358561, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0
+      value: 0.7071068
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1e96889930e69ca4faa2610d07358561, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1e96889930e69ca4faa2610d07358561, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 1
+      value: 0.7071068
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1e96889930e69ca4faa2610d07358561, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1e96889930e69ca4faa2610d07358561, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -54,7 +54,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1e96889930e69ca4faa2610d07358561, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 180
+      value: 90
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1e96889930e69ca4faa2610d07358561, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
@@ -88,13 +88,14 @@ PrefabInstance:
       propertyPath: m_ConstrainProportionsScale
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8785528080728405848, guid: 1e96889930e69ca4faa2610d07358561, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 231b0b76ea8df33428a51bb74ec60945, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 1e96889930e69ca4faa2610d07358561, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 5944142244984782821}
     - targetCorrespondingSourceObject: {fileID: 781679719685557685, guid: 1e96889930e69ca4faa2610d07358561, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7000513917059587387}
@@ -228,26 +229,3 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 7425758697607453491, guid: 1e96889930e69ca4faa2610d07358561, type: 3}
---- !u!1 &7297033130573131317 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 1e96889930e69ca4faa2610d07358561, type: 3}
-  m_PrefabInstance: {fileID: 7603533201782100836}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &5944142244984782821
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7297033130573131317}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Outline
-  outlineMode: 0
-  outlineColor: {r: 1, g: 1, b: 1, a: 1}
-  outlineWidth: 2
-  precomputeOutline: 0
-  bakeKeys: []
-  bakeValues: []

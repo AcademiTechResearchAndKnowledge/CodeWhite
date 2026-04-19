@@ -20,12 +20,12 @@ public class EntityDetector : MonoBehaviour
     private PlayerMovement playerMovement;
     private ClosetHideInteract playerHideInteract;
     private TableHideState playerTableState;
-    private EntityAi entityAi;
+    private EntityAiOlder entityAi;
     private EntityWondering entityWondering;
 
     void Awake()
     {
-        entityAi = GetComponent<EntityAi>();
+        entityAi = GetComponent<EntityAiOlder>();
         entityWondering = GetComponent<EntityWondering>();
     }
 

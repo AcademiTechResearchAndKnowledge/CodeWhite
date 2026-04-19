@@ -95,6 +95,11 @@ public class PlayerMovement : MonoBehaviour
 
         HandleCrouch();
         HandleStamina();
+
+
+        Vector3 origin = new Vector3(transform.position.x, col.bounds.max.y + 0.01f, transform.position.z);
+        float distance = normalHeight + 0.1f;
+        Debug.DrawRay(origin, Vector3.up * distance, Color.red);
     }
 
     void FixedUpdate()

@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.AI;
 
-public class EntityAi : MonoBehaviour
+public class EntityAiOlder : MonoBehaviour
 {
     public Transform movePositionTransform;
 

@@ -122,7 +122,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5936632849859682460}
   - component: {fileID: 7907272973956132388}
-  - component: {fileID: 3220658924197904007}
+  - component: {fileID: 787322388080444302}
   m_Layer: 0
   m_Name: BlackDoor
   m_TagString: Interactable
@@ -168,7 +168,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.722867, y: 1.5380145, z: 0.20280313}
   m_Center: {x: -0.009231925, y: -0.024781406, z: 0.032463074}
---- !u!114 &3220658924197904007
+--- !u!114 &787322388080444302
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -177,7 +177,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 4035569484488239187}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b091012e7bdf40441ae3b93518a7e186, type: 3}
+  m_Script: {fileID: 11500000, guid: c5d279d87f6e6f943ac93598dfb6578c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PortalDoor
   portalCamera: {fileID: 0}
@@ -185,9 +185,9 @@ MonoBehaviour:
   player: {fileID: 0}
   idlePortalMaterial: {fileID: 0}
   portalMaterialBase: {fileID: 0}
-  interactDistance: 3
-  portalActiveTime: 3
-  backtrackBlockTime: 3
+  interactDistance: 10
+  portalActiveTime: 5
+  backtrackBlockTime: 1.5
 --- !u!1 &6522830185657367353
 GameObject:
   m_ObjectHideFlags: 0
