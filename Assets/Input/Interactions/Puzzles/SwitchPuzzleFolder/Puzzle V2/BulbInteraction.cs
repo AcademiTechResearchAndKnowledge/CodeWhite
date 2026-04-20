@@ -1,5 +1,6 @@
 using UnityEngine;
 
+// FOR THE BULB OBJECT
 public class BulbInteraction : Interactable
 {
     public static BulbInteraction Instance;
@@ -37,7 +38,6 @@ public class BulbInteraction : Interactable
     {
         base.Interact();
 
-        // Hot if either the first or second button pressed was the correct one
         if (firstButtonWasCorrect || secondButtonWasCorrect)
             LaptopManager.Instance.ShowHint("The bulb is HOT — one of your pressed buttons is connected!");
         else

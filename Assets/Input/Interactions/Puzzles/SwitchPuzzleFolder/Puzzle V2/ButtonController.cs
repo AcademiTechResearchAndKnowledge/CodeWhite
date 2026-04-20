@@ -1,5 +1,6 @@
 using UnityEngine;
 
+// FOR EMPTY OBJECT THAT READS THE BUTTONS AND CONTROLS THE DOOR AND BULB
 public class ButtonController : MonoBehaviour
 {
     public static ButtonController Instance;
@@ -28,64 +29,64 @@ public class ButtonController : MonoBehaviour
     private int secondPressedButton = -1;
     private int pressCount = 0;
     private bool buttonsLocked = false;
-    private bool doorIsOpen;
+    private bool doorIsOpen = true;
 
     void Awake()
     {
         Instance = this;
+    }
+
+    void Start()
+    {
         ApplyDoorState(true);
+        SetBulbState(false);
+
+        ApplyDoorState(true);
+        SetBulbState(false);
     }
 
     public void OnButtonPressed(int buttonIndex)
     {
         if (buttonsLocked) return;
         if (pressCount >= 2) return;
-
+        
+        //First press
         if (pressCount == 0)
         {
-            // --- First press ---
+            
             firstPressedButton = buttonIndex;
             SetButtonVisual(buttonIndex, true);
 
-            // Door closes on first press
             doorIsOpen = false;
             ApplyDoorState(false);
 
-            // Light bulb if this first button is correct
             bool firstIsCorrect = SwitchPuzzleManager.Instance.CheckAnswer(buttonIndex);
             SetBulbState(firstIsCorrect);
 
-            // Tell BulbInteraction whether first press was correct
             BulbInteraction.Instance.SetFirstButtonCorrect(firstIsCorrect);
 
             pressCount = 1;
         }
+        //Second press
         else if (pressCount == 1)
         {
-            // --- Second press ---
-            // Can't press the same button twice
             if (buttonIndex == firstPressedButton) return;
 
             secondPressedButton = buttonIndex;
             SetButtonVisual(buttonIndex, true);
 
-            // Door opens on second press
             doorIsOpen = true;
             ApplyDoorState(true);
 
-            // Check if the second button pressed is the correct one
             bool secondIsCorrect = SwitchPuzzleManager.Instance.CheckAnswer(buttonIndex);
             SetBulbState(secondIsCorrect);
 
-            // Update BulbInteraction — hot/cold now reflects
-            // whichever of the two pressed buttons was correct
-            bool eitherWasCorrect = BulbInteraction.Instance.IsFirstButtonCorrect() || secondIsCorrect;
             BulbInteraction.Instance.SetSecondButtonCorrect(secondIsCorrect);
 
             pressCount = 2;
-
-            // Lock all buttons
             LockAllButtons();
+
+            LaptopManager.Instance.UnlockAnswers();
         }
     }
 

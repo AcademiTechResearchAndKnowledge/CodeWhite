@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class LighterItem : Interactable
+public class LighterPickup : Interactable
 {
     public static bool hasLighter = false;
 

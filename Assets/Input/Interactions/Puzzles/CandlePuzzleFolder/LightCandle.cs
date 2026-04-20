@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class CandleInteract : Interactable
+public class CandleInteracted : Interactable
 {
     public GameObject flame;
     private bool isLit = false;
@@ -9,7 +9,7 @@ public class CandleInteract : Interactable
     {
         if (isLit) return;
 
-        if (!LighterItem.hasLighter)
+        if (!LighterPickup.hasLighter)
         {
             Debug.Log("You need a lighter!");
             return;
@@ -18,7 +18,7 @@ public class CandleInteract : Interactable
         isLit = true;
         flame.SetActive(true);
 
-        LighterItem.hasLighter = false;
+        LighterPickup.hasLighter = false;
 
         PuzzleManager.instance.CandleLit();
     }

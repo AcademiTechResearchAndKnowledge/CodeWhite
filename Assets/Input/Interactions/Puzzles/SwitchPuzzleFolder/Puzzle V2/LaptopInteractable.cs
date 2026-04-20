@@ -1,5 +1,6 @@
 using UnityEngine;
 
+// FOR THE LAPTOP OBJECT, SO THE PLAYER CAN INTERACT WITH IT
 public class LaptopInteractable : Interactable
 {
     public override void Interact()
