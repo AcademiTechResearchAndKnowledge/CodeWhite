@@ -144,10 +144,10 @@ MonoBehaviour:
   frontAngle: 45
   backAngle: 135
   playerReference: {fileID: 0}
-  body: {fileID: 0}
+  body: {fileID: 7873738004595871847}
   animator: {fileID: 7918944528095286349}
   spriteRenderer: {fileID: 3444739460606341748}
-  navMeshAgent: {fileID: 0}
+  navMeshAgent: {fileID: 6784065674680064044}
 --- !u!1 &6508504866725617351
 GameObject:
   m_ObjectHideFlags: 0
@@ -162,6 +162,7 @@ GameObject:
   - component: {fileID: 8524075316939704075}
   - component: {fileID: 453859888704035866}
   - component: {fileID: 3326810911531359156}
+  - component: {fileID: 2793818226136808801}
   m_Layer: 0
   m_Name: WhiteLady
   m_TagString: Untagged
@@ -365,3 +366,24 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!65 &2793818226136808801
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6508504866725617351}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.7771945, y: 2.5115716, z: 0.22580147}
+  m_Center: {x: -0.014309168, y: 1.6578876, z: -0.020842552}

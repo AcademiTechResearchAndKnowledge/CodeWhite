@@ -12,9 +12,9 @@ GameObject:
   - component: {fileID: 2496164538885376509}
   - component: {fileID: 7046581467851356932}
   - component: {fileID: 4307063180158290624}
-  - component: {fileID: 5504392574295157810}
-  - component: {fileID: 7665139832582693462}
-  - component: {fileID: 4234839819940515767}
+  - component: {fileID: -860494957984491563}
+  - component: {fileID: -4037706428010266766}
+  - component: {fileID: 7193544550496847029}
   - component: {fileID: 7372747374758709090}
   m_Layer: 0
   m_Name: TheCorrector
@@ -111,7 +111,7 @@ NavMeshAgent:
   m_BaseOffset: 1
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
---- !u!114 &5504392574295157810
+--- !u!114 &-860494957984491563
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -120,23 +120,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 5222052619046087319}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: abc6785d1e11ce84b8b32f3540ca5a7c, type: 3}
+  m_Script: {fileID: 11500000, guid: 757be479b27377d4b8b1beae5be901ad, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EntityWondering
-  wanderRadius: 5
-  wanderTimer: 3
---- !u!114 &7665139832582693462
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5222052619046087319}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fc92ca9c8e70c0845b0373305747013d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EntityDetector
+  m_EditorClassIdentifier: Assembly-CSharp::AggroEntityDetector
   detectRange: 8
   hideAllowedRange: 12
   loseRange: 15
@@ -144,18 +130,35 @@ MonoBehaviour:
   isLookingPlayer: 0
   canHideFromEnemy: 0
   distanceToPlayer: 0
---- !u!114 &4234839819940515767
+--- !u!114 &-4037706428010266766
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5222052619046087319}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 41968f1dcd66b574797e1bc03db85ecf, type: 3}
+  m_Script: {fileID: 11500000, guid: 5554cec3a05042d4289237d23bda026d, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EntityAi
+  m_EditorClassIdentifier: Assembly-CSharp::AggroEntityWondering
+  currentState: 0
+  wanderRadius: 10
+  wanderTimer: 5
+  localSearchDuration: 10
+  relocateDistance: 30
+--- !u!114 &7193544550496847029
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5222052619046087319}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf4e3e39689a9df4499a743f8b26f5db, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AggroEntityAI
   movePositionTransform: {fileID: 0}
 --- !u!114 &7372747374758709090
 MonoBehaviour:
@@ -170,6 +173,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CorrectorJumpscareTrigger
   catchRadius: 2.5
+  anxietySpikePercentage: 75
 --- !u!1 &5772028412668307073
 GameObject:
   m_ObjectHideFlags: 0

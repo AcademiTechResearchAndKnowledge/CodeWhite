@@ -2909,11 +2909,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 934983617}
   m_CullTransparentMesh: 1
---- !u!135 &939104452 stripped
-SphereCollider:
-  m_CorrespondingSourceObject: {fileID: 4267777501834807491, guid: f70b2793a1e3bae4e97cb334af19507d, type: 3}
-  m_PrefabInstance: {fileID: 2116356373160904004}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &939599310
 GameObject:
   m_ObjectHideFlags: 0
@@ -4839,30 +4834,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 278490330625797729, guid: f70b2793a1e3bae4e97cb334af19507d, type: 3}
-      propertyPath: sphereCol
-      value: 
-      objectReference: {fileID: 939104452}
-    - target: {fileID: 278490330625797729, guid: f70b2793a1e3bae4e97cb334af19507d, type: 3}
-      propertyPath: crouchHeight
-      value: 0.3
-      objectReference: {fileID: 0}
-    - target: {fileID: 278490330625797729, guid: f70b2793a1e3bae4e97cb334af19507d, type: 3}
-      propertyPath: crouchCenterY
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 278490330625797729, guid: f70b2793a1e3bae4e97cb334af19507d, type: 3}
-      propertyPath: ceilingMask.m_Bits
-      value: 512
-      objectReference: {fileID: 0}
-    - target: {fileID: 278490330625797729, guid: f70b2793a1e3bae4e97cb334af19507d, type: 3}
-      propertyPath: crouchSphereRadius
-      value: 0.03
-      objectReference: {fileID: 0}
-    - target: {fileID: 278490330625797729, guid: f70b2793a1e3bae4e97cb334af19507d, type: 3}
-      propertyPath: crouchCapsuleRadius
-      value: 0.15
-      objectReference: {fileID: 0}
     - target: {fileID: 4335931957978498964, guid: f70b2793a1e3bae4e97cb334af19507d, type: 3}
       propertyPath: m_LocalPosition.x
       value: -65.68358
@@ -4901,10 +4872,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4335931957978498964, guid: f70b2793a1e3bae4e97cb334af19507d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7403238436818178870, guid: f70b2793a1e3bae4e97cb334af19507d, type: 3}
-      propertyPath: m_IsTrigger
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7629738588920685599, guid: f70b2793a1e3bae4e97cb334af19507d, type: 3}

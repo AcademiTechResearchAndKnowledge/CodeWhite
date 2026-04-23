@@ -1,6 +1,5 @@
 using UnityEngine;
 using TMPro;
-using UnityEditor.PackageManager;
 
 public class HUDInteractController : MonoBehaviour
 {
@@ -9,18 +8,26 @@ public class HUDInteractController : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        DisableInteractionText();
     }
 
-    [SerializeField] TMP_Text interactionText;
+    [Header("UI References")]
+    [SerializeField] private GameObject interactionPanel;
+    [SerializeField] private TMP_Text keyText;
+    [SerializeField] private TMP_Text objectNameText;
+    [SerializeField] private TMP_Text actionText;
 
-    public void EnableInteractionText(string text)
-        {
-            interactionText.text = text + " (F)";
-            interactionText.gameObject.SetActive(true);
-        }
+    public void EnableInteractionText(string key, string objectName, string action)
+    {
+        keyText.text = key;
+        objectNameText.text = objectName;
+        actionText.text = action;
+
+        interactionPanel.SetActive(true);
+    }
 
     public void DisableInteractionText()
-        {
-            interactionText.gameObject.SetActive(false);
-        }
+    {
+        interactionPanel.SetActive(false);
+    }
 }
