@@ -12,6 +12,9 @@ public class DoorController : Interactable
     private bool isOpen = false;
     private bool isBusy = false; // Prevents spamming the interaction key
 
+    // Keeps track of if the White Lady is standing in the doorway
+    private int aiInZone = 0;
+
     public override void Interact()
     {
         // If the door is currently mid-animation, ignore the interaction
@@ -35,6 +38,43 @@ public class DoorController : Interactable
             StartCoroutine(CloseDoorRoutine());
         }
     }
+
+    // „Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ
+    //  AI Trigger Detector (Automatic Doors)
+    // „Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ
+
+    private void OnTriggerEnter(Collider other)
+    {
+        // Check if the object stepping into the zone is the White Lady
+        if (other.GetComponent<WhiteLady>() != null)
+        {
+            aiInZone++;
+
+            // If the door is currently closed and not moving, open it for her!
+            if (!isOpen && !isBusy)
+            {
+                StartCoroutine(OpenDoorRoutine());
+            }
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.GetComponent<WhiteLady>() != null)
+        {
+            aiInZone--;
+
+            // If she completely left the zone, and the door is open, close it behind her!
+            if (aiInZone <= 0 && isOpen && !isBusy)
+            {
+                StartCoroutine(CloseDoorRoutine());
+            }
+        }
+    }
+
+    // „Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ
+    //  Coroutines
+    // „Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ
 
     IEnumerator OpenDoorRoutine()
     {

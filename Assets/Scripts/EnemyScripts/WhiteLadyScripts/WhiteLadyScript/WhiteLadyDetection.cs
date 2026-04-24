@@ -7,43 +7,27 @@ using UnityEngine;
 /// </summary>
 public class WhiteLadyDetection : MonoBehaviour
 {
-    // ─────────────────────────────────────────
-    //  Detection Settings
-    // ─────────────────────────────────────────
     [Header("Detection Settings")]
-    [Tooltip("Distance at which the White Lady first sees the player.")]
     public float detectRange = 6f;
-
-    [Tooltip("Distance at which she gives up the chase.")]
     public float loseRange = 10f;
-
-    [Tooltip("Player must be farther than this to be allowed to hide.")]
     public float hideAllowedRange = 12f;
-
-    [Tooltip("Crouching only works beyond this distance.")]
     public float crouchSafeDistance = 3f;
-
-    [Tooltip("How far short of the player's last position she stops when investigating.")]
     public float investigateStopDistance = 5f;
 
-    // ─────────────────────────────────────────
-    //  Read-Only Info (visible in Inspector)
-    // ─────────────────────────────────────────
+    [Header("Line of Sight")]
+    public LayerMask obstacleMask;
+    public float eyeHeight = 1.5f;
+    public float playerCenterHeight = 1.0f;
+
     [Header("Info (Read-Only)")]
     public float distanceToPlayer;
-    public bool  canHideFromEnemy;
+    public bool canHideFromEnemy;
 
-    // ─────────────────────────────────────────
-    //  Private — player references
-    // ─────────────────────────────────────────
-    private Transform          playerTransform;
-    private PlayerMovement     playerMovement;
+    private Transform playerTransform;
+    private PlayerMovement playerMovement;
     private ClosetHideInteract playerClosetInteract;
-    private TableHideState     playerTableState;
+    private TableHideState playerTableState;
 
-    // ─────────────────────────────────────────
-    //  Lifecycle
-    // ─────────────────────────────────────────
     void Start()
     {
         ResolvePlayerReferences();
@@ -57,41 +41,52 @@ public class WhiteLadyDetection : MonoBehaviour
         canHideFromEnemy = distanceToPlayer > hideAllowedRange;
     }
 
-    // ─────────────────────────────────────────
-    //  Public Queries — called by WhiteLady.cs
-    // ─────────────────────────────────────────
+    public bool HasLineOfSight()
+    {
+        if (playerTransform == null) return false;
 
-    /// <summary>Returns true if the player is hidden in a closet or crouching under a table.</summary>
+        Vector3 startPos = transform.position + Vector3.up * eyeHeight;
+        Vector3 targetPos = playerTransform.position + Vector3.up * playerCenterHeight;
+
+        Vector3 direction = (targetPos - startPos).normalized;
+        float distance = Vector3.Distance(startPos, targetPos);
+
+        Debug.DrawRay(startPos, direction * distance, Color.yellow);
+
+        RaycastHit[] hits = Physics.RaycastAll(startPos, direction, distance, obstacleMask, QueryTriggerInteraction.Ignore);
+
+        for (int i = 0; i < hits.Length; i++)
+        {
+            Transform hitObj = hits[i].transform;
+            if (hitObj.root == transform.root) continue;
+            if (hitObj.root == playerTransform.root || hitObj.CompareTag("Player")) continue;
+            return false;
+        }
+
+        return true;
+    }
+
     public bool IsPlayerHiding()
     {
-        bool inCloset   = playerClosetInteract != null && playerClosetInteract.IsHiding;
-        bool underTable = playerTableState     != null && playerTableState.isUnderTable
+        bool inCloset = playerClosetInteract != null && playerClosetInteract.IsHiding;
+        bool underTable = playerTableState != null && playerTableState.isUnderTable
                           && IsPlayerCrouching();
         return inCloset || underTable;
     }
 
-    /// <summary>Returns true if the player is crouching far enough away to avoid detection.</summary>
     public bool IsPlayerSneakingSuccessfully()
     {
         return IsPlayerCrouching() && distanceToPlayer > crouchSafeDistance;
     }
 
-    /// <summary>
-    /// Returns the position she should walk toward when the player breaks line of sight.
-    /// Stops short of the exact position by investigateStopDistance so it feels natural.
-    /// </summary>
     public Vector3 GetLastKnownPosition()
     {
         if (playerTransform == null) return transform.position;
 
-        Vector3 direction    = (playerTransform.position - transform.position).normalized;
-        float   travelDist   = Mathf.Max(0f, distanceToPlayer - investigateStopDistance);
+        Vector3 direction = (playerTransform.position - transform.position).normalized;
+        float travelDist = Mathf.Max(0f, distanceToPlayer - investigateStopDistance);
         return transform.position + direction * travelDist;
     }
-
-    // ─────────────────────────────────────────
-    //  Private Helpers
-    // ─────────────────────────────────────────
 
     bool IsPlayerCrouching()
     {
@@ -100,22 +95,22 @@ public class WhiteLadyDetection : MonoBehaviour
 
     void ResolvePlayerReferences()
     {
-        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-
-        if (playerObj == null)
+        // Now fully bulletproof: Uses Unity 6 search instead of relying on specific tags!
+        PlayerReferences refs = FindAnyObjectByType<PlayerReferences>();
+        if (refs != null)
         {
-            Debug.LogError("[WhiteLadyDetection] No GameObject with tag 'Player' found in scene.");
-            return;
+            playerTransform = refs.transform;
+            playerMovement = refs.movementScript;
+        }
+        else
+        {
+            Debug.LogWarning("[WhiteLadyDetection] PlayerReferences not found.");
         }
 
-        playerTransform      = playerObj.transform;
-        playerClosetInteract = playerObj.GetComponent<ClosetHideInteract>();
-        playerTableState     = playerObj.GetComponent<TableHideState>();
+        playerClosetInteract = FindAnyObjectByType<ClosetHideInteract>();
+        playerTableState = FindAnyObjectByType<TableHideState>();
 
-        PlayerReferences refs = playerObj.GetComponent<PlayerReferences>();
-        if (refs != null)
-            playerMovement = refs.movementScript;
-        else
-            Debug.LogWarning("[WhiteLadyDetection] PlayerReferences not found — crouch detection disabled.");
+        if (playerClosetInteract == null)
+            Debug.LogWarning("[WhiteLadyDetection] ClosetHideInteract script not found in scene!");
     }
 }

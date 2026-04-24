@@ -147,7 +147,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b2ad8202cf1c834db4e8063153b881a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlowerTeleport
-  message: 
+  buttonText: E
+  objectName: Object
+  actionName: Interact
   onInteraction:
     m_PersistentCalls:
       m_Calls:
@@ -167,8 +169,8 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
-  teleportInterval: 3
-  minSpawnDistance: 10
+  teleportInterval: 15
+  minSpawnDistance: 15
   audioSource: {fileID: 6652918826405382964}
   teleportSound: {fileID: 8300000, guid: a87eb6b8eae6baf4db6ad923e0394863, type: 3}
 --- !u!114 &8803032917974281984

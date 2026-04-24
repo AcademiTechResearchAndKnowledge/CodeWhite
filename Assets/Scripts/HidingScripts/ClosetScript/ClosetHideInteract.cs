@@ -6,17 +6,27 @@ public class ClosetHideInteract : MonoBehaviour
 {
     public bool CanInteract = true;
 
+    [Header("White Lady Settings")]
+    public float safeHideDistance = 12f;
+
+    // --- Old AI References ---
     private EntityDetector entity;
     private EntityAi entityAi;
     private EntityWondering entityWondering;
+
+    // --- New AI Reference ---
+    private WhiteLady whiteLady;
 
     public float inputDelay = 2f;
     private bool inputLocked = false;
 
     private ClosetHidingSystem currentCloset;
 
-    // Used by the EntityDetector to know if the player is currently inside
-    public bool IsHiding => currentCloset != null && currentCloset.InsideCloset;
+    // --- INSTANT HIDE FIX ---
+    private bool isTransitioningToHide = false;
+
+    // The White Lady will now read this as TRUE the exact millisecond you press F
+    public bool IsHiding => (currentCloset != null && currentCloset.InsideCloset) || isTransitioningToHide;
 
     void Start()
     {
@@ -25,23 +35,21 @@ public class ClosetHideInteract : MonoBehaviour
 
     void FindEntityReferences()
     {
-        // Using FindObjectOfType is much safer for prefabs! 
-        // It doesn't rely on you remembering to set tags in the Inspector.
         entity = Object.FindFirstObjectByType<EntityDetector>();
-
         if (entity != null)
         {
             entityAi = entity.GetComponent<EntityAi>();
             entityWondering = entity.GetComponent<EntityWondering>();
         }
+
+        whiteLady = Object.FindFirstObjectByType<WhiteLady>();
     }
 
     void Update()
     {
         if (inputLocked) return;
 
-        // Keep trying to find the entity if it spawned late
-        if (entity == null)
+        if (entity == null && whiteLady == null)
         {
             FindEntityReferences();
         }
@@ -49,6 +57,7 @@ public class ClosetHideInteract : MonoBehaviour
         // --- EXIT CLOSET ---
         if (Keyboard.current.gKey.wasPressedThisFrame && currentCloset != null && currentCloset.InsideCloset)
         {
+            isTransitioningToHide = false; // Player is coming out!
             CanInteract = true;
             StartCoroutine(InputDelay());
             StartCoroutine(currentCloset.GoOutsideCloset_CO());
@@ -69,28 +78,38 @@ public class ClosetHideInteract : MonoBehaviour
 
                 if (closet != null && hit.collider.CompareTag("Closet"))
                 {
-                    // === THE GATEKEEPER LOGIC ===
+                    bool canHide = true;
+
+                    if (entity != null && !entity.canHideFromEnemy)
+                    {
+                        canHide = false;
+                    }
+
+                    if (whiteLady != null)
+                    {
+                        float distanceToWL = Vector3.Distance(transform.position, whiteLady.transform.position);
+
+                        if (whiteLady.CurrentState == WhiteLady.State.Chasing && distanceToWL < safeHideDistance)
+                        {
+                            canHide = false;
+                        }
+                    }
+
+                    if (!canHide)
+                    {
+                        Debug.Log("Enemy is too close. Cannot hide yet.");
+                        return;
+                    }
+
                     if (entity != null)
                     {
-                        // 1. If the enemy's script says we cannot hide, STOP immediately.
-                        if (!entity.canHideFromEnemy)
-                        {
-                            Debug.Log("Enemy is still too close. Cannot hide yet.");
-                            return; // This kicks us out of the interaction!
-                        }
-
-                        // 2. If we passed the distance check, disable the enemy AI chasing
                         if (entityAi != null) entityAi.enabled = false;
                         if (entityWondering != null) entityWondering.enabled = true;
                     }
-                    else
-                    {
-                        Debug.LogWarning("No Enemy found in scene, allowing hide by default.");
-                    }
 
-                    // === PROCEED TO HIDE ===
                     currentCloset = closet;
                     CanInteract = false;
+                    isTransitioningToHide = true; // The AI instantly drops chase here!
                     StartCoroutine(InputDelay());
                     StartCoroutine(currentCloset.GoInsideCloset_CO());
                 }

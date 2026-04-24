@@ -11,22 +11,23 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float sprintMultiplier = 1.3f;
     [SerializeField] private float exhaustedMultiplier = 0.5f;
 
+    [Header("Ideal Standing Settings")]
+    [Tooltip("Right-click this component and select 'Fetch Standing Values' to auto-fill these!")]
+    [SerializeField] private float standHeight = 2f;
+    [SerializeField] private float standCapsuleRadius = 0.5f;
+    [SerializeField] private Vector3 standCenter = new Vector3(0, 0, 0);
+    [SerializeField] private Vector3 standCameraPos = new Vector3(0, 0.8f, 0);
+    [SerializeField] private Vector3 standBodyPos = Vector3.zero;
+
     [Header("Ideal Crouch Settings")]
-    [Tooltip("The total height of the player when crouching.")]
     [SerializeField] private float crouchHeight = 0.5f;
-
-    [Tooltip("Must be half of crouchHeight or less!")]
     [SerializeField] private float crouchCapsuleRadius = 0.25f;
-
-    [Tooltip("Multiplier for movement speed while crouching (e.g., 0.5 is half speed).")]
     [SerializeField] private float crouchSpeedMultiplier = 0.5f;
-
-    [Tooltip("How fast the player transitions between standing and crouching.")]
     [SerializeField] private float crouchTransitionSpeed = 10f;
 
     [Header("Environment Detection")]
     public Transform groundCheck;
-    public float groundDistance = 0.4f;
+    public float groundDistance = 0.45f;
     public LayerMask groundMask;
     public LayerMask ceilingMask;
 
@@ -47,15 +48,7 @@ public class PlayerMovement : MonoBehaviour
     private bool isSprinting;
     public bool isCrouching;
 
-    private float normalHeight;
-    private float normalCapsuleRadius;
-    private Vector3 normalCenter;
-
-    private Vector3 originalBodyPos;
-    private Vector3 originalCameraPos;
-
     private float currentCrouchWeight = 0f;
-
     private PlayerStats playerStats;
 
     void Awake()
@@ -64,28 +57,11 @@ public class PlayerMovement : MonoBehaviour
         col = GetComponent<CapsuleCollider>();
         playerStats = GetComponent<PlayerStats>();
 
-        if (col != null)
-        {
-            normalHeight = col.height;
-            normalCapsuleRadius = col.radius;
-            normalCenter = col.center;
-        }
-
         if (sphereCol != null)
         {
             originalSphereRadius = sphereCol.radius;
             originalSphereCenter = sphereCol.center;
         }
-        else
-        {
-            Debug.LogWarning("Sphere Collider is not assigned in the PlayerMovement script!");
-        }
-
-        if (body != null)
-            originalBodyPos = body.localPosition;
-
-        if (cameraHolder != null)
-            originalCameraPos = cameraHolder.localPosition;
     }
 
     void Update()
@@ -95,11 +71,6 @@ public class PlayerMovement : MonoBehaviour
 
         HandleCrouch();
         HandleStamina();
-
-
-        Vector3 origin = new Vector3(transform.position.x, col.bounds.max.y + 0.01f, transform.position.z);
-        float distance = normalHeight + 0.1f;
-        Debug.DrawRay(origin, Vector3.up * distance, Color.red);
     }
 
     void FixedUpdate()
@@ -110,9 +81,7 @@ public class PlayerMovement : MonoBehaviour
     void OnJump()
     {
         if (!isGrounded) return;
-
-        if (isCrouching && !CanStand())
-            return;
+        if (isCrouching && !CanStand()) return;
 
         rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
     }
@@ -139,20 +108,19 @@ public class PlayerMovement : MonoBehaviour
         }
 
         isCrouching = wantsToCrouch;
-
         float targetWeight = wantsToCrouch ? 1f : 0f;
 
         currentCrouchWeight = Mathf.Lerp(currentCrouchWeight, targetWeight, Time.deltaTime * crouchTransitionSpeed);
 
-        float heightDifference = normalHeight - crouchHeight;
+        float heightDifference = standHeight - crouchHeight;
         float currentDrop = (heightDifference / 2f) * currentCrouchWeight;
 
         if (col != null)
         {
-            col.height = Mathf.Lerp(normalHeight, crouchHeight, currentCrouchWeight);
+            col.height = Mathf.Lerp(standHeight, crouchHeight, currentCrouchWeight);
             float targetRadius = Mathf.Min(crouchCapsuleRadius, crouchHeight / 2f);
-            col.radius = Mathf.Lerp(normalCapsuleRadius, targetRadius, currentCrouchWeight);
-            col.center = new Vector3(normalCenter.x, normalCenter.y - currentDrop, normalCenter.z);
+            col.radius = Mathf.Lerp(standCapsuleRadius, targetRadius, currentCrouchWeight);
+            col.center = new Vector3(standCenter.x, standCenter.y - currentDrop, standCenter.z);
         }
 
         if (sphereCol != null)
@@ -163,23 +131,23 @@ public class PlayerMovement : MonoBehaviour
         }
 
         if (body != null)
-            body.localPosition = originalBodyPos + new Vector3(0, -currentDrop, 0);
+            body.localPosition = standBodyPos + new Vector3(0, -currentDrop, 0);
 
         if (cameraHolder != null)
-            cameraHolder.localPosition = originalCameraPos + new Vector3(0, -currentDrop, 0);
+            cameraHolder.localPosition = standCameraPos + new Vector3(0, -currentDrop, 0);
     }
 
     bool CanStand()
     {
         if (col == null) return true;
 
-        Vector3 centerWorld = transform.TransformPoint(normalCenter);
-        float offset = (normalHeight / 2f) - normalCapsuleRadius;
+        Vector3 centerWorld = transform.TransformPoint(standCenter);
+        float offset = (standHeight / 2f) - standCapsuleRadius;
 
         Vector3 pointBottom = centerWorld - transform.up * offset;
         Vector3 pointTop = centerWorld + transform.up * offset;
 
-        float checkRadius = normalCapsuleRadius * 0.95f;
+        float checkRadius = standCapsuleRadius * 0.95f;
 
         return !Physics.CheckCapsule(pointBottom, pointTop, checkRadius, ceilingMask, QueryTriggerInteraction.Ignore);
     }
@@ -216,10 +184,12 @@ public class PlayerMovement : MonoBehaviour
                 currentSpeed = moveSpeed * sprintMultiplier;
         }
 
-        if (isCrouching)
-            currentSpeed *= crouchSpeedMultiplier;
+        if (isCrouching) currentSpeed *= crouchSpeedMultiplier;
 
-        rb.linearVelocity = new Vector3(direction.x * currentSpeed, rb.linearVelocity.y, direction.z * currentSpeed);
+        if (rb != null)
+        {
+            rb.linearVelocity = new Vector3(direction.x * currentSpeed, rb.linearVelocity.y, direction.z * currentSpeed);
+        }
     }
 
     public bool IsGrounded => isGrounded;
@@ -228,9 +198,27 @@ public class PlayerMovement : MonoBehaviour
     {
         get
         {
+            if (rb == null) return 0f;
             Vector3 v = rb.linearVelocity;
             v.y = 0f;
             return v.magnitude;
         }
+    }
+
+    [ContextMenu("Fetch Standing Values")]
+    private void FetchStandingValues()
+    {
+        CapsuleCollider c = GetComponent<CapsuleCollider>();
+        if (c != null)
+        {
+            standHeight = c.height;
+            standCapsuleRadius = c.radius;
+            standCenter = c.center;
+        }
+
+        if (cameraHolder != null) standCameraPos = cameraHolder.localPosition;
+        if (body != null) standBodyPos = body.localPosition;
+
+        Debug.Log("Standing values locked in! Your SFX and Bobbing should work perfectly now.");
     }
 }

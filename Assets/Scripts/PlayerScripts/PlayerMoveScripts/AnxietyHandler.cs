@@ -8,7 +8,7 @@ public class AnxietyHandler : MonoBehaviour
     [Header("References")]
     [SerializeField] private PlayerStats playerStats;
     [SerializeField] private Camera playerCamera;
-    [SerializeField] private Volume globalVolume; // Reference your Global Volume here
+    [SerializeField] private Volume globalVolume;
 
     [Header("Audio")]
     [SerializeField] private AudioSource heartbeatAudio;
@@ -16,7 +16,8 @@ public class AnxietyHandler : MonoBehaviour
 
     // ─── Anxiety Trigger Settings ───────────────────────────────────────────────
     [Header("Anxiety Object Settings")]
-    [SerializeField] private string anxietyObjectTag = "AnxietyObject";
+    [Tooltip("Select the layer(s) that should trigger anxiety.")]
+    [SerializeField] private LayerMask anxietyLayerMask; // Replaced Tag with LayerMask
     [SerializeField] private float gazeDetectionRange = 20f;
     [SerializeField] private float proximityRadius = 5f;
     [SerializeField] private float gazeAnxietyRate = 5f;
@@ -58,7 +59,6 @@ public class AnxietyHandler : MonoBehaviour
         if (playerCamera == null)
             playerCamera = Camera.main;
 
-        // Try to find the Vignette profile in the volume
         if (globalVolume != null && globalVolume.profile.TryGet(out Vignette v))
         {
             _vignette = v;
@@ -97,16 +97,14 @@ public class AnxietyHandler : MonoBehaviour
 
         if (Physics.Raycast(ray, out RaycastHit hit, gazeDetectionRange))
         {
-            if (hit.collider.CompareTag(anxietyObjectTag))
+            // Bitwise check: Is the object's layer included in our anxietyLayerMask?
+            if (((1 << hit.collider.gameObject.layer) & anxietyLayerMask) != 0)
             {
-                // Check if the entity is named "WhiteLady"
                 if (hit.collider.name == "WhiteLady")
                 {
-                    // Access the WhiteLady script to check her current state
                     WhiteLady lady = hit.collider.GetComponent<WhiteLady>();
                     if (lady != null && lady.CurrentState == WhiteLady.State.Weeping)
                     {
-                        // Ignore anxiety if she is weeping
                         return;
                     }
                 }
@@ -119,26 +117,25 @@ public class AnxietyHandler : MonoBehaviour
     private void CheckProximity()
     {
         isNearAnxietyObject = false;
-        Collider[] nearby = Physics.OverlapSphere(transform.position, proximityRadius);
+
+        // Highly optimized: We pass the anxietyLayerMask directly into the Sphere check. 
+        // Unity now completely ignores walls, floors, and other unselected layers.
+        Collider[] nearby = Physics.OverlapSphere(transform.position, proximityRadius, anxietyLayerMask);
 
         foreach (Collider col in nearby)
         {
-            if (col.CompareTag(anxietyObjectTag))
+            if (col.name == "WhiteLady")
             {
-                // Check if the nearby entity is named "WhiteLady"
-                if (col.name == "WhiteLady")
+                WhiteLady lady = col.GetComponent<WhiteLady>();
+                if (lady != null && lady.CurrentState == WhiteLady.State.Weeping)
                 {
-                    WhiteLady lady = col.GetComponent<WhiteLady>();
-                    if (lady != null && lady.CurrentState == WhiteLady.State.Weeping)
-                    {
-                        // Skip this object and check if another scary object is nearby
-                        continue;
-                    }
+                    continue; // Skip the weeping lady and check the rest of the array
                 }
-
-                isNearAnxietyObject = true;
-                break;
             }
+
+            // If we find any valid anxiety object, flag it and stop checking
+            isNearAnxietyObject = true;
+            break;
         }
     }
 
@@ -194,7 +191,6 @@ public class AnxietyHandler : MonoBehaviour
             targetIntensity = Mathf.Lerp(0f, vignetteMaxIntensity, t);
         }
 
-        // Apply to Post Processing override
         _vignette.intensity.value = Mathf.MoveTowards(_vignette.intensity.value, targetIntensity, Time.deltaTime);
     }
 

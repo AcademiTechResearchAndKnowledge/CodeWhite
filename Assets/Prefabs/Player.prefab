@@ -322,6 +322,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ClosetHideInteract
   CanInteract: 1
+  safeHideDistance: 12
   inputDelay: 1
 --- !u!114 &2610894288452618994
 MonoBehaviour:
@@ -414,7 +415,7 @@ Transform:
   m_GameObject: {fileID: 4143065003209578940}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -1, z: 0}
+  m_LocalPosition: {x: 0, y: 0.23, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -930,6 +931,11 @@ MonoBehaviour:
   jumpForce: 3
   sprintMultiplier: 1.5
   exhaustedMultiplier: 0.5
+  standHeight: 1.977471
+  standCapsuleRadius: 0.4984953
+  standCenter: {x: -0.058055073, y: 0.0018479228, z: 0.015023142}
+  standCameraPos: {x: 0, y: 0, z: 0}
+  standBodyPos: {x: 0, y: 0, z: 0}
   crouchHeight: 0.3
   crouchCapsuleRadius: 0.15
   crouchSpeedMultiplier: 0.5
@@ -1096,10 +1102,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AnxietyHandler
   playerStats: {fileID: 8437259340677395842}
   playerCamera: {fileID: 2373784669673648852}
-  globalVolume: {fileID: 0}
+  globalVolume: {fileID: 2610894288452618994}
   heartbeatAudio: {fileID: 8057037278168558304}
   tinnitusAudio: {fileID: 3948102778499383628}
-  anxietyObjectTag: AnxietyObject
+  anxietyLayerMask:
+    serializedVersion: 2
+    m_Bits: 2048
   gazeDetectionRange: 20
   proximityRadius: 5
   gazeAnxietyRate: 20
