@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class IdleOrClosetEnemySpawner : MonoBehaviour
 {
@@ -38,7 +39,6 @@ public class IdleOrClosetEnemySpawner : MonoBehaviour
 
     private void Update()
     {
-        // If the stalker is currently in the scene, do not run the timers
         if (activeStalker != null)
             return;
 
@@ -99,12 +99,12 @@ public class IdleOrClosetEnemySpawner : MonoBehaviour
             return;
         }
 
-        BoxCollider chosenArea = GetRandomSpawnArea();
+        BoxCollider chosenArea = GetBestSpawnArea();
+
         if (chosenArea == null) return;
 
         Vector3 spawnPos = GetRandomPointInBox(chosenArea);
 
-        // Store the reference so the spawner knows the stalker is currently active
         activeStalker = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
 
         StalkerFollowScript stalkerScript = activeStalker.GetComponent<StalkerFollowScript>();
@@ -131,11 +131,36 @@ public class IdleOrClosetEnemySpawner : MonoBehaviour
         Debug.Log($"Stalker spawned. Reason: {(isClosetSpawn ? "Closet" : "Idle")}");
     }
 
-    private BoxCollider GetRandomSpawnArea()
+    private BoxCollider GetBestSpawnArea()
     {
-        BoxCollider[] validAreas = System.Array.FindAll(spawnAreas, area => area != null);
-        if (validAreas.Length == 0) return null;
-        return validAreas[Random.Range(0, validAreas.Length)];
+        List<BoxCollider> validAreas = new List<BoxCollider>();
+        foreach (var area in spawnAreas)
+        {
+            if (area != null)
+            {
+                validAreas.Add(area);
+            }
+        }
+
+        if (validAreas.Count == 0)
+            return null;
+
+        validAreas.Sort((a, b) =>
+        {
+            float distA = Vector3.Distance(playerRefs.transform.position, a.bounds.center);
+            float distB = Vector3.Distance(playerRefs.transform.position, b.bounds.center);
+            return distA.CompareTo(distB);
+        });
+
+        foreach (var area in validAreas)
+        {
+            if (!area.bounds.Contains(playerRefs.transform.position))
+            {
+                return area;
+            }
+        }
+
+        return validAreas[validAreas.Count - 1];
     }
 
     private Vector3 GetRandomPointInBox(BoxCollider box)

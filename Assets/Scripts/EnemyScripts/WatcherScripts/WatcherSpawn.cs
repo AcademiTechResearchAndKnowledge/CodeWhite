@@ -1,7 +1,11 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class WatcherSpawn : MonoBehaviour
 {
+    [Header("Player Reference")]
+    [SerializeField] private PlayerReferences playerRef;
+
     [Header("Enemy")]
     [SerializeField] private GameObject enemyPrefab;
 
@@ -18,6 +22,14 @@ public class WatcherSpawn : MonoBehaviour
 
     private float timer;
     private bool hasSpawned;
+
+    private void Start()
+    {
+        if (playerRef == null)
+        {
+            playerRef = Object.FindFirstObjectByType<PlayerReferences>();
+        }
+    }
 
     private void Update()
     {
@@ -51,30 +63,56 @@ public class WatcherSpawn : MonoBehaviour
             return;
         }
 
-        BoxCollider validArea = GetRandomValidSpawnArea();
+        if (playerRef == null)
+        {
+            Debug.LogWarning("TimedEnemySpawner: Player Reference is missing. Cannot calculate closest spawn.");
+            return;
+        }
 
-        if (validArea == null)
+        BoxCollider bestArea = GetBestSpawnArea();
+
+        if (bestArea == null)
         {
             Debug.LogWarning("TimedEnemySpawner: No valid spawn area found on the correct layer.");
             return;
         }
 
-        Vector3 spawnPos = GetRandomPointInBox(validArea);
+        Vector3 spawnPos = GetRandomPointInBox(bestArea);
 
         Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
         Debug.Log("Enemy spawned.");
     }
 
-    private BoxCollider GetRandomValidSpawnArea()
+    private BoxCollider GetBestSpawnArea()
     {
-        BoxCollider[] validAreas = System.Array.FindAll(spawnAreas, area =>
-            area != null && ((enemySpawnMask.value & (1 << area.gameObject.layer)) != 0)
-        );
+        List<BoxCollider> validAreas = new List<BoxCollider>();
+        foreach (var area in spawnAreas)
+        {
+            if (area != null && ((enemySpawnMask.value & (1 << area.gameObject.layer)) != 0))
+            {
+                validAreas.Add(area);
+            }
+        }
 
-        if (validAreas.Length == 0)
+        if (validAreas.Count == 0)
             return null;
 
-        return validAreas[Random.Range(0, validAreas.Length)];
+        validAreas.Sort((a, b) =>
+        {
+            float distA = Vector3.Distance(playerRef.transform.position, a.bounds.center);
+            float distB = Vector3.Distance(playerRef.transform.position, b.bounds.center);
+            return distA.CompareTo(distB);
+        });
+
+        foreach (var area in validAreas)
+        {
+            if (!area.bounds.Contains(playerRef.transform.position))
+            {
+                return area;
+            }
+        }
+
+        return validAreas[validAreas.Count - 1];
     }
 
     private Vector3 GetRandomPointInBox(BoxCollider box)

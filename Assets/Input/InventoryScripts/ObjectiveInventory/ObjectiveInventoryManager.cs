@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem; // Added for the new input system
 
 public class ObjectiveInventoryManager : MonoBehaviour
 {
@@ -31,6 +32,15 @@ public class ObjectiveInventoryManager : MonoBehaviour
     private void Start()
     {
         RefreshUI();
+    }
+
+    // --- NEW: Listen for Input to use the item ---
+    private void Update()
+    {
+        if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame)
+        {
+            UseSelectedItem();
+        }
     }
 
     public bool AddItem(ObjectiveItemData item, int amount)
@@ -66,7 +76,7 @@ public class ObjectiveInventoryManager : MonoBehaviour
         }
         else // Or find a new empty slot
         {
-            bool foundEmptySlot = false; // <-- WE ADDED THIS TRACKER
+            bool foundEmptySlot = false;
 
             for (int i = 0; i < slots.Count; i++)
             {
@@ -74,12 +84,12 @@ public class ObjectiveInventoryManager : MonoBehaviour
                 {
                     slots[i].item = item;
                     slots[i].amount = amountToAdd;
-                    foundEmptySlot = true; // <-- MARK AS FOUND
+                    foundEmptySlot = true;
                     break;
                 }
             }
 
-            // THE FIX: If it looped through all slots and found nothing, fail the pickup.
+            // If it looped through all slots and found nothing, fail the pickup.
             if (!foundEmptySlot)
             {
                 Debug.Log("Inventory is completely full! No empty slots left.");
@@ -125,20 +135,56 @@ public class ObjectiveInventoryManager : MonoBehaviour
 
         if (slot == null || slot.IsEmpty()) return;
 
-        if (slot.item.worldPrefab != null)
+        Debug.Log("Cannot drop objective item: " + slot.item.itemName);
+    }
+
+    // --- NEW: Use the currently selected item ---
+    public void UseSelectedItem()
+    {
+        ObjectiveInventorySlot slot = GetSelectedSlot();
+
+        if (slot == null || slot.IsEmpty())
         {
-            Instantiate(slot.item.worldPrefab, dropPosition, Quaternion.Euler(90f, 0f, 0f));
-            Debug.Log("Dropped Objective: " + slot.item.itemName);
+            return;
         }
 
-        slot.amount--;
+        ObjectiveItemData itemToUse = slot.item;
+        Debug.Log("Using item: " + itemToUse.itemName);
 
-        if (slot.amount <= 0)
+        // --- CHECK FOR PORTAL SPAWN ---
+        if (itemToUse.spawnsPortal)
         {
-            slot.Clear();
+            RandomPortalSpawner spawner = FindFirstObjectByType<RandomPortalSpawner>();
+
+            if (spawner != null)
+            {
+                spawner.SpawnPortalRandom();
+                Debug.Log("Portal spawned from objective inventory!");
+            }
         }
 
-        RefreshUI();
+        // --- CONSUME ITEM ---
+        if (itemToUse.consumable)
+        {
+            slot.amount--;
+
+            if (slot.amount <= 0)
+            {
+                slot.Clear();
+                DeselectAll();
+            }
+
+            RefreshUI();
+        }
+
+        // ---------------------------------------------------------
+        // THE FIX: Tell the TutorialManager that the item was used!
+        // ---------------------------------------------------------
+        TutorialManager tutorial = FindFirstObjectByType<TutorialManager>();
+        if (tutorial != null)
+        {
+            tutorial.ItemUsed();
+        }
     }
 
     // Allows quest managers to delete specific items

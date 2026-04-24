@@ -4,11 +4,17 @@ using UnityEngine;
 public class CandleFlicker : MonoBehaviour
 {
     [SerializeField] private Light torchLight;
+
+    [Header("Audio Settings")]
+    [SerializeField] private AudioSource flickerAudio;
+
+    [Header("Flicker Settings")]
     [SerializeField] private float flickerDuration = 2f;
     [SerializeField] private float minFlickerInterval = 0.05f;
     [SerializeField] private float maxFlickerInterval = 0.15f;
 
     private Coroutine flickerRoutine;
+    private bool originalLightState;
 
     private void OnEnable()
     {
@@ -25,6 +31,9 @@ public class CandleFlicker : MonoBehaviour
         if (flickerRoutine != null)
         {
             StopCoroutine(flickerRoutine);
+            torchLight.enabled = originalLightState;
+
+            if (flickerAudio != null) flickerAudio.Stop();
         }
 
         if (torchLight.enabled)
@@ -36,7 +45,13 @@ public class CandleFlicker : MonoBehaviour
     private IEnumerator FlickerRoutine()
     {
         float timer = 0f;
-        bool originalState = torchLight.enabled;
+        originalLightState = torchLight.enabled;
+
+        if (flickerAudio != null)
+        {
+            flickerAudio.loop = true;
+            flickerAudio.Play();
+        }
 
         while (timer < flickerDuration)
         {
@@ -48,7 +63,13 @@ public class CandleFlicker : MonoBehaviour
             yield return new WaitForSeconds(waitTime);
         }
 
-        torchLight.enabled = originalState;
+        torchLight.enabled = originalLightState;
+
+        if (flickerAudio != null)
+        {
+            flickerAudio.Stop();
+        }
+
         flickerRoutine = null;
     }
 }

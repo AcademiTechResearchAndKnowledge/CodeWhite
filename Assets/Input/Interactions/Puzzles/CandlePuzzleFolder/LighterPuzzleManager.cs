@@ -19,9 +19,13 @@ public class LighterPuzzleManager : MonoBehaviour
     public enum LighterState { Hidden, Spawned, Held }
     public LighterState currentLighterState = LighterState.Hidden;
 
-    // We now track TWO lists. One for all drawers, one for the active unsearched pool
     private List<PuzzleDrawer> allDrawers = new List<PuzzleDrawer>();
     private List<PuzzleDrawer> unsearchedDrawers = new List<PuzzleDrawer>();
+
+    private GameObject currentActiveEntity;
+
+    // NEW: A Stack to remember exactly which physical candles are currently lit
+    private Stack<CandleInteract> litCandlesStack = new Stack<CandleInteract>();
 
     void Awake()
     {
@@ -70,24 +74,49 @@ public class LighterPuzzleManager : MonoBehaviour
         currentLighterState = LighterState.Held;
     }
 
-    public void CandleLit()
+    // UPDATED: Now accepts the specific candle that was just interacted with
+    public void CandleLit(CandleInteract newlyLitCandle)
     {
         candlesLit++;
+
+        // Add this specific candle to the top of our tracking stack
+        litCandlesStack.Push(newlyLitCandle);
+
         Debug.Log("Candles lit: " + candlesLit);
 
         currentLighterState = LighterState.Hidden;
-
-        // THE FIX: Reset all drawers so the player can search them again for the next lighter!
         ResetAllDrawers();
-
-        if (candlesLit == 1 && entity_1 != null && entity_1_spawn != null)
-        {
-            Instantiate(entity_1, entity_1_spawn.position, entity_1_spawn.rotation);
-        }
 
         if (candlesLit >= candlesToFinish)
         {
             PuzzleFinished();
+        }
+        else
+        {
+            if (currentActiveEntity == null && entity_1 != null && entity_1_spawn != null)
+            {
+                currentActiveEntity = Instantiate(entity_1, entity_1_spawn.position, entity_1_spawn.rotation);
+                Debug.Log("The entity has spawned!");
+            }
+        }
+    }
+
+    public void BlowOutCandle()
+    {
+        if (candlesLit > 0)
+        {
+            candlesLit--;
+            Debug.Log("Entity caught the player! A candle was blown out. Candles lit: " + candlesLit);
+
+            // THE FIX: Grab the most recently lit candle off the stack and turn off its flame
+            if (litCandlesStack.Count > 0)
+            {
+                CandleInteract candleToBlowOut = litCandlesStack.Pop();
+                candleToBlowOut.Extinguish();
+            }
+
+            currentLighterState = LighterState.Hidden;
+            ResetAllDrawers();
         }
     }
 
@@ -96,7 +125,7 @@ public class LighterPuzzleManager : MonoBehaviour
         unsearchedDrawers.Clear();
         foreach (PuzzleDrawer drawer in allDrawers)
         {
-            drawer.ResetSearchState(); // We will add this method to the drawer script next
+            drawer.ResetSearchState();
             unsearchedDrawers.Add(drawer);
         }
         Debug.Log("All drawers reset! The pool is full again.");

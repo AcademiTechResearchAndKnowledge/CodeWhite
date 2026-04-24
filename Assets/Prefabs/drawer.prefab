@@ -72,15 +72,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 247148185d40e6f4a85192d03f5e866f, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -71.586494
+      value: -7.32
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 247148185d40e6f4a85192d03f5e866f, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -3.9899998
+      value: 0.49999994
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 247148185d40e6f4a85192d03f5e866f, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 4.835975
+      value: -14.660091
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 247148185d40e6f4a85192d03f5e866f, type: 3}
       propertyPath: m_LocalRotation.w
@@ -291,10 +291,15 @@ MonoBehaviour:
   drawerAnimator: {fileID: 1576030860973888322}
   animationStepDelay: 0.5
   itemSpawnPoint: {fileID: 8761489269752562270}
+  entityPrefab: {fileID: 1703955676773548085, guid: 842e749b9e3322644bac3fcc69df3913, type: 3}
+  chanceToSpawnEntity: 0.05
   possibleItems:
-  - {fileID: 5382085084506835340, guid: 861d91c50561ea747997cdd2a1ffc746, type: 3}
-  lootSpawnDelay: 0.2
-  chanceToSpawnNothing: 0.3
+  - {fileID: 1216001009907763359, guid: bd7ff953ee8c4844ea3d7095657a8eeb, type: 3}
+  - {fileID: 5382990296369616802, guid: 1b92938f4af76a24ea3bb970e28dbf1b, type: 3}
+  - {fileID: 4561899675154089424, guid: dac7f2d2a3c722541ae027e564dba2e5, type: 3}
+  - {fileID: 3886852057512288418, guid: 9dcd880e32902be45a41874a40818b9f, type: 3}
+  lootSpawnDelay: 0.1
+  chanceToSpawnNothing: 0.7
   spawnOnlyOnce: 1
 --- !u!114 &3236057478362151411
 MonoBehaviour:
@@ -361,10 +366,15 @@ MonoBehaviour:
   drawerAnimator: {fileID: 1576030860973888322}
   animationStepDelay: 0.5
   itemSpawnPoint: {fileID: 4052516040328991340}
+  entityPrefab: {fileID: 1703955676773548085, guid: 842e749b9e3322644bac3fcc69df3913, type: 3}
+  chanceToSpawnEntity: 0.05
   possibleItems:
-  - {fileID: 5382085084506835340, guid: 861d91c50561ea747997cdd2a1ffc746, type: 3}
-  lootSpawnDelay: 0.2
-  chanceToSpawnNothing: 0.3
+  - {fileID: 1216001009907763359, guid: bd7ff953ee8c4844ea3d7095657a8eeb, type: 3}
+  - {fileID: 5382990296369616802, guid: 1b92938f4af76a24ea3bb970e28dbf1b, type: 3}
+  - {fileID: 4561899675154089424, guid: dac7f2d2a3c722541ae027e564dba2e5, type: 3}
+  - {fileID: 3886852057512288418, guid: 9dcd880e32902be45a41874a40818b9f, type: 3}
+  lootSpawnDelay: 0.1
+  chanceToSpawnNothing: 0.7
   spawnOnlyOnce: 1
 --- !u!114 &1758442766726910004
 MonoBehaviour:

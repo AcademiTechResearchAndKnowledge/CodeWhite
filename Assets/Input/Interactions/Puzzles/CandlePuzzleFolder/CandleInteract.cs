@@ -27,6 +27,17 @@ public class CandleInteract : Interactable
         flame.SetActive(true);
         onCandleLit?.Invoke();
 
-        LighterPuzzleManager.instance.CandleLit();
+        // THE FIX: We now pass 'this' specific candle script to the manager so it can keep track of it
+        LighterPuzzleManager.instance.CandleLit(this);
+    }
+
+    // --- NEW: Method to turn the light and flame off ---
+    public void Extinguish()
+    {
+        if (!isLit) return;
+
+        isLit = false;
+        flame.SetActive(false);
+        Debug.Log("TRACKER: A candle was extinguished!");
     }
 }

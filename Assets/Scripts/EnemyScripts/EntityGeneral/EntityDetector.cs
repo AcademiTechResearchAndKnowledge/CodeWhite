@@ -8,21 +8,24 @@ public class EntityDetector : MonoBehaviour
     public float loseRange = 15f;
     public float crouchSafeDistance = 3f;
 
+    [Tooltip("How far away from the player's last known position the entity should stop.")]
+    public float investigateStopDistance = 5f;
+
     [Header("State")]
     public bool isLookingPlayer;
     public bool canHideFromEnemy;
     public float distanceToPlayer;
 
-    // Auto-Assigned References
     private Transform playerTransform;
     private PlayerMovement playerMovement;
     private ClosetHideInteract playerHideInteract;
-    private EntityAi entityAi;
+    private TableHideState playerTableState;
+    private EntityAiOlder entityAi;
     private EntityWondering entityWondering;
 
     void Awake()
     {
-        entityAi = GetComponent<EntityAi>();
+        entityAi = GetComponent<EntityAiOlder>();
         entityWondering = GetComponent<EntityWondering>();
     }
 
@@ -39,8 +42,8 @@ public class EntityDetector : MonoBehaviour
         {
             playerTransform = playerObj.transform;
             playerHideInteract = playerObj.GetComponent<ClosetHideInteract>();
+            playerTableState = playerObj.GetComponent<TableHideState>();
 
-            // Utilize your existing PlayerReferences script!
             PlayerReferences refs = playerObj.GetComponent<PlayerReferences>();
             if (refs != null)
             {
@@ -62,14 +65,20 @@ public class EntityDetector : MonoBehaviour
         // Player can hide only when farther than 12
         canHideFromEnemy = distanceToPlayer > hideAllowedRange;
 
-        // Automatically check if the player is in ANY closet via their script
-        if (playerHideInteract != null && playerHideInteract.IsHiding)
+        bool playerIsCrouching = playerMovement != null && playerMovement.isCrouching;
+
+        // --- Determine if the player is currently hidden ---
+        bool isHidingInCloset = playerHideInteract != null && playerHideInteract.IsHiding;
+        bool isHidingUnderTable = playerTableState != null && playerTableState.isUnderTable && playerIsCrouching;
+
+        // Automatically check if the player is in ANY closet OR crouching under a table
+        if (isHidingInCloset || isHidingUnderTable)
         {
-            // --- NEW: Check if we were JUST chasing the player before they hid ---
+            // Check if we were JUST chasing the player before they hid
             if (isLookingPlayer)
             {
-                // Tell the wondering script to go to their last known position
-                entityWondering.InvestigateLocation(playerTransform.position);
+                // Tell the wondering script to go to the offset position instead of the exact position
+                entityWondering.InvestigateLocation(GetOffsetInvestigatePosition());
             }
 
             isLookingPlayer = false;
@@ -77,8 +86,6 @@ public class EntityDetector : MonoBehaviour
             entityWondering.enabled = true;
             return;
         }
-
-        bool playerIsCrouching = playerMovement != null && playerMovement.isCrouching;
 
         // Start chase if within detect range
         if (distanceToPlayer <= detectRange)
@@ -105,15 +112,24 @@ public class EntityDetector : MonoBehaviour
         // Stop chase if beyond lose range
         if (distanceToPlayer > loseRange)
         {
-            // --- NEW: Also investigate if the player just runs out of distance naturally! ---
             if (isLookingPlayer)
             {
-                entityWondering.InvestigateLocation(playerTransform.position);
+                // Tell the wondering script to go to the offset position
+                entityWondering.InvestigateLocation(GetOffsetInvestigatePosition());
             }
 
             isLookingPlayer = false;
             entityAi.enabled = false;
             entityWondering.enabled = true;
         }
+    }
+
+    private Vector3 GetOffsetInvestigatePosition()
+    {
+        Vector3 directionToPlayer = (playerTransform.position - transform.position).normalized;
+
+        float travelDistance = Mathf.Max(0f, distanceToPlayer - investigateStopDistance);
+
+        return transform.position + (directionToPlayer * travelDistance);
     }
 }

@@ -1,18 +1,21 @@
 using UnityEngine;
-using UnityEngine.Events;
-
-[System.Serializable]
-public class ColliderEvent : UnityEvent<Collider> {}
 
 public class TriggerRelay : MonoBehaviour
 {
-    [SerializeField]public ColliderEvent onTriggerEnter;
+    [SerializeField] private PlayerActionDetector detector;
+    public int area_CODE;
 
-    void OnTriggerEnter(Collider other)
+    private void OnTriggerEnter(Collider other)
     {
-       
         if (!other.CompareTag("Player")) return;
-        
-        onTriggerEnter.Invoke(other);
+
+        detector.OnTriggered(other, area_CODE);
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (!other.CompareTag("Player")) return;
+
+        detector.OnExitArea(area_CODE);
     }
 }

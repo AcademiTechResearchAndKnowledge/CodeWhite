@@ -147,7 +147,7 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.49879074
+  m_Radius: 0.29
   m_Height: 2.03
   m_Direction: 1
   m_Center: {x: 0.0028419495, y: 0.0018478632, z: 0.015023172}
@@ -212,8 +212,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: abc6785d1e11ce84b8b32f3540ca5a7c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EntityWondering
+  currentState: 0
   wanderRadius: 5
   wanderTimer: 3
+  localSearchDuration: 10
+  relocateDistance: 20
 --- !u!114 &4493095120266582555
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -230,6 +233,7 @@ MonoBehaviour:
   hideAllowedRange: 12
   loseRange: 15
   crouchSafeDistance: 3
+  investigateStopDistance: 3
   isLookingPlayer: 0
   canHideFromEnemy: 0
   distanceToPlayer: 0

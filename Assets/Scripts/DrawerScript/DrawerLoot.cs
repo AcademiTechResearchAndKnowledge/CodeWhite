@@ -19,6 +19,13 @@ public class DrawerLoot : Interactable
     [Header("Spawn Point")]
     public Transform itemSpawnPoint;
 
+    [Header("Jumpscare Entity Settings")]
+    [Tooltip("Drag the Entity Prefab here.")]
+    public GameObject entityPrefab;
+    [Range(0f, 1f)]
+    [Tooltip("Independent chance to spawn the entity (0.1 = 10% chance)")]
+    public float chanceToSpawnEntity = 0.1f;
+
     [Header("Possible Loot")]
     public GameObject[] possibleItems;
 
@@ -32,15 +39,19 @@ public class DrawerLoot : Interactable
     public bool spawnOnlyOnce = true;
 
     private bool isOpen = false;
-    private bool isBusy = false;
     private bool hasSpawned = false;
     private GameObject currentSpawnedItem;
+    private Coroutine activeCoroutine;
+
+    private float lastInteractTime = 0f;
+    private float interactCooldown = 0.25f;
 
     public override void Interact()
     {
-        if (isBusy)
+        if (Time.time - lastInteractTime < interactCooldown)
             return;
 
+        lastInteractTime = Time.time;
         base.Interact();
 
         if (drawerAnimator == null)
@@ -49,19 +60,24 @@ public class DrawerLoot : Interactable
             return;
         }
 
+        if (activeCoroutine != null)
+        {
+            StopCoroutine(activeCoroutine);
+        }
+
         if (!isOpen)
         {
-            StartCoroutine(OpenDrawerRoutine());
+            activeCoroutine = StartCoroutine(OpenDrawerRoutine());
         }
         else
         {
-            StartCoroutine(CloseDrawerRoutine());
+            activeCoroutine = StartCoroutine(CloseDrawerRoutine());
         }
     }
 
     IEnumerator OpenDrawerRoutine()
     {
-        isBusy = true;
+        isOpen = true;
 
         if (drawerType == DrawerType.TopDrawer)
         {
@@ -70,11 +86,13 @@ public class DrawerLoot : Interactable
             if (!spawnOnlyOnce || !hasSpawned)
             {
                 yield return new WaitForSeconds(lootSpawnDelay);
-                SpawnRandomItem();
+                SpawnContent();
                 hasSpawned = true;
             }
 
-            yield return new WaitForSeconds(animationStepDelay - lootSpawnDelay);
+            float waitTime = Mathf.Max(0, animationStepDelay - lootSpawnDelay);
+            yield return new WaitForSeconds(waitTime);
+
             drawerAnimator.SetInteger("C", 2);
         }
         else
@@ -84,21 +102,22 @@ public class DrawerLoot : Interactable
             if (!spawnOnlyOnce || !hasSpawned)
             {
                 yield return new WaitForSeconds(lootSpawnDelay);
-                SpawnRandomItem();
+                SpawnContent();
                 hasSpawned = true;
             }
 
-            yield return new WaitForSeconds(animationStepDelay - lootSpawnDelay);
+            float waitTime = Mathf.Max(0, animationStepDelay - lootSpawnDelay);
+            yield return new WaitForSeconds(waitTime);
+
             drawerAnimator.SetInteger("C", 6);
         }
 
-        isOpen = true;
-        isBusy = false;
+        activeCoroutine = null;
     }
 
     IEnumerator CloseDrawerRoutine()
     {
-        isBusy = true;
+        isOpen = false;
 
         if (drawerType == DrawerType.TopDrawer)
         {
@@ -113,35 +132,30 @@ public class DrawerLoot : Interactable
             drawerAnimator.SetInteger("C", 8);
         }
 
-        isOpen = false;
-        isBusy = false;
+        activeCoroutine = null;
     }
 
-    void SpawnRandomItem()
+    void SpawnContent()
     {
-        if (itemSpawnPoint == null)
+        if (itemSpawnPoint == null) return;
+
+        if (entityPrefab != null && Random.value < chanceToSpawnEntity)
         {
-            Debug.LogWarning("No itemSpawnPoint assigned on " + gameObject.name);
+            InstantiateAndSetupObject(entityPrefab);
             return;
         }
 
-        if (possibleItems == null || possibleItems.Length == 0)
-        {
-            Debug.LogWarning("No possibleItems assigned on " + gameObject.name);
-            return;
-        }
+        if (Random.value < chanceToSpawnNothing) return;
 
-        if (Random.value < chanceToSpawnNothing)
-        {
-            Debug.Log(gameObject.name + " spawned nothing.");
-            return;
-        }
+        if (possibleItems == null || possibleItems.Length == 0) return;
 
         int randomIndex = Random.Range(0, possibleItems.Length);
-        GameObject chosenItem = possibleItems[randomIndex];
+        InstantiateAndSetupObject(possibleItems[randomIndex]);
+    }
 
-        currentSpawnedItem = Instantiate(chosenItem, itemSpawnPoint.position, itemSpawnPoint.rotation);
-
+    void InstantiateAndSetupObject(GameObject prefabToSpawn)
+    {
+        currentSpawnedItem = Instantiate(prefabToSpawn, itemSpawnPoint.position, itemSpawnPoint.rotation);
         currentSpawnedItem.transform.SetParent(itemSpawnPoint, true);
 
         Rigidbody rb = currentSpawnedItem.GetComponent<Rigidbody>();
@@ -160,7 +174,5 @@ public class DrawerLoot : Interactable
         {
             Physics.IgnoreCollision(itemCollider, drawerCollider, true);
         }
-
-        Debug.Log(gameObject.name + " spawned " + chosenItem.name);
     }
 }

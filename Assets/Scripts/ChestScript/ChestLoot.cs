@@ -10,6 +10,13 @@ public class ChestLoot : Interactable
     [Header("Spawn Point")]
     public Transform itemSpawnPoint;
 
+    [Header("Jumpscare Entity Settings")]
+    [Tooltip("Drag the Entity Prefab here.")]
+    public GameObject entityPrefab;
+    [Range(0f, 1f)]
+    [Tooltip("Independent chance to spawn the entity (0.1 = 10% chance)")]
+    public float chanceToSpawnEntity = 0.1f;
+
     [Header("Possible Loot")]
     public GameObject[] possibleItems;
 
@@ -32,7 +39,6 @@ public class ChestLoot : Interactable
         if (isBusy)
             return;
 
-        // Call the base Interact method from your Interactable class
         base.Interact();
 
         if (chestAnimator == null)
@@ -55,21 +61,17 @@ public class ChestLoot : Interactable
     {
         isBusy = true;
 
-        // Transition from ChestIdle to ChestOpen
         chestAnimator.SetInteger("C", 1);
 
         if (!spawnOnlyOnce || !hasSpawned)
         {
-            // Wait for the specific moment in the animation to spawn the loot
             yield return new WaitForSeconds(lootSpawnDelay);
-            SpawnRandomItem();
+            SpawnContent();
             hasSpawned = true;
         }
 
-        // Wait for the rest of the open animation to finish
         yield return new WaitForSeconds(animationStepDelay - lootSpawnDelay);
 
-        // Transition to ChestOpen_Idle
         chestAnimator.SetInteger("C", 2);
 
         isOpen = true;
@@ -80,21 +82,17 @@ public class ChestLoot : Interactable
     {
         isBusy = true;
 
-        // Transition from ChestOpen_Idle to ChestClose
         chestAnimator.SetInteger("C", 3);
 
         yield return new WaitForSeconds(animationStepDelay);
 
-        // Transition from ChestClose back to ChestIdle
         chestAnimator.SetInteger("C", 4);
-
-
 
         isOpen = false;
         isBusy = false;
     }
 
-    void SpawnRandomItem()
+    void SpawnContent()
     {
         if (itemSpawnPoint == null)
         {
@@ -102,9 +100,10 @@ public class ChestLoot : Interactable
             return;
         }
 
-        if (possibleItems == null || possibleItems.Length == 0)
+        if (entityPrefab != null && Random.value < chanceToSpawnEntity)
         {
-            Debug.LogWarning("No possibleItems assigned on " + gameObject.name);
+            InstantiateAndSetupObject(entityPrefab);
+            Debug.Log(gameObject.name + " spawned the Entity!");
             return;
         }
 
@@ -114,18 +113,25 @@ public class ChestLoot : Interactable
             return;
         }
 
+        if (possibleItems == null || possibleItems.Length == 0)
+        {
+            Debug.LogWarning("No possibleItems assigned on " + gameObject.name);
+            return;
+        }
+
         int randomIndex = Random.Range(0, possibleItems.Length);
-        GameObject chosenItem = possibleItems[randomIndex];
+        InstantiateAndSetupObject(possibleItems[randomIndex]);
+        Debug.Log(gameObject.name + " spawned " + possibleItems[randomIndex].name);
+    }
 
-        currentSpawnedItem = Instantiate(chosenItem, itemSpawnPoint.position, itemSpawnPoint.rotation);
-
-        // Parent the item to the spawn point so it moves with the chest lid/base if necessary
+    void InstantiateAndSetupObject(GameObject prefabToSpawn)
+    {
+        currentSpawnedItem = Instantiate(prefabToSpawn, itemSpawnPoint.position, itemSpawnPoint.rotation);
         currentSpawnedItem.transform.SetParent(itemSpawnPoint, true);
 
         Rigidbody rb = currentSpawnedItem.GetComponent<Rigidbody>();
         if (rb != null)
         {
-            // Freeze the physics so the item doesn't fly out or clip through the chest
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
             rb.isKinematic = true;
@@ -137,10 +143,7 @@ public class ChestLoot : Interactable
 
         if (itemCollider != null && chestCollider != null)
         {
-            // Prevent the spawned item from colliding with the chest itself
             Physics.IgnoreCollision(itemCollider, chestCollider, true);
         }
-
-        Debug.Log(gameObject.name + " spawned " + chosenItem.name);
     }
 }

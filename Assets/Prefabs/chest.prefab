@@ -174,7 +174,7 @@ PrefabInstance:
     - target: {fileID: 4628347513043353130, guid: caa0bad9ba8540a469efc817a196eac6, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: 6c2fff6bfa88df84c8c39ea06e61d2ec, type: 2}
+      objectReference: {fileID: 2100000, guid: 19ebd89a903c60b4893f3eb466de9b3e, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -351,8 +351,13 @@ MonoBehaviour:
   chestAnimator: {fileID: 6924840829491959206}
   animationStepDelay: 0.5
   itemSpawnPoint: {fileID: 6020684400912733117}
+  entityPrefab: {fileID: 1703955676773548085, guid: 842e749b9e3322644bac3fcc69df3913, type: 3}
+  chanceToSpawnEntity: 0.05
   possibleItems:
-  - {fileID: 5382085084506835340, guid: 861d91c50561ea747997cdd2a1ffc746, type: 3}
+  - {fileID: 5382990296369616802, guid: 1b92938f4af76a24ea3bb970e28dbf1b, type: 3}
+  - {fileID: 1216001009907763359, guid: bd7ff953ee8c4844ea3d7095657a8eeb, type: 3}
+  - {fileID: 4561899675154089424, guid: dac7f2d2a3c722541ae027e564dba2e5, type: 3}
+  - {fileID: 3886852057512288418, guid: 9dcd880e32902be45a41874a40818b9f, type: 3}
   lootSpawnDelay: 0.01
-  chanceToSpawnNothing: 0.4
+  chanceToSpawnNothing: 0.7
   spawnOnlyOnce: 1

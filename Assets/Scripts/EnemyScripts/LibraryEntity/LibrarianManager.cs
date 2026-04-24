@@ -9,7 +9,13 @@ public class LibrarianManager : MonoBehaviour
 
     [Header("Entity Spawning")]
     public GameObject huntingEntityPrefab;
-    public Transform entitySpawnPoint;
+
+    [Tooltip("Drag all your empty spawn point GameObjects into this list.")]
+    public Transform[] entitySpawnPoints;
+
+    [Header("Level Progress")]
+    [SerializeField] private int signedBooksSubmitted = 0;
+    private const int requiredSignedBooks = 10;
 
     public void SubmitBook(LibraryBookType submittedBookType)
     {
@@ -17,7 +23,14 @@ public class LibrarianManager : MonoBehaviour
         {
             case LibraryBookType.Signed:
                 ModifyAnxiety(-5f);
-                Debug.Log("Book Accepted: Librarian is satisfied. Anxiety reduced by 5%.");
+                signedBooksSubmitted++;
+
+                Debug.Log($"Book Accepted: Librarian is satisfied. Anxiety reduced by 5%. ({signedBooksSubmitted}/{requiredSignedBooks} Signed Books)");
+
+                if (signedBooksSubmitted >= requiredSignedBooks)
+                {
+                    SpawnPortal();
+                }
                 break;
 
             case LibraryBookType.Unsigned:
@@ -45,10 +58,27 @@ public class LibrarianManager : MonoBehaviour
 
     private void SpawnHuntingEntity()
     {
-        if (huntingEntityPrefab != null && entitySpawnPoint != null)
+        // Check if we have the prefab AND at least one spawn point in the array
+        if (huntingEntityPrefab != null && entitySpawnPoints != null && entitySpawnPoints.Length > 0)
         {
-            Instantiate(huntingEntityPrefab, entitySpawnPoint.position, entitySpawnPoint.rotation);
-            Debug.Log("[Entity Action] The Hunting Entity has been spawned into the world!");
+            // 1. Pick a random number between 0 and the total number of spawn points
+            int randomIndex = Random.Range(0, entitySpawnPoints.Length);
+
+            // 2. Select the spawn point at that random index
+            Transform selectedSpawnPoint = entitySpawnPoints[randomIndex];
+
+            // 3. Spawn the Corrector at the chosen location
+            Instantiate(huntingEntityPrefab, selectedSpawnPoint.position, selectedSpawnPoint.rotation);
+            Debug.Log($"[Entity Action] The Corrector has spawned at point: {selectedSpawnPoint.name}!");
         }
+        else
+        {
+            Debug.LogWarning("Cannot spawn entity! Please assign the Entity Prefab and at least one Spawn Point in the inspector.");
+        }
+    }
+
+    private void SpawnPortal()
+    {
+        Debug.Log("[Level Complete] 10 Signed Books submitted! The Portal is now spawning...");
     }
 }

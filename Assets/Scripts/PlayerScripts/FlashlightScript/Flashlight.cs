@@ -48,11 +48,6 @@ public class Flashlight : MonoBehaviour
                 onFlashlightOff?.Invoke();
             }
         }
-
-        if (Keyboard.current.uKey.wasPressedThisFrame)
-        {
-            Flicker();
-        }
     }
 
     public void Flicker()
