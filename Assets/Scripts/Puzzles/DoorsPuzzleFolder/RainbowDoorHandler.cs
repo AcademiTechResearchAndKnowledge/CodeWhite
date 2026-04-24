@@ -2,25 +2,35 @@ using UnityEngine;
 
 public class RainbowDoorInteractable : Interactable
 {
-    [Header("References")]
-   // public GameObject eye;  // assign the Eye object behind the door
+    [SerializeField] private GameObject entity_1;
 
-    [Header("Debug/Entity")]
-    public float entityTriggerDistance = 10f; //distance to trigger entity
+    private Transform entity_1_spawn;
+    private bool spawnFound = false;
 
     private bool isOpened = false;
+    private bool entitySpawned = false;
+
+    private GameObject spawnedEntity; 
+
+    private Transform player;
+    private bool playerFound = false;
+
+    void Awake()
+    {
+        CacheSpawnPoint();
+    }
+
+    void Start()
+    {
+        CachePlayer();
+    }
 
     void Update()
     {
-        
-        if (!isOpened && PlayerExists())
-        {
-            float distance = Vector3.Distance(PlayerPosition(), transform.position);
-            if (distance <= entityTriggerDistance)
-            {
-                TriggerEntity();
-            }
-        }
+        if (isOpened) return;
+
+        if (!playerFound)
+            CachePlayer();
     }
 
     public override void Interact()
@@ -31,39 +41,88 @@ public class RainbowDoorInteractable : Interactable
             return;
         }
 
-        if (DoorPuzzleHandler.instance.hasKey)
+        if (DoorPuzzleHandler.instance != null && DoorPuzzleHandler.instance.hasKey)
         {
             Debug.Log("Rainbow door opened!");
             isOpened = true;
-            
-            /*
-            if (eye != null)
+
+   
+            if (spawnedEntity != null)
             {
-                eye.SetActive(true);
-                Debug.Log("The eye appears behind the door...");
+                Destroy(spawnedEntity);
+                spawnedEntity = null;
+                Debug.Log("Entity destroyed because door was opened.");
             }
-            */
         }
         else
         {
             Debug.Log("The rainbow door is locked. You need a key.");
+            TriggerEntity();
         }
     }
 
     void TriggerEntity()
     {
-        Debug.Log("Entity has been triggered and is approaching the player...");
-        // add entity stuff here lmao
+        if (entitySpawned)
+        {
+            Debug.Log("Entity already spawned.");
+            return;
+        }
+
+        if (entity_1 == null)
+        {
+            Debug.LogWarning("Entity prefab is not assigned.");
+            return;
+        }
+
+        if (!spawnFound || entity_1_spawn == null)
+        {
+            Debug.LogWarning("Entity spawn point not found or not assigned.");
+            return;
+        }
+
+        spawnedEntity = Instantiate(entity_1, entity_1_spawn.position, entity_1_spawn.rotation);
+        entitySpawned = true;
+
+        Debug.Log("Entity spawned and is approaching the player...");
     }
 
-    Vector3 PlayerPosition()
+    void CachePlayer()
     {
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
-        return player != null ? player.transform.position : Vector3.zero;
+        GameObject p = GameObject.FindGameObjectWithTag("Player");
+
+        if (p != null)
+        {
+            player = p.transform;
+            playerFound = true;
+        }
+        else
+        {
+            playerFound = false;
+        }
     }
 
-    bool PlayerExists()
+    void CacheSpawnPoint()
     {
-        return GameObject.FindGameObjectWithTag("Player") != null;
+        try
+        {
+            GameObject spawn = GameObject.FindGameObjectWithTag("EntitySpawn");
+
+            if (spawn != null)
+            {
+                entity_1_spawn = spawn.transform;
+                spawnFound = true;
+            }
+            else
+            {
+                spawnFound = false;
+                Debug.LogWarning("No GameObject with tag 'EntitySpawn' found in scene.");
+            }
+        }
+        catch (UnityException e)
+        {
+            spawnFound = false;
+            Debug.LogError("Missing Tag in Unity Tag Manager: 'EntitySpawn'\n" + e.Message);
+        }
     }
 }

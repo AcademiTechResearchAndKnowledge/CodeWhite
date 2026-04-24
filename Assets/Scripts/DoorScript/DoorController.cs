@@ -3,42 +3,49 @@ using System.Collections;
 
 public class DoorController : Interactable
 {
-    [Header("Animation")]
     public Animator doorAnimator;
 
-    [Tooltip("How long to wait before switching to the Idle state after opening/closing.")]
-    public float animationStepDelay = 0.5f;
+    public float openTime = 1f;
+    public float closeTime = 1f;
 
-    private bool isOpen = false;
-    private bool isBusy = false; // Prevents spamming the interaction key
+    // NEW: auto close delay
+    public float autoCloseDelay = 3f;
+
+    private enum DoorState
+    {
+        Closed,
+        Opening,
+        Open,
+        Closing
+    }
+
+    private DoorState state = DoorState.Closed;
+    private bool locked;
+
+
+    private Coroutine autoCloseCoroutine;
 
     // Keeps track of if the White Lady is standing in the doorway
     private int aiInZone = 0;
 
     public override void Interact()
     {
-        // If the door is currently mid-animation, ignore the interaction
-        if (isBusy)
-            return;
+        if (locked || doorAnimator == null) return;
 
-        base.Interact();
+        // cancel auto-close if player interacts
+        CancelAutoClose();
 
-        if (doorAnimator == null)
+        if (state == DoorState.Closed)
         {
-            Debug.LogWarning("No Animator assigned on " + gameObject.name);
-            return;
+            StartCoroutine(OpenRoutine());
         }
-
-        if (!isOpen)
+        else if (state == DoorState.Open)
         {
-            StartCoroutine(OpenDoorRoutine());
-        }
-        else
-        {
-            StartCoroutine(CloseDoorRoutine());
+            StartCoroutine(CloseRoutine());
         }
     }
 
+<<<<<<< Updated upstream
     // „Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ
     //  AI Trigger Detector (Automatic Doors)
     // „Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ
@@ -77,36 +84,106 @@ public class DoorController : Interactable
     // „Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ
 
     IEnumerator OpenDoorRoutine()
+=======
+    private IEnumerator OpenRoutine()
+>>>>>>> Stashed changes
     {
-        isBusy = true;
+        locked = true;
+        state = DoorState.Opening;
 
-        // C=1: Opens Door
-        doorAnimator.SetInteger("C", 1);
+        doorAnimator.Play("Door - Open");
 
-        // Wait for the opening animation to finish
-        yield return new WaitForSeconds(animationStepDelay);
+        yield return new WaitForSeconds(openTime);
 
-        // C=2: Open Door Idle (door stays open)
-        doorAnimator.SetInteger("C", 2);
+        doorAnimator.Play("Door - Open Idle");
 
-        isOpen = true;
-        isBusy = false;
+        state = DoorState.Open;
+        locked = false;
+
+
+        StartAutoClose();
     }
 
-    IEnumerator CloseDoorRoutine()
+    private IEnumerator CloseRoutine()
     {
-        isBusy = true;
+        locked = true;
+        state = DoorState.Closing;
 
-        // C=3: Close Door
-        doorAnimator.SetInteger("C", 3);
+        doorAnimator.Play("Door - Close");
 
-        // Wait for the closing animation to finish
-        yield return new WaitForSeconds(animationStepDelay);
+        yield return new WaitForSeconds(closeTime);
 
-        // C=4: Goes back to idle (door is closed)
-        doorAnimator.SetInteger("C", 4);
+        doorAnimator.Play("Door - Idle");
 
-        isOpen = false;
-        isBusy = false;
+        state = DoorState.Closed;
+        locked = false;
+
+        CancelAutoClose();
     }
+
+    public void ForceCloseFromPortal()
+    {
+        StopAllCoroutines();
+        CancelAutoClose();
+        StartCoroutine(ForceCloseRoutine());
+    }
+
+    private IEnumerator ForceCloseRoutine()
+    {
+        locked = true;
+        state = DoorState.Closing;
+
+        doorAnimator.Play("Door - Close");
+
+        yield return new WaitForSeconds(closeTime);
+
+        doorAnimator.Play("Door - Idle");
+
+        state = DoorState.Closed;
+        locked = false;
+    }
+
+
+
+    private void StartAutoClose()
+    {
+        CancelAutoClose();
+        autoCloseCoroutine = StartCoroutine(AutoCloseRoutine());
+    }
+
+    private void CancelAutoClose()
+    {
+        if (autoCloseCoroutine != null)
+        {
+            StopCoroutine(autoCloseCoroutine);
+            autoCloseCoroutine = null;
+        }
+    }
+
+    private IEnumerator AutoCloseRoutine()
+    {
+        yield return new WaitForSeconds(autoCloseDelay);
+
+        if (state == DoorState.Open && !locked)
+        {
+            StartCoroutine(CloseRoutine());
+        }
+
+        autoCloseCoroutine = null;
+    }
+
+
+    public void AutoClose()
+    {
+        if (state == DoorState.Open && !locked)
+        {
+            StartCoroutine(CloseRoutine());
+        }
+    }
+
+    public void OpenFromPortal()
+{
+    if (state == DoorState.Closed)
+        StartCoroutine(OpenRoutine());
+}
 }
