@@ -7,6 +7,8 @@ public class DoorController : Interactable
 
     public float openTime = 1f;
     public float closeTime = 1f;
+    private bool isOpen = false;
+    private bool isBusy = false;
 
     // NEW: auto close delay
     public float autoCloseDelay = 3f;
@@ -37,7 +39,7 @@ public class DoorController : Interactable
 
         if (state == DoorState.Closed)
         {
-            StartCoroutine(OpenRoutine());
+            StartCoroutine(OpenDoorRoutine());
         }
         else if (state == DoorState.Open)
         {
@@ -45,11 +47,7 @@ public class DoorController : Interactable
         }
     }
 
-<<<<<<< Updated upstream
-    // „Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ
-    //  AI Trigger Detector (Automatic Doors)
-    // „Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ
-
+    
     private void OnTriggerEnter(Collider other)
     {
         // Check if the object stepping into the zone is the White Lady
@@ -74,19 +72,13 @@ public class DoorController : Interactable
             // If she completely left the zone, and the door is open, close it behind her!
             if (aiInZone <= 0 && isOpen && !isBusy)
             {
-                StartCoroutine(CloseDoorRoutine());
+                StartCoroutine(CloseRoutine());
             }
         }
     }
 
-    // „Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ
-    //  Coroutines
-    // „Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ
-
+   
     IEnumerator OpenDoorRoutine()
-=======
-    private IEnumerator OpenRoutine()
->>>>>>> Stashed changes
     {
         locked = true;
         state = DoorState.Opening;
@@ -184,6 +176,6 @@ public class DoorController : Interactable
     public void OpenFromPortal()
 {
     if (state == DoorState.Closed)
-        StartCoroutine(OpenRoutine());
+        StartCoroutine(OpenDoorRoutine());
 }
 }

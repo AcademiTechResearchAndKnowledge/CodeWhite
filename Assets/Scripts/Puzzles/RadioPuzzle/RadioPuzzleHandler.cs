@@ -26,6 +26,10 @@ public class RadioPuzzleHandler : MonoBehaviour
     [SerializeField] private float maxFilmGrain = 1f;
     [SerializeField] private float grainDamping = 2f;
 
+
+    [SerializeField] private float maxVignette = 0.5f;
+    [SerializeField] private float vignetteDamping = 2f;
+
     [SerializeField] private float exitFadeSpeed = 2.5f;
 
     private CinemachineCamera cineCamera;
@@ -33,6 +37,7 @@ public class RadioPuzzleHandler : MonoBehaviour
 
     private Volume postProcessVolume;
     private FilmGrain filmGrain;
+    private Vignette vignette; 
 
     private float targetFrequency;
     private float ominousFrequency;
@@ -56,10 +61,8 @@ public class RadioPuzzleHandler : MonoBehaviour
             HandlePuzzle();
         }
 
-
         HandleFadeOut();
     }
-
 
     void HandlePuzzle()
     {
@@ -89,6 +92,7 @@ public class RadioPuzzleHandler : MonoBehaviour
 
     void ApplyEffects(float dist)
     {
+        // CAMERA SHAKE
         if (noise != null)
         {
             noise.FrequencyGain = dist < 0.5f
@@ -96,14 +100,22 @@ public class RadioPuzzleHandler : MonoBehaviour
                 : Mathf.Lerp(noise.FrequencyGain, 0f, Time.deltaTime * damping);
         }
 
+        // FILM GRAIN
         if (filmGrain != null)
         {
             filmGrain.intensity.value = dist < 0.5f
                 ? Mathf.Lerp(0f, maxFilmGrain, 1f - dist / 0.5f)
                 : Mathf.Lerp(filmGrain.intensity.value, 0f, Time.deltaTime * grainDamping);
         }
-    }
 
+
+        if (vignette != null)
+        {
+            vignette.intensity.value = dist < 0.5f
+                ? Mathf.Lerp(0f, maxVignette, 1f - dist / 0.5f)
+                : Mathf.Lerp(vignette.intensity.value, 0f, Time.deltaTime * vignetteDamping);
+        }
+    }
 
     void HandleFadeOut()
     {
@@ -118,8 +130,9 @@ public class RadioPuzzleHandler : MonoBehaviour
             filmGrain.intensity.value = Mathf.Lerp(filmGrain.intensity.value, 0f, t);
 
 
+        if (vignette != null)
+            vignette.intensity.value = Mathf.Lerp(vignette.intensity.value, 0f, t);
     }
-
 
     public void SubmitFrequency()
     {
@@ -159,10 +172,8 @@ public class RadioPuzzleHandler : MonoBehaviour
             rb.AddForce(dir * ominousPushForce, ForceMode.Impulse);
         }
 
-
         ResetPuzzleImmediate();
     }
-
 
     void ResetPuzzleImmediate()
     {
@@ -189,12 +200,10 @@ public class RadioPuzzleHandler : MonoBehaviour
         Debug.Log($"[RESET INSTANT] T:{targetFrequency:F1} | O:{ominousFrequency:F1}");
     }
 
-
     void UpdateFrequency()
     {
         frequencyText.text = knobValue.frequency.ToString("F1") + " MHz";
     }
-
 
     void GetActiveCinemachineCamera()
     {
@@ -218,6 +227,9 @@ public class RadioPuzzleHandler : MonoBehaviour
         postProcessVolume = cam.GetComponent<Volume>();
 
         if (postProcessVolume != null)
+        {
             postProcessVolume.profile.TryGet(out filmGrain);
+            postProcessVolume.profile.TryGet(out vignette); // ✅ GET VIGNETTE
+        }
     }
 }
