@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 public class NokiaPuzzle : MonoBehaviour
 {
+    public RandomPortalSpawner RPS;
     public int numberLength = 4;
 
     public int[] correctNumber;
@@ -77,6 +78,7 @@ public class NokiaPuzzle : MonoBehaviour
     void Success()
     {
         isSolved = true;
+        RPS.SpawnPortalRandom();
         Debug.Log("Correct number!");
 
  

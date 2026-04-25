@@ -1,14 +1,16 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.InputSystem;
+using System.Collections;
 
 public class DialogueManager : MonoBehaviour
 {
     public static DialogueManager Instance;
     public GameObject dialoguePanel;
     public TextMeshProUGUI dialogueText;
+    public TextMeshProUGUI nameText;
 
-    private string[] currentLines;
+    private DialogueData.DialogueLine[] currentLines;
     private int index;
     private bool isPlayerFrozen = false;
     private PlayerMovement playerMovement;
@@ -16,6 +18,9 @@ public class DialogueManager : MonoBehaviour
     private bool useAutoAdvance = false;
     private float autoAdvanceTime = 5f;
     private float autoAdvanceTimer = 0f;
+
+    private Coroutine typingCoroutine;
+    private bool isTyping = false;
 
     private void Awake()
     {
@@ -28,14 +33,19 @@ public class DialogueManager : MonoBehaviour
     {
         if (!dialoguePanel.activeSelf) return;
 
-        // Manual advance (optinal to hahaha)
         if (Keyboard.current.spaceKey.wasPressedThisFrame)
         {
-            NextLine();
+            if (isTyping)
+            {
+                SkipTyping();
+            }
+            else
+            {
+                NextLine();
+            }
         }
 
-        // Auto advance
-        if (useAutoAdvance)
+        if (useAutoAdvance && !isTyping)
         {
             autoAdvanceTimer -= Time.unscaledDeltaTime;
             if (autoAdvanceTimer <= 0f)
@@ -71,11 +81,52 @@ public class DialogueManager : MonoBehaviour
 
     void ShowLine()
     {
-        dialogueText.text = currentLines[index];
+        if (typingCoroutine != null)
+            StopCoroutine(typingCoroutine);
+
+        var line = currentLines[index];
+
+        if (string.IsNullOrEmpty(line.speakerName))
+        {
+            nameText.gameObject.SetActive(false);
+        }
+        else
+        {
+            nameText.gameObject.SetActive(true);
+            nameText.text = line.speakerName;
+            nameText.color = line.nameColor;
+        }
+
+        dialogueText.color = line.textColor;
+        typingCoroutine = StartCoroutine(TypeText(line.text));
+
         if (useAutoAdvance)
         {
-            autoAdvanceTimer = autoAdvanceTime; // reset timer on new line
+            autoAdvanceTimer = autoAdvanceTime;
         }
+    }
+
+    IEnumerator TypeText(string text)
+    {
+        isTyping = true;
+        dialogueText.text = "";
+
+        foreach (char c in text)
+        {
+            dialogueText.text += c;
+            yield return new WaitForSecondsRealtime(0.02f);
+        }
+
+        isTyping = false;
+    }
+
+    void SkipTyping()
+    {
+        if (typingCoroutine != null)
+            StopCoroutine(typingCoroutine);
+
+        dialogueText.text = currentLines[index].text;
+        isTyping = false;
     }
 
     void NextLine()
