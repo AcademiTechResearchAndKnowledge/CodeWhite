@@ -108,8 +108,8 @@ public class Outline : MonoBehaviour
     // Apply material properties immediately
     needsUpdate = true;
 
-    var mf = GetComponentInChildren<MeshFilter>();
-    mf.mesh = Instantiate(mf.sharedMesh);
+    //var mf = GetComponentInChildren<MeshFilter>();
+    //mf.mesh = Instantiate(mf.sharedMesh);
   }
 
   void OnEnable()

@@ -147,7 +147,7 @@ Transform:
   m_GameObject: {fileID: 2482385671022945450}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -41.868824, y: 0.5999999, z: 21.93204}
+  m_LocalPosition: {x: 0, y: 0.5999999, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -384,12 +384,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3544992279055200351}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0.93, z: -0.019}
+  m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
+  m_LocalPosition: {x: 0, y: 0.93000007, z: -0.019000053}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 9140122755514068591}
+  m_Father: {fileID: 466067281440141521}
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
 --- !u!114 &6911212938801584294
 MonoBehaviour:
@@ -862,7 +862,6 @@ Transform:
   m_Children:
   - {fileID: 7587743193427179702}
   - {fileID: 3049861566668292173}
-  - {fileID: 6646631838066792545}
   - {fileID: 6599107435555780065}
   m_Father: {fileID: 466067281440141521}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1228,16 +1227,13 @@ MonoBehaviour:
   gazeAnxietyRate: 20
   proximityAnxietyRate: 10
   anxietyDecayRate: 5
-  heartbeatThreshold: 0.5
-  heartbeatMinPitch: 1
-  heartbeatMaxPitch: 2
-  heartbeatMinVolume: 0.2
-  heartbeatMaxVolume: 1
-  tinnitusThreshold: 0.7
-  tinnitusMinVolume: 0
-  tinnitusMaxVolume: 0.8
+  isBeingChased: 0
   vignetteThreshold: 0.7
   vignetteMaxIntensity: 0.723
+  pulseSpeed: 6
+  pulseStrength: 0.05
+  blurMax: 1.5
+  redPulseStrength: 0.4
 --- !u!82 &8057037278168558304
 AudioSource:
   m_ObjectHideFlags: 0
@@ -1463,6 +1459,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 6646631838066792545}
   - {fileID: 9140122755514068591}
   - {fileID: 101103983190192487}
   m_Father: {fileID: 4335931957978498964}

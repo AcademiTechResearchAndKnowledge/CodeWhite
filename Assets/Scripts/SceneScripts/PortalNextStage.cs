@@ -1,6 +1,8 @@
 using UnityEngine;
 using System.Collections;
 using Unity.Cinemachine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class PortalNextStage : MonoBehaviour
 {
@@ -8,6 +10,15 @@ public class PortalNextStage : MonoBehaviour
     public float duration = 6f;
     public float liftHeight = 2f;
     public float lookHeight = 10f;
+
+    [Header("Scene")]
+    public string nextSceneName;
+
+    [Header("Fade")]
+    public float fadeStartPoint = 0.3f;
+
+    private Image fadeImage;
+    private GameObject fadeObject;
 
     private bool used = false;
 
@@ -38,17 +49,49 @@ public class PortalNextStage : MonoBehaviour
         lookTarget = target.transform;
     }
 
+    private void Start()
+    {
+        fadeObject = GameObject.Find("FadeScreen");
+
+        if (fadeObject == null)
+        {
+            Debug.LogWarning("[PortalNextStage] FadeScreen not found.");
+            return;
+        }
+
+        fadeImage = fadeObject.GetComponentInChildren<Image>();
+
+        if (fadeImage == null)
+        {
+            Debug.LogWarning("[PortalNextStage] Image not found under FadeScreen.");
+            return;
+        }
+
+        Color c = fadeImage.color;
+        c.a = 0f;
+        fadeImage.color = c;
+
+        fadeObject.SetActive(true);
+
+        Debug.Log("[PortalNextStage] Fade system initialized.");
+    }
+
     private void OnTriggerEnter(Collider other)
     {
         if (used) return;
         if (!other.CompareTag(playerTag)) return;
 
         used = true;
+
+        Debug.Log("[PortalNextStage] Trigger entered by player.");
+
         StartCoroutine(Sequence(other.transform));
     }
 
     private IEnumerator Sequence(Transform player)
     {
+        Debug.Log("[PortalNextStage] Sequence started.");
+
         Rigidbody rb = player.GetComponent<Rigidbody>();
         if (rb != null)
         {
@@ -86,14 +129,39 @@ public class PortalNextStage : MonoBehaviour
             if (lookTarget != null)
                 lookTarget.position = player.position + Vector3.up * lookHeight;
 
+            float fadeT = Mathf.InverseLerp(fadeStartPoint, 1f, t);
+            fadeT = Mathf.Clamp01(fadeT);
+
+            if (fadeImage != null)
+            {
+                Color c = fadeImage.color;
+                c.a = fadeT;
+                fadeImage.color = c;
+            }
+
             yield return null;
         }
 
         player.position = transform.position + Vector3.up * liftHeight;
 
-        yield return new WaitForSeconds(0.5f);
+        Debug.Log("[PortalNextStage] Movement finished, loading scene.");
 
-        if (RunManager.Instance != null)
-            RunManager.Instance.LoadNextStage();
+        yield return new WaitForSeconds(0.3f);
+
+        LoadNextScene();
+    }
+
+    void LoadNextScene()
+    {
+        if (!string.IsNullOrEmpty(nextSceneName))
+        {
+            Debug.Log("[PortalNextStage] Loading scene: " + nextSceneName);
+            SceneManager.LoadScene(nextSceneName);
+        }
+        else
+        {
+            Debug.Log("[PortalNextStage] Loading next scene index.");
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+        }
     }
 }
