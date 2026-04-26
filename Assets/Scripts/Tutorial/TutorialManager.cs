@@ -29,12 +29,14 @@ public class TutorialManager : MonoBehaviour
     public float startDelay = 1.0f;
 
     [Header("Game Object References")]
-    public PlayerReferences player; // Reference to freeze the player during the intro
+    public PlayerReferences player;
     public Outline itemOutline;
     public Outline doorOutline;
 
     private TutorialState currentState = TutorialState.Walk;
-    private bool isFading = false;
+
+    // Tracks the current UI animation so we can interrupt it if the player is fast
+    private Coroutine activeUICoroutine;
 
     void Start()
     {
@@ -47,21 +49,20 @@ public class TutorialManager : MonoBehaviour
         // Start the cinematic intro!
         if (blackScreenCanvasGroup != null)
         {
-            blackScreenCanvasGroup.alpha = 1; // Make sure it starts pitch black
+            blackScreenCanvasGroup.alpha = 1;
             StartCoroutine(IntroSequence());
         }
         else
         {
-            // Fallback if you forget to assign the black screen
-            StartCoroutine(ShowMessage("WASD to walk"));
+            LockAdvancedControls();
+
+            if (activeUICoroutine != null) StopCoroutine(activeUICoroutine);
+            activeUICoroutine = StartCoroutine(ShowMessage("WASD to walk"));
         }
     }
 
     void Update()
     {
-        if (isFading) return; // Don't check inputs while transitioning
-
-        // Ensure devices exist before checking to prevent errors
         bool hasKeyboard = Keyboard.current != null;
         bool hasMouse = Mouse.current != null;
 
@@ -92,30 +93,31 @@ public class TutorialManager : MonoBehaviour
                 }
                 break;
 
-            // Pickup and UseItem are handled by external scripts calling public methods below
-
             case TutorialState.Sprint:
                 if (hasKeyboard && Keyboard.current.leftShiftKey.wasPressedThisFrame)
                 {
                     AdvanceTutorial(TutorialState.Portal, "Go through the portal");
                 }
                 break;
-
-                // Portal is handled by an external trigger calling a public method below
         }
     }
 
     private void AdvanceTutorial(TutorialState nextState, string nextMessage)
     {
         currentState = nextState;
-        StartCoroutine(TransitionMessage(nextMessage));
+
+        UnlockMechanic(nextState);
+
+        // Stop any currently playing text fades and start the new one
+        if (activeUICoroutine != null) StopCoroutine(activeUICoroutine);
+        activeUICoroutine = StartCoroutine(TransitionMessage(nextMessage));
     }
 
     // --- PUBLIC METHODS FOR EXTERNAL SCRIPTS ---
 
     public void ItemPickedUp()
     {
-        if (currentState == TutorialState.Pickup && !isFading)
+        if (currentState == TutorialState.Pickup)
         {
             if (itemOutline != null) itemOutline.enabled = false;
             AdvanceTutorial(TutorialState.UseItem, "Use scroll wheel or numbers to select the item and press E to use");
@@ -124,7 +126,7 @@ public class TutorialManager : MonoBehaviour
 
     public void ItemUsed()
     {
-        if (currentState == TutorialState.UseItem && !isFading)
+        if (currentState == TutorialState.UseItem)
         {
             if (doorOutline != null) doorOutline.enabled = true;
             AdvanceTutorial(TutorialState.Door, "Go to the door and press F to interact");
@@ -133,7 +135,7 @@ public class TutorialManager : MonoBehaviour
 
     public void DoorInteracted()
     {
-        if (currentState == TutorialState.Door && !isFading)
+        if (currentState == TutorialState.Door)
         {
             if (doorOutline != null) doorOutline.enabled = false;
             AdvanceTutorial(TutorialState.Sprint, "Press Shift to sprint");
@@ -142,39 +144,71 @@ public class TutorialManager : MonoBehaviour
 
     public void PortalEntered()
     {
-        if (currentState == TutorialState.Portal && !isFading)
+        if (currentState == TutorialState.Portal)
         {
             currentState = TutorialState.Finished;
-            StartCoroutine(HideMessage());
+
+            if (activeUICoroutine != null) StopCoroutine(activeUICoroutine);
+            activeUICoroutine = StartCoroutine(HideMessage());
         }
     }
 
-    // --- HELPER METHODS ---
+    // --- CONTROL LOCKING / UNLOCKING ---
 
-    private void TogglePlayerControls(bool state)
+    private void ToggleAllPlayerControls(bool state)
     {
         if (player == null) return;
-
         if (player.movementScript != null) player.movementScript.enabled = state;
         if (player.flashlightScript != null) player.flashlightScript.enabled = state;
 
-        // Disable the camera script so they can't look around in the dark
-        if (player.playerCam != null) player.playerCam.enabled = state;
+        // Target the playerLook script instead of playerCam
+        if (player.playerLook != null) player.playerLook.canLook = state;
+    }
+
+    private void LockAdvancedControls()
+    {
+        if (player == null) return;
+
+        if (player.movementScript != null) player.movementScript.enabled = true;
+
+        // Target the playerLook script instead of playerCam
+        if (player.playerLook != null) player.playerLook.canLook = true;
+
+        if (player.flashlightScript != null) player.flashlightScript.enabled = false;
+
+        if (player.movementScript != null)
+        {
+            player.movementScript.canCrouch = false;
+            player.movementScript.canSprint = false;
+        }
+    }
+
+    private void UnlockMechanic(TutorialState state)
+    {
+        if (player == null) return;
+
+        switch (state)
+        {
+            case TutorialState.Flashlight:
+                if (player.flashlightScript != null) player.flashlightScript.enabled = true;
+                break;
+            case TutorialState.Crouch:
+                if (player.movementScript != null) player.movementScript.canCrouch = true;
+                break;
+            case TutorialState.Sprint:
+                if (player.movementScript != null) player.movementScript.canSprint = true;
+                break;
+        }
     }
 
     // --- COROUTINES FOR SEQUENCES AND UI ---
 
     private IEnumerator IntroSequence()
     {
-        isFading = true;
+        ToggleAllPlayerControls(false);
 
-        // Disable controls before the fade starts
-        TogglePlayerControls(false);
-
-        // Wait a moment in the dark
         yield return new WaitForSeconds(startDelay);
 
-        // Fade the black screen away
         float timer = 0;
         while (timer < blackScreenFadeDuration)
         {
@@ -184,46 +218,44 @@ public class TutorialManager : MonoBehaviour
         }
 
         blackScreenCanvasGroup.alpha = 0;
-        blackScreenCanvasGroup.gameObject.SetActive(false); // Turn off so it doesn't block UI clicks
+        blackScreenCanvasGroup.gameObject.SetActive(false);
 
-        // Re-enable controls once the fade is done
-        TogglePlayerControls(true);
+        LockAdvancedControls();
 
-        isFading = false;
-        yield return StartCoroutine(ShowMessage("WASD to walk"));
+        if (activeUICoroutine != null) StopCoroutine(activeUICoroutine);
+        activeUICoroutine = StartCoroutine(ShowMessage("WASD to walk"));
     }
 
     private IEnumerator ShowMessage(string message)
     {
-        isFading = true;
         tutorialText.text = message;
 
         float timer = 0;
+        float startAlpha = textCanvasGroup.alpha;
+
         while (timer < fadeDuration)
         {
             timer += Time.deltaTime;
-            textCanvasGroup.alpha = Mathf.Lerp(0, 1, timer / fadeDuration);
+            textCanvasGroup.alpha = Mathf.Lerp(startAlpha, 1, timer / fadeDuration);
             yield return null;
         }
 
         textCanvasGroup.alpha = 1;
-        isFading = false;
     }
 
     private IEnumerator HideMessage()
     {
-        isFading = true;
-
         float timer = 0;
+        float startAlpha = textCanvasGroup.alpha;
+
         while (timer < fadeDuration)
         {
             timer += Time.deltaTime;
-            textCanvasGroup.alpha = Mathf.Lerp(1, 0, timer / fadeDuration);
+            textCanvasGroup.alpha = Mathf.Lerp(startAlpha, 0, timer / fadeDuration);
             yield return null;
         }
 
         textCanvasGroup.alpha = 0;
-        isFading = false;
     }
 
     private IEnumerator TransitionMessage(string nextMessage)

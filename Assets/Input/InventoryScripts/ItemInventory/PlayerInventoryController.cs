@@ -10,8 +10,8 @@ public class PlayerInventoryController : MonoBehaviour
     private int globalSlotIndex = 0;
     private const int MAX_TOTAL_SLOTS = 7;
 
-    // Track the data object instead of a string to handle randomized indices
-    private ObjectiveItemData currentDisplayedData = null;
+    // We use 'ScriptableObject' so it can peacefully hold ANY item type (ItemData OR ObjectiveItemData)
+    private ScriptableObject currentDisplayedData = null;
 
     private void Start()
     {
@@ -32,15 +32,15 @@ public class PlayerInventoryController : MonoBehaviour
 
     void CheckHandVisualUpdates()
     {
-        // 1. We use the generic 'ScriptableObject' so it can hold ANY item type
         ScriptableObject intendedData = null;
 
+        // 1. Grab the item from the correct inventory
         if (globalSlotIndex < 5)
         {
             var slot = InventoryManager.Instance.GetSelectedSlot();
             if (slot != null && !slot.IsEmpty())
             {
-                intendedData = slot.item;
+                intendedData = slot.item; // This is 'ItemData'
             }
         }
         else
@@ -48,15 +48,14 @@ public class PlayerInventoryController : MonoBehaviour
             var slot = ObjectiveInventoryManager.Instance.GetSelectedSlot();
             if (slot != null && !slot.IsEmpty())
             {
-                intendedData = slot.item;
+                intendedData = slot.item; // This is 'ObjectiveItemData'
             }
         }
 
-        // 2. Check if we actually need to change what we are holding
-        // We compare the 'name' or the object itself to see if it changed
-        if (currentDisplayedData != (ObjectiveItemData)intendedData)
+        // 2. Safely check if we changed items without forcing a cast
+        if (currentDisplayedData != intendedData)
         {
-            currentDisplayedData = (ObjectiveItemData)intendedData;
+            currentDisplayedData = intendedData;
 
             if (handController != null)
             {
@@ -64,12 +63,17 @@ public class PlayerInventoryController : MonoBehaviour
                 {
                     handController.UnequipAll();
                 }
-                else
+                // 3a. Ask: Are you a Book/Objective Item?
+                else if (intendedData is ObjectiveItemData objectiveData)
                 {
-                    // 3. We pass the data to the hand. 
-                    // If it's a book, it uses the Index. 
-                    // If it's a regular item, it uses the Name.
-                    handController.EquipItemByData((ObjectiveItemData)intendedData);
+                    // Use the special Data method (handles visual Index for books)
+                    handController.EquipItemByData(objectiveData);
+                }
+                // 3b. Ask: Are you a Regular Item?
+                else if (intendedData is ItemData regularData)
+                {
+                    // Fall back to your original string Name method!
+                    handController.EquipItemByName(regularData.itemName);
                 }
             }
         }
@@ -140,7 +144,6 @@ public class PlayerInventoryController : MonoBehaviour
             }
             else
             {
-                // This triggers the specific use logic for objective items (like books)
                 ObjectiveInventoryManager.Instance.UseSelectedItem();
             }
         }

@@ -262,11 +262,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e47502c1e4bff94dbda0e4150fe1569, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SimpleCandleInteract
-  message: 
+  buttonText: F
+  objectName: Tall Lamp
+  actionName: Turn On
   onInteraction:
     m_PersistentCalls:
       m_Calls: []
   flame: {fileID: 7766921145208778862}
+  audioSource: {fileID: 4023466855028900127}
+  turnOnSound: {fileID: 8300000, guid: a5dc29a8c8b7f1249bb0d2c4d80ecaa1, type: 3}
+  turnOffSound: {fileID: 8300000, guid: a5dc29a8c8b7f1249bb0d2c4d80ecaa1, type: 3}
 --- !u!114 &7693555071248308441
 MonoBehaviour:
   m_ObjectHideFlags: 0
