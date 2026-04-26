@@ -2,22 +2,22 @@ using UnityEngine;
 
 public class LightCircle : MonoBehaviour
 {
-    public float lifeTime = 10f; // how long the light stays
-
-    void Start()
-    {
-        Debug.Log("Light circle appeared.");
-
-        Destroy(gameObject, lifeTime);
-    }
+    public LightCircleSpawner spawner;
 
     void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
         {
-            Debug.Log("Player ran through the light circle!");
+            Debug.Log("Light triggered");
 
-            Destroy(gameObject);
+            if (spawner != null)
+            {
+                spawner.LightTriggered(gameObject);
+            }
+            else
+            {
+                Debug.LogError("Spawner reference is missing on LightCircle");
+            }
         }
     }
 }

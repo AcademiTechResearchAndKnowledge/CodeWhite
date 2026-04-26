@@ -486,7 +486,7 @@ BoxCollider:
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 1, y: 0.98, z: -0.06}
-  m_Center: {x: 0, y: 0.36, z: 0.008}
+  m_Center: {x: 0, y: 0.54, z: 0.008}
 --- !u!114 &6997487326095538080
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -507,7 +507,9 @@ MonoBehaviour:
   linkedDoorController: {fileID: 0}
   interactDistance: 10
   portalActiveTime: 5
-  backtrackBlockTime: 1.5
+  backtrackBlockTime: 0.2
+  linkedDoorOpenTime: 3
+  recentlyUsed: 0
 --- !u!1 &3642129172628064197
 GameObject:
   m_ObjectHideFlags: 0
@@ -864,6 +866,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   doorAnimator: {fileID: 7713680053410492441}
+  portal: {fileID: 0}
   openTime: 1
   closeTime: 1
   autoCloseDelay: 3

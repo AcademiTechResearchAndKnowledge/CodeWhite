@@ -20,13 +20,13 @@ RenderSettings:
   m_FogDensity: 0.01
   m_LinearFogStart: 0
   m_LinearFogEnd: 300
-  m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+  m_AmbientSkyColor: {r: 0, g: 0, b: 0, a: 1}
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
   m_AmbientIntensity: 1
-  m_AmbientMode: 0
-  m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
+  m_AmbientMode: 3
+  m_SubtractiveShadowColor: {r: 0, g: 0, b: 0, a: 1}
+  m_SkyboxMaterial: {fileID: 0}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -35,7 +35,7 @@ RenderSettings:
   m_DefaultReflectionMode: 0
   m_DefaultReflectionResolution: 128
   m_ReflectionBounces: 1
-  m_ReflectionIntensity: 1
+  m_ReflectionIntensity: 0.3
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
   m_UseRadianceAmbientProbe: 0
@@ -9972,7 +9972,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ae1c5ab5fda02b439a0e0d3f0f81b52, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HUDInteractController
-  interactionText: {fileID: 1320256371}
+  interactionPanel: {fileID: 0}
+  keyText: {fileID: 0}
+  objectNameText: {fileID: 0}
+  actionText: {fileID: 0}
 --- !u!114 &992553380
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14520,7 +14523,7 @@ MonoBehaviour:
   m_OverrideTileSize: 0
   m_TileSize: 256
   m_OverrideVoxelSize: 0
-  m_VoxelSize: 0.16333334
+  m_VoxelSize: 0.096666664
   m_MinRegionArea: 2
   m_NavMeshData: {fileID: 23800000, guid: 36e2c923bcfeeb842ace59e35a159477, type: 2}
   m_BuildHeightMesh: 0
@@ -21149,6 +21152,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DialogueManager
   dialoguePanel: {fileID: 1969742005}
   dialogueText: {fileID: 1283254738}
+  nameText: {fileID: 0}
 --- !u!4 &2104180375
 Transform:
   m_ObjectHideFlags: 0

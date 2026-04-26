@@ -4,14 +4,15 @@ using System.Collections;
 public class DoorController : Interactable
 {
     public Animator doorAnimator;
+    public PortalDoor portal; // ✅ NEW
 
     public float openTime = 1f;
     public float closeTime = 1f;
-    private bool isOpen = false;
-    private bool isBusy = false;
 
-    // NEW: auto close delay
     public float autoCloseDelay = 3f;
+
+    private bool isBusy = false;
+    private bool locked;
 
     private enum DoorState
     {
@@ -22,19 +23,18 @@ public class DoorController : Interactable
     }
 
     private DoorState state = DoorState.Closed;
-    private bool locked;
-
 
     private Coroutine autoCloseCoroutine;
-
-    // Keeps track of if the White Lady is standing in the doorway
     private int aiInZone = 0;
 
     public override void Interact()
     {
         if (locked || doorAnimator == null) return;
 
-        // cancel auto-close if player interacts
+        
+        if (portal != null && !portal.CanInteractWithDoor())
+            return;
+
         CancelAutoClose();
 
         if (state == DoorState.Closed)
@@ -47,16 +47,17 @@ public class DoorController : Interactable
         }
     }
 
-    
     private void OnTriggerEnter(Collider other)
     {
-        // Check if the object stepping into the zone is the White Lady
         if (other.GetComponent<WhiteLady>() != null)
         {
             aiInZone++;
 
-            // If the door is currently closed and not moving, open it for her!
-            if (!isOpen && !isBusy)
+
+            if (portal != null && !portal.CanInteractWithDoor())
+                return;
+
+            if (state == DoorState.Closed && !locked)
             {
                 StartCoroutine(OpenDoorRoutine());
             }
@@ -69,15 +70,13 @@ public class DoorController : Interactable
         {
             aiInZone--;
 
-            // If she completely left the zone, and the door is open, close it behind her!
-            if (aiInZone <= 0 && isOpen && !isBusy)
+            if (aiInZone <= 0 && state == DoorState.Open && !locked)
             {
                 StartCoroutine(CloseRoutine());
             }
         }
     }
 
-   
     IEnumerator OpenDoorRoutine()
     {
         locked = true;
@@ -92,11 +91,10 @@ public class DoorController : Interactable
         state = DoorState.Open;
         locked = false;
 
-
         StartAutoClose();
     }
 
-    private IEnumerator CloseRoutine()
+    IEnumerator CloseRoutine()
     {
         locked = true;
         state = DoorState.Closing;
@@ -120,7 +118,7 @@ public class DoorController : Interactable
         StartCoroutine(ForceCloseRoutine());
     }
 
-    private IEnumerator ForceCloseRoutine()
+    IEnumerator ForceCloseRoutine()
     {
         locked = true;
         state = DoorState.Closing;
@@ -134,8 +132,6 @@ public class DoorController : Interactable
         state = DoorState.Closed;
         locked = false;
     }
-
-
 
     private void StartAutoClose()
     {
@@ -164,18 +160,9 @@ public class DoorController : Interactable
         autoCloseCoroutine = null;
     }
 
-
-    public void AutoClose()
-    {
-        if (state == DoorState.Open && !locked)
-        {
-            StartCoroutine(CloseRoutine());
-        }
-    }
-
     public void OpenFromPortal()
-{
-    if (state == DoorState.Closed)
-        StartCoroutine(OpenDoorRoutine());
-}
+    {
+        if (state == DoorState.Closed)
+            StartCoroutine(OpenDoorRoutine());
+    }
 }

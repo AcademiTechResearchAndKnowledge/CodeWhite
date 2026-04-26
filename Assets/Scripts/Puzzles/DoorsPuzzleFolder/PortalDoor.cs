@@ -16,13 +16,11 @@ public class PortalDoor : MonoBehaviour
 
     public float interactDistance = 10f;
     public float portalActiveTime = 5f;
-    public float backtrackBlockTime = 1.5f;
-
-
+    public float backtrackBlockTime = 0.2f;
     public float linkedDoorOpenTime = 3f;
 
     bool portalActive;
-    bool recentlyUsed;
+    public bool recentlyUsed;
 
     Material runtimeMat;
     Renderer portalRenderer;
@@ -106,7 +104,6 @@ public class PortalDoor : MonoBehaviour
     {
         portalActive = true;
 
-
         if (linkedDoorController != null)
         {
             linkedDoorController.OpenFromPortal();
@@ -137,9 +134,7 @@ public class PortalDoor : MonoBehaviour
         yield return new WaitForSeconds(linkedDoorOpenTime);
 
         if (linkedDoorController != null)
-        {
             linkedDoorController.ForceCloseFromPortal();
-        }
     }
 
     void OnTriggerEnter(Collider other)
@@ -183,5 +178,11 @@ public class PortalDoor : MonoBehaviour
     {
         yield return new WaitForSeconds(backtrackBlockTime);
         recentlyUsed = false;
+    }
+
+
+    public bool CanInteractWithDoor()
+    {
+        return !recentlyUsed && !portalActive;
     }
 }

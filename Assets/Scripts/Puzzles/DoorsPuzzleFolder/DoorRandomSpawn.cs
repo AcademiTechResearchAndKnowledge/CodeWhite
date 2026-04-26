@@ -45,6 +45,7 @@ public class doorsGen : MonoBehaviour
 
         int rainbowIndex = Random.Range(0, totalDoors);
         int whiteIndex = Random.Range(0, totalDoors);
+
         while (whiteIndex == rainbowIndex)
             whiteIndex = Random.Range(0, totalDoors);
 
@@ -53,25 +54,23 @@ public class doorsGen : MonoBehaviour
             Vector3 pos = GetValidRandomPosition();
             if (pos == Vector3.zero) continue;
 
+            pos.y = floorTop;
+
             GameObject prefabToSpawn = blackDoorPrefab;
+
             if (i == rainbowIndex) prefabToSpawn = rainbowDoorPrefab;
             else if (i == whiteIndex) prefabToSpawn = whiteDoorPrefab;
 
-            GameObject door = Instantiate(
-                prefabToSpawn,
-                new Vector3(pos.x, 0f, pos.z),
-                Quaternion.Euler(0, Random.Range(0f, 360f), 0),
-                doorsParent
-            );
+            GameObject door = Instantiate(prefabToSpawn, pos, Quaternion.Euler(0, Random.Range(0f, 360f), 0), doorsParent);
 
             AdjustToFloor(door);
+
             usedPositions.Add(pos);
 
             if (prefabToSpawn == blackDoorPrefab)
                 blackDoors.Add(door);
         }
 
-        // Pair black doors
         for (int i = 0; i < blackDoors.Count; i += 2)
         {
             if (i + 1 >= blackDoors.Count) break;
@@ -94,6 +93,7 @@ public class doorsGen : MonoBehaviour
         camB.targetTexture = texB;
 
         Camera mainCam = Camera.main;
+
         if (mainCam != null)
         {
             camA.fieldOfView = mainCam.fieldOfView;
@@ -126,21 +126,18 @@ public class doorsGen : MonoBehaviour
     void AdjustToFloor(GameObject obj)
     {
         Collider col = obj.GetComponentInChildren<Collider>();
-        if (col != null)
-        {
-            float halfHeight = col.bounds.extents.y;
-            obj.transform.position = new Vector3(
-                obj.transform.position.x,
-                floorTop + halfHeight,
-                obj.transform.position.z
-            );
-        }
+        if (col == null) return;
+
+        float offset = floorTop - col.bounds.min.y;
+        obj.transform.position += new Vector3(0f, offset, 0f);
     }
 
     void SpawnKey()
     {
         Vector3 pos = GetValidRandomPosition();
         if (pos == Vector3.zero) return;
+
+        pos.y = floorTop;
 
         GameObject key = Instantiate(keyPrefab, pos, Quaternion.identity, keysParent);
         AdjustToFloor(key);
