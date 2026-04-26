@@ -211,11 +211,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e47502c1e4bff94dbda0e4150fe1569, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SimpleCandleInteract
-  message: 
+  buttonText: F
+  objectName: Candle
+  actionName: Light Up
   onInteraction:
     m_PersistentCalls:
       m_Calls: []
   flame: {fileID: 285888489707602620}
+  audioSource: {fileID: 0}
+  turnOnSound: {fileID: 0}
+  turnOffSound: {fileID: 0}
 --- !u!82 &3913498052051034055
 AudioSource:
   m_ObjectHideFlags: 0

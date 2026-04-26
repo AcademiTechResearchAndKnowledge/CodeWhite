@@ -137,15 +137,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 0c7c8152e91e2ea4fb37b1ce9ef3c09c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -32.288
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 0c7c8152e91e2ea4fb37b1ce9ef3c09c, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 2.5035899
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 0c7c8152e91e2ea4fb37b1ce9ef3c09c, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 26.813948
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 0c7c8152e91e2ea4fb37b1ce9ef3c09c, type: 3}
       propertyPath: m_LocalRotation.w
@@ -153,15 +153,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 0c7c8152e91e2ea4fb37b1ce9ef3c09c, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 0c7c8152e91e2ea4fb37b1ce9ef3c09c, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 0c7c8152e91e2ea4fb37b1ce9ef3c09c, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 0c7c8152e91e2ea4fb37b1ce9ef3c09c, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -251,11 +251,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e47502c1e4bff94dbda0e4150fe1569, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SimpleCandleInteract
-  message: 
+  buttonText: F
+  objectName: Table Lamp
+  actionName: Light Up
   onInteraction:
     m_PersistentCalls:
       m_Calls: []
   flame: {fileID: 2196551193598688642}
+  audioSource: {fileID: 7216330600572974092}
+  turnOnSound: {fileID: 8300000, guid: d51c942e8fe4cdb4892edcb4c4b6d54b, type: 3}
+  turnOffSound: {fileID: 8300000, guid: d51c942e8fe4cdb4892edcb4c4b6d54b, type: 3}
 --- !u!65 &3628862384068688131
 BoxCollider:
   m_ObjectHideFlags: 0

@@ -1,6 +1,9 @@
 using TMPro;
 using UnityEngine;
 using System.Collections;
+using Unity.Cinemachine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 public class RadioPuzzleHandler : MonoBehaviour
 {
@@ -12,98 +15,221 @@ public class RadioPuzzleHandler : MonoBehaviour
     public float maxTargetFrequency = 108.0f;
     public float minOminousFrequency = 88.0f;
     public float maxOminousFrequency = 108.0f;
+
     public float submitDelay = 2f;
     public float ominousPushForce = 5f;
     public float verticalPushForce = 2f;
 
+    [SerializeField] private float maxFrequencyGain = 3f;
+    [SerializeField] private float damping = 2f;
+
+    [SerializeField] private float maxFilmGrain = 1f;
+    [SerializeField] private float grainDamping = 2f;
+
+
+    [SerializeField] private float maxVignette = 0.5f;
+    [SerializeField] private float vignetteDamping = 2f;
+
+    [SerializeField] private float exitFadeSpeed = 2.5f;
+
+    private CinemachineCamera cineCamera;
+    private CinemachineBasicMultiChannelPerlin noise;
+
+    private Volume postProcessVolume;
+    private FilmGrain filmGrain;
+    private Vignette vignette; 
+
     private float targetFrequency;
     private float ominousFrequency;
-    private float submitTimer = 0f;
+    private float submitTimer;
     private float lastFrequency;
+
+    private bool puzzleActive = false;
+    private bool fadingOut = false;
 
     void Start()
     {
-        ResetPuzzle();
+        GetActiveCinemachineCamera();
+        GetMainCameraVolume();
+        ResetPuzzleImmediate();
     }
 
     void Update()
     {
-        if (objZoom.isInPuzzle && knobValue.dragging && !knobValue.submitted)
+        if (puzzleActive && objZoom.isInPuzzle)
         {
-            UpdateFrequency();
-            if (Mathf.Abs(knobValue.frequency - lastFrequency) > 0.001f)
-            {
-                submitTimer = submitDelay;
-                lastFrequency = knobValue.frequency;
-            }
+            HandlePuzzle();
+        }
 
-            submitTimer -= Time.deltaTime;
-            if (submitTimer <= 0f)
-            {
-                SubmitFrequency();
-                submitTimer = 0f;
-            }
+        HandleFadeOut();
+    }
+
+    void HandlePuzzle()
+    {
+        if (!knobValue.dragging || knobValue.submitted)
+            return;
+
+        UpdateFrequency();
+
+        float dist = Mathf.Abs(knobValue.frequency - ominousFrequency);
+
+        if (Mathf.Abs(knobValue.frequency - lastFrequency) > 0.001f)
+        {
+            submitTimer = submitDelay;
+            lastFrequency = knobValue.frequency;
+        }
+
+        submitTimer -= Time.deltaTime;
+
+        if (submitTimer <= 0f)
+        {
+            SubmitFrequency();
+            submitTimer = 0f;
+        }
+
+        ApplyEffects(dist);
+    }
+
+    void ApplyEffects(float dist)
+    {
+        // CAMERA SHAKE
+        if (noise != null)
+        {
+            noise.FrequencyGain = dist < 0.5f
+                ? Mathf.Lerp(0f, maxFrequencyGain, 1f - dist / 0.5f)
+                : Mathf.Lerp(noise.FrequencyGain, 0f, Time.deltaTime * damping);
+        }
+
+        // FILM GRAIN
+        if (filmGrain != null)
+        {
+            filmGrain.intensity.value = dist < 0.5f
+                ? Mathf.Lerp(0f, maxFilmGrain, 1f - dist / 0.5f)
+                : Mathf.Lerp(filmGrain.intensity.value, 0f, Time.deltaTime * grainDamping);
+        }
+
+
+        if (vignette != null)
+        {
+            vignette.intensity.value = dist < 0.5f
+                ? Mathf.Lerp(0f, maxVignette, 1f - dist / 0.5f)
+                : Mathf.Lerp(vignette.intensity.value, 0f, Time.deltaTime * vignetteDamping);
         }
     }
 
-    void UpdateFrequency()
+    void HandleFadeOut()
     {
-        if (knobValue.frequency == 0f)
-            knobValue.frequency = knobValue.minFrequency;
-        frequencyText.text = knobValue.frequency.ToString("F1") + " MHz";
+        if (!fadingOut) return;
+
+        float t = Time.deltaTime * exitFadeSpeed;
+
+        if (noise != null)
+            noise.FrequencyGain = Mathf.Lerp(noise.FrequencyGain, 0f, t);
+
+        if (filmGrain != null)
+            filmGrain.intensity.value = Mathf.Lerp(filmGrain.intensity.value, 0f, t);
+
+
+        if (vignette != null)
+            vignette.intensity.value = Mathf.Lerp(vignette.intensity.value, 0f, t);
     }
 
     public void SubmitFrequency()
     {
         if (Mathf.Abs(knobValue.frequency - ominousFrequency) < 0.1f)
         {
-            Debug.Log($"Ominous frequency triggered! {ominousFrequency:F1} MHz");
             StartCoroutine(ExitAndPushPlayer());
             return;
         }
 
         if (Mathf.Abs(knobValue.frequency - targetFrequency) < 0.1f)
         {
-            Debug.Log($"Puzzle solved! Correct frequency was {targetFrequency:F1} MHz");
             knobValue.submitted = true;
-        }
-        else
-        {
-            Debug.Log($"Incorrect frequency. Target: {targetFrequency:F1} MHz, Ominous: {ominousFrequency:F1} MHz");
         }
     }
 
     IEnumerator ExitAndPushPlayer()
     {
+        puzzleActive = false;
+        fadingOut = true;
+
+        knobValue.dragging = false;
+        objZoom.isInPuzzle = false;
+
         objZoom.ExitPuzzle();
+
         yield return new WaitForFixedUpdate();
 
-        Rigidbody playerRb = objZoom.playerController?.GetComponent<Rigidbody>();
-        if (playerRb != null)
-        {
-            if (playerRb.isKinematic)
-                playerRb.isKinematic = false;
+        Rigidbody rb = objZoom.playerController?.GetComponent<Rigidbody>();
 
-            Vector3 pushDirection = objZoom.transform.forward.normalized;
-            pushDirection.y = verticalPushForce / ominousPushForce;
-            playerRb.AddForce(pushDirection * ominousPushForce, ForceMode.Impulse);
-            Debug.Log("Player pushed by ominous frequency!");
+        if (rb != null)
+        {
+            rb.isKinematic = false;
+
+            Vector3 dir = objZoom.transform.forward.normalized;
+            dir.y = verticalPushForce / ominousPushForce;
+
+            rb.AddForce(dir * ominousPushForce, ForceMode.Impulse);
         }
 
-        ResetPuzzle();
+        ResetPuzzleImmediate();
     }
 
-    public void ResetPuzzle()
+    void ResetPuzzleImmediate()
     {
+        puzzleActive = true;
+
         knobValue.ResetKnob();
-        UpdateFrequency();
+        knobValue.dragging = false;
+        knobValue.submitted = false;
+
         targetFrequency = Random.Range(minTargetFrequency, maxTargetFrequency);
+
         do
         {
             ominousFrequency = Random.Range(minOminousFrequency, maxOminousFrequency);
-        } while (Mathf.Abs(ominousFrequency - targetFrequency) < 0.1f);
+        }
+        while (Mathf.Abs(ominousFrequency - targetFrequency) < 0.1f);
+
         submitTimer = submitDelay;
         lastFrequency = knobValue.frequency;
-        Debug.Log($"New target frequency: {targetFrequency:F1} MHz, Ominous frequency: {ominousFrequency:F1} MHz");
+
+        knobValue.frequency = knobValue.minFrequency;
+        UpdateFrequency();
+
+        Debug.Log($"[RESET INSTANT] T:{targetFrequency:F1} | O:{ominousFrequency:F1}");
+    }
+
+    void UpdateFrequency()
+    {
+        frequencyText.text = knobValue.frequency.ToString("F1") + " MHz";
+    }
+
+    void GetActiveCinemachineCamera()
+    {
+        Camera cam = Camera.main;
+        if (cam == null) return;
+
+        CinemachineBrain brain = cam.GetComponent<CinemachineBrain>();
+        if (brain == null || brain.ActiveVirtualCamera == null) return;
+
+        cineCamera = brain.ActiveVirtualCamera as CinemachineCamera;
+
+        if (cineCamera != null)
+            noise = cineCamera.GetComponent<CinemachineBasicMultiChannelPerlin>();
+    }
+
+    void GetMainCameraVolume()
+    {
+        Camera cam = Camera.main;
+        if (cam == null) return;
+
+        postProcessVolume = cam.GetComponent<Volume>();
+
+        if (postProcessVolume != null)
+        {
+            postProcessVolume.profile.TryGet(out filmGrain);
+            postProcessVolume.profile.TryGet(out vignette); // ✅ GET VIGNETTE
+        }
     }
 }

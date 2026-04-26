@@ -14,6 +14,10 @@ public class MirrorPieceRandomSpawner : MonoBehaviour
     public int numberOfPiecesToSpawn = 6;
     public float groundOffset = 0.5f;
 
+    [Header("Orientation Settings")]
+    [Tooltip("Adjust this to make the items lay down. Usually (90, 0, 0) or (0, 0, 90) works depending on the model.")]
+    public Vector3 layDownRotation = new Vector3(90f, 0f, 0f);
+
     private void Start()
     {
         SpawnMirrorPieces();
@@ -37,10 +41,12 @@ public class MirrorPieceRandomSpawner : MonoBehaviour
             Transform chosenPoint = availablePoints[randomIndex];
             Vector3 spawnPos = chosenPoint.position + new Vector3(0f, groundOffset, 0f);
 
+            Quaternion spawnRot = Quaternion.Euler(layDownRotation);
+
             GameObject spawnedBase = Instantiate(
                 mirrorPiecePrefab,
                 spawnPos,
-                Quaternion.identity,
+                spawnRot,
                 transform
             );
             spawnedBase.name = "SpawnedMirror_Piece_" + i;
@@ -49,7 +55,7 @@ public class MirrorPieceRandomSpawner : MonoBehaviour
                 uniqueVisualAssets[i],
                 spawnedBase.transform.position,
                 spawnedBase.transform.rotation,
-                spawnedBase.transform 
+                spawnedBase.transform
             );
             uniqueVisual.name = "UniqueVisualModel";
 

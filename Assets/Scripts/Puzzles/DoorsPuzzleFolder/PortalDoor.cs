@@ -5,24 +5,27 @@ using System.Collections;
 [RequireComponent(typeof(Collider))]
 public class PortalDoor : MonoBehaviour
 {
-    [Header("Portal Setup")]
     public Camera portalCamera;
     public PortalDoor linkedDoor;
     public Transform player;
+
     public Material idlePortalMaterial;
     public Material portalMaterialBase;
 
-    private Material portalRenderMat;
+    public DoorController linkedDoorController;
 
-    [Header("Settings")]
     public float interactDistance = 10f;
     public float portalActiveTime = 5f;
     public float backtrackBlockTime = 1.5f;
 
-    private bool portalActive = false;
-    private bool recentlyUsed = false;
 
-    private Renderer portalScreenRenderer;
+    public float linkedDoorOpenTime = 3f;
+
+    bool portalActive;
+    bool recentlyUsed;
+
+    Material runtimeMat;
+    Renderer portalRenderer;
 
     void Start()
     {
@@ -30,14 +33,13 @@ public class PortalDoor : MonoBehaviour
 
         Transform screen = transform.Find("Portal_Mesh");
         if (screen != null)
-            portalScreenRenderer = screen.GetComponent<Renderer>();
+            portalRenderer = screen.GetComponent<Renderer>();
 
-        // Create ONE material instance only
         if (portalMaterialBase != null)
-            portalRenderMat = new Material(portalMaterialBase);
+            runtimeMat = new Material(portalMaterialBase);
 
-        if (portalScreenRenderer != null)
-            portalScreenRenderer.material = idlePortalMaterial;
+        if (portalRenderer != null)
+            portalRenderer.material = idlePortalMaterial;
 
         if (portalCamera != null)
             portalCamera.enabled = false;
@@ -47,6 +49,9 @@ public class PortalDoor : MonoBehaviour
             GameObject obj = GameObject.FindGameObjectWithTag("Player");
             if (obj != null) player = obj.transform;
         }
+
+        if (linkedDoor != null)
+            linkedDoorController = linkedDoor.GetComponentInParent<DoorController>();
     }
 
     void Update()
@@ -57,7 +62,9 @@ public class PortalDoor : MonoBehaviour
 
         if (dist <= interactDistance && !recentlyUsed)
         {
-            if (Keyboard.current.fKey.wasPressedThisFrame && !portalActive)
+            if (Keyboard.current != null &&
+                Keyboard.current.fKey.wasPressedThisFrame &&
+                !portalActive)
             {
                 ActivatePortal();
             }
@@ -69,46 +76,70 @@ public class PortalDoor : MonoBehaviour
         if (!portalActive || portalCamera == null || linkedDoor == null || player == null)
             return;
 
-        TransformThroughPortalCamera();
+        UpdatePortalCamera();
         portalCamera.enabled = true;
     }
 
-    void TransformThroughPortalCamera()
+    void UpdatePortalCamera()
     {
         if (Camera.main == null) return;
 
-        Vector3 relativePos = transform.InverseTransformPoint(Camera.main.transform.position);
-        Quaternion relativeRot = Quaternion.Inverse(transform.rotation) * Camera.main.transform.rotation;
+        Vector3 pos = transform.InverseTransformPoint(Camera.main.transform.position);
+        Quaternion rot = Quaternion.Inverse(transform.rotation) * Camera.main.transform.rotation;
 
-        portalCamera.transform.position = linkedDoor.transform.TransformPoint(relativePos);
-        portalCamera.transform.rotation = linkedDoor.transform.rotation * relativeRot;
+        portalCamera.transform.position =
+            linkedDoor.transform.TransformPoint(pos);
+
+        portalCamera.transform.rotation =
+            linkedDoor.transform.rotation * rot;
 
         portalCamera.transform.Rotate(0f, 180f, 0f);
 
-        if (portalScreenRenderer != null && portalRenderMat != null)
+        if (portalRenderer != null && runtimeMat != null)
         {
-            portalRenderMat.mainTexture = portalCamera.targetTexture;
-            portalScreenRenderer.material = portalRenderMat;
+            runtimeMat.mainTexture = portalCamera.targetTexture;
+            portalRenderer.material = runtimeMat;
         }
     }
 
     void ActivatePortal()
     {
         portalActive = true;
-        StartCoroutine(AutoClosePortal(portalActiveTime));
+
+
+        if (linkedDoorController != null)
+        {
+            linkedDoorController.OpenFromPortal();
+            StartCoroutine(CloseLinkedDoorLater());
+        }
+
+        StartCoroutine(AutoClosePortal());
     }
 
-    IEnumerator AutoClosePortal(float delay)
+    IEnumerator AutoClosePortal()
     {
-        yield return new WaitForSeconds(delay);
+        yield return new WaitForSeconds(portalActiveTime);
 
         portalActive = false;
 
         if (portalCamera != null)
             portalCamera.enabled = false;
 
-        if (portalScreenRenderer != null)
-            portalScreenRenderer.material = idlePortalMaterial;
+        if (portalRenderer != null)
+            portalRenderer.material = idlePortalMaterial;
+
+        if (linkedDoorController != null)
+            linkedDoorController.ForceCloseFromPortal();
+    }
+
+    IEnumerator CloseLinkedDoorLater()
+    {
+        yield return new WaitForSeconds(linkedDoorOpenTime);
+
+        if (linkedDoorController != null)
+        {
+            linkedDoorController.ForceCloseFromPortal();
+        }
     }
 
     void OnTriggerEnter(Collider other)
@@ -117,39 +148,40 @@ public class PortalDoor : MonoBehaviour
 
         if (other.transform == player)
         {
-            TeleportPlayer(player);
+            Teleport(player);
 
-            // Block BOTH doors temporarily
             recentlyUsed = true;
             linkedDoor.recentlyUsed = true;
 
-            StartCoroutine(ResetBacktrack(backtrackBlockTime));
-            StartCoroutine(linkedDoor.ResetBacktrack(backtrackBlockTime));
+            StartCoroutine(ResetBacktrack());
+            StartCoroutine(linkedDoor.ResetBacktrack());
         }
     }
 
-    void TeleportPlayer(Transform player)
+    void Teleport(Transform t)
     {
-        if (linkedDoor == null || player == null) return;
+        Vector3 offset = t.position - transform.position;
 
-        Vector3 offset = player.position - transform.position;
+        Vector3 forward = Vector3.Project(offset, transform.forward);
+        Vector3 lateral = offset - forward;
 
-        Vector3 forwardComponent = Vector3.Project(offset, transform.forward);
-        Vector3 lateralComponent = offset - forwardComponent;
+        float dist = forward.magnitude;
 
-        float forwardDistance = forwardComponent.magnitude;
+        t.position =
+            linkedDoor.transform.position +
+            linkedDoor.transform.forward * dist +
+            lateral;
 
-        player.position = linkedDoor.transform.position
-                        + linkedDoor.transform.forward * forwardDistance
-                        + lateralComponent;
+        float rot = linkedDoor.transform.eulerAngles.y
+                  - transform.eulerAngles.y
+                  + 180f;
 
-        float deltaY = linkedDoor.transform.eulerAngles.y - transform.eulerAngles.y + 180f;
-        player.Rotate(0f, deltaY, 0f, Space.World);
+        t.Rotate(0f, rot, 0f, Space.World);
     }
 
-    IEnumerator ResetBacktrack(float delay)
+    IEnumerator ResetBacktrack()
     {
-        yield return new WaitForSeconds(delay);
+        yield return new WaitForSeconds(backtrackBlockTime);
         recentlyUsed = false;
     }
 }

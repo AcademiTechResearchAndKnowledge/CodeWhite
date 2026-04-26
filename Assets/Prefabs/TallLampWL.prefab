@@ -137,15 +137,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: e21b647e018bfce4389d00369cbc7743, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -9.7313
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e21b647e018bfce4389d00369cbc7743, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.4999999
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e21b647e018bfce4389d00369cbc7743, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -19.923134
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e21b647e018bfce4389d00369cbc7743, type: 3}
       propertyPath: m_LocalRotation.w
@@ -153,15 +153,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e21b647e018bfce4389d00369cbc7743, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e21b647e018bfce4389d00369cbc7743, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e21b647e018bfce4389d00369cbc7743, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e21b647e018bfce4389d00369cbc7743, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -275,23 +275,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e47502c1e4bff94dbda0e4150fe1569, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SimpleCandleInteract
-  message: 
+  buttonText: F
+  objectName: Tall Lamp
+  actionName: Light Up
   onInteraction:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 7149155817320898057}
-        m_TargetAssemblyTypeName: PickupSFX, Assembly-CSharp
-        m_MethodName: Play
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
   flame: {fileID: 529022171015057853}
+  audioSource: {fileID: 7598818523188349572}
+  turnOnSound: {fileID: 8300000, guid: a5dc29a8c8b7f1249bb0d2c4d80ecaa1, type: 3}
+  turnOffSound: {fileID: 8300000, guid: a5dc29a8c8b7f1249bb0d2c4d80ecaa1, type: 3}
 --- !u!114 &7149155817320898057
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -21,8 +21,6 @@ public class FlowerTeleport : Interactable
 
     private void Start()
     {
-        message = "Press F to collect flower";
-
         // Cache the player's transform to check distance later
         GameObject player = GameObject.FindGameObjectWithTag("Player");
         if (player != null)
