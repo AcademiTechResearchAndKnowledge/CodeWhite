@@ -10,15 +10,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 5bcb75810722c8249a15e1afa3a32fa9, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 6.5465903
+      value: -4.8499002
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 5bcb75810722c8249a15e1afa3a32fa9, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.921
+      value: 0.909
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 5bcb75810722c8249a15e1afa3a32fa9, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -16.485743
+      value: 3.98424
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 5bcb75810722c8249a15e1afa3a32fa9, type: 3}
       propertyPath: m_LocalRotation.w
@@ -48,6 +48,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: 5bcb75810722c8249a15e1afa3a32fa9, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 848a4b56b97d71f428c317fc8dc6f3fd, type: 2}
     - target: {fileID: 919132149155446097, guid: 5bcb75810722c8249a15e1afa3a32fa9, type: 3}
       propertyPath: m_Name
       value: FixedMirror
@@ -74,7 +78,7 @@ PrefabInstance:
       addedObject: {fileID: -6363610012673549711}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 5bcb75810722c8249a15e1afa3a32fa9, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 7194797128526770925}
+      addedObject: {fileID: 7991986001219142216}
   m_SourcePrefab: {fileID: 100100000, guid: 5bcb75810722c8249a15e1afa3a32fa9, type: 3}
 --- !u!1 &6131110864726957006 stripped
 GameObject:
@@ -109865,7 +109869,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 543c66aafda528e4ea15182b7331580f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Interactable
-  message: 
+  buttonText: E
+  objectName: Object
+  actionName: Interact
   onInteraction:
     m_PersistentCalls:
       m_Calls:
@@ -109922,7 +109928,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!64 &7194797128526770925
+--- !u!64 &7991986001219142216
 MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -109941,6 +109947,6 @@ MeshCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 5
-  m_Convex: 1
+  m_Convex: 0
   m_CookingOptions: 30
-  m_Mesh: {fileID: 5048107306707955097, guid: 5bcb75810722c8249a15e1afa3a32fa9, type: 3}
+  m_Mesh: {fileID: -2767207944793109021, guid: 5bcb75810722c8249a15e1afa3a32fa9, type: 3}
