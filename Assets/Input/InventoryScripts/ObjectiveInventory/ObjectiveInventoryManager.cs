@@ -105,12 +105,35 @@ public class ObjectiveInventoryManager : MonoBehaviour
     {
         selectedSlot = index;
         RefreshUI();
+
+        // --- NEW: Update the hand visuals when a slot is selected ---
+        HandController hand = FindFirstObjectByType<HandController>();
+        if (hand != null)
+        {
+            ObjectiveInventorySlot slot = GetSelectedSlot();
+            if (slot != null && !slot.IsEmpty())
+            {
+                // We use the new Data-based method we added to the HandController!
+                hand.EquipItemByData(slot.item);
+            }
+            else
+            {
+                hand.UnequipAll();
+            }
+        }
     }
 
     public void DeselectAll()
     {
         selectedSlot = -1;
         RefreshUI();
+
+        // --- NEW: Hide hand visuals when nothing is selected ---
+        HandController hand = FindFirstObjectByType<HandController>();
+        if (hand != null)
+        {
+            hand.UnequipAll();
+        }
     }
 
     public ObjectiveInventorySlot GetSelectedSlot()

@@ -10,27 +10,27 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: a003020684cfb274fa918f549147c2fa, type: 3}
       propertyPath: m_LocalScale.x
-      value: 75
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: a003020684cfb274fa918f549147c2fa, type: 3}
       propertyPath: m_LocalScale.y
-      value: 75
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: a003020684cfb274fa918f549147c2fa, type: 3}
       propertyPath: m_LocalScale.z
-      value: 75
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: a003020684cfb274fa918f549147c2fa, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 6.4926763
+      value: -3.940833
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: a003020684cfb274fa918f549147c2fa, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.7903403
+      value: 0.71
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: a003020684cfb274fa918f549147c2fa, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -14.461059
+      value: 4.046
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: a003020684cfb274fa918f549147c2fa, type: 3}
       propertyPath: m_LocalRotation.w
@@ -60,6 +60,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: a003020684cfb274fa918f549147c2fa, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 7716e18800219674ea268b9205763e70, type: 2}
     - target: {fileID: 919132149155446097, guid: a003020684cfb274fa918f549147c2fa, type: 3}
       propertyPath: m_Name
       value: Cobra
@@ -86,7 +90,7 @@ PrefabInstance:
       addedObject: {fileID: 7437845337550742080}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: a003020684cfb274fa918f549147c2fa, type: 3}
       insertIndex: -1
-      addedObject: {fileID: -3196908994330217145}
+      addedObject: {fileID: 778526730184163472}
   m_SourcePrefab: {fileID: 100100000, guid: a003020684cfb274fa918f549147c2fa, type: 3}
 --- !u!1 &1216001009907763359 stripped
 GameObject:
@@ -39417,7 +39421,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 543c66aafda528e4ea15182b7331580f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Interactable
-  message: 
+  buttonText: E
+  objectName: Object
+  actionName: Interact
   onInteraction:
     m_PersistentCalls:
       m_Calls:
@@ -39474,7 +39480,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!64 &-3196908994330217145
+--- !u!64 &778526730184163472
 MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -39493,6 +39499,6 @@ MeshCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 5
-  m_Convex: 1
+  m_Convex: 0
   m_CookingOptions: 30
-  m_Mesh: {fileID: 6379269468861650838, guid: a003020684cfb274fa918f549147c2fa, type: 3}
+  m_Mesh: {fileID: -8099566299494519584, guid: a003020684cfb274fa918f549147c2fa, type: 3}

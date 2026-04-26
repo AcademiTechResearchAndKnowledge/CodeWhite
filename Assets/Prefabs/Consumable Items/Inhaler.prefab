@@ -10,27 +10,27 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 43fe63d27e7205b4d980936beb1aa689, type: 3}
       propertyPath: m_LocalScale.x
-      value: 50
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 43fe63d27e7205b4d980936beb1aa689, type: 3}
       propertyPath: m_LocalScale.y
-      value: 50
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 43fe63d27e7205b4d980936beb1aa689, type: 3}
       propertyPath: m_LocalScale.z
-      value: 50
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 43fe63d27e7205b4d980936beb1aa689, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 6.794
+      value: -3.716
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 43fe63d27e7205b4d980936beb1aa689, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.609
+      value: 0.679
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 43fe63d27e7205b4d980936beb1aa689, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -14.4847765
+      value: 4.067
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 43fe63d27e7205b4d980936beb1aa689, type: 3}
       propertyPath: m_LocalRotation.w
@@ -60,6 +60,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: 43fe63d27e7205b4d980936beb1aa689, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 7641bbba0f436cd419257699ce41c297, type: 2}
     - target: {fileID: 919132149155446097, guid: 43fe63d27e7205b4d980936beb1aa689, type: 3}
       propertyPath: m_Name
       value: Inhaler
@@ -86,7 +90,7 @@ PrefabInstance:
       addedObject: {fileID: 7101624759989572894}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 43fe63d27e7205b4d980936beb1aa689, type: 3}
       insertIndex: -1
-      addedObject: {fileID: -2698470109516473451}
+      addedObject: {fileID: 8060434897696896724}
   m_SourcePrefab: {fileID: 100100000, guid: 43fe63d27e7205b4d980936beb1aa689, type: 3}
 --- !u!1 &4561899675154089424 stripped
 GameObject:
@@ -35211,7 +35215,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 543c66aafda528e4ea15182b7331580f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Interactable
-  message: 
+  buttonText: E
+  objectName: Object
+  actionName: Interact
   onInteraction:
     m_PersistentCalls:
       m_Calls:
@@ -35268,7 +35274,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!64 &-2698470109516473451
+--- !u!64 &8060434897696896724
 MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -35287,6 +35293,6 @@ MeshCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 5
-  m_Convex: 1
+  m_Convex: 0
   m_CookingOptions: 30
-  m_Mesh: {fileID: 701788109683122973, guid: 43fe63d27e7205b4d980936beb1aa689, type: 3}
+  m_Mesh: {fileID: -7137160790143997384, guid: 43fe63d27e7205b4d980936beb1aa689, type: 3}

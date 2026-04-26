@@ -2,29 +2,45 @@ using UnityEngine;
 
 public class HandController : MonoBehaviour
 {
-    public void EquipItemByName(string itemName)
+    [Header("Randomized Book Models")]
+    public GameObject[] handBookModels;
+
+    public void EquipItemByData(ObjectiveItemData itemData)
     {
-        // First, hide every item in the hand
         UnequipAll();
 
-        if (string.IsNullOrEmpty(itemName)) return;
+        if (itemData == null) return;
 
-        // Search the children of the Hand for one with the exact matching name
-        Transform itemModel = transform.Find(itemName);
+        // 1. Logic for Randomized Books
+        if (itemData.bookType != LibraryBookType.None)
+        {
+            if (itemData.visualIndex >= 0 && itemData.visualIndex < handBookModels.Length)
+            {
+                GameObject model = handBookModels[itemData.visualIndex];
+                if (model != null)
+                {
+                    model.SetActive(true);
+                    Debug.Log($"[Hand] Activating BOOK model: {model.name} at index {itemData.visualIndex}");
+                    return; // Stop here if it's a book
+                }
+            }
+        }
 
+        // 2. Logic for Regular Items (Fallback)
+        Transform itemModel = transform.Find(itemData.itemName);
         if (itemModel != null)
         {
             itemModel.gameObject.SetActive(true);
+            Debug.Log($"[Hand] Activating REGULAR model by name: {itemModel.name}");
         }
         else
         {
-            Debug.LogWarning($"HandController: No 3D model found in Hand named '{itemName}'. Make sure the GameObject name matches the ScriptableObject itemName exactly!");
+            Debug.LogWarning($"[Hand] Could not find any model for: {itemData.itemName}");
         }
     }
 
     public void UnequipAll()
     {
-        // Loop through all children and disable them
         foreach (Transform child in transform)
         {
             child.gameObject.SetActive(false);
