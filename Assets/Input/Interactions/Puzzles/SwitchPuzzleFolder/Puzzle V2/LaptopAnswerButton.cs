@@ -1,14 +1,28 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
-// FOR LAPTOP'S BUTTONS OBJECTS
-public class LaptopAnswerButton : Interactable
+public class LaptopAnswerButton : MonoBehaviour
 {
-    [Header("Which answer index this represents (0, 1, or 2)")]
     public int answerIndex = 0;
+    public objectZoom zoomScript;
 
-    public override void Interact()
+    void Update()
     {
-        base.Interact();
-        LaptopManager.Instance.OnAnswerSelected(answerIndex);
+        if (zoomScript == null || !zoomScript.isInPuzzle) return;
+
+        if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
+            RaycastHit hit;
+
+            if (Physics.Raycast(ray, out hit))
+            {
+                if (hit.transform == transform)
+                {
+                    Debug.Log("Clicked answer: " + answerIndex);
+                    LaptopManager.Instance.OnAnswerSelected(answerIndex);
+                }
+            }
+        }
     }
 }

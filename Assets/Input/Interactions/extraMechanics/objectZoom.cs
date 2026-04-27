@@ -1,5 +1,6 @@
 using UnityEngine;
 using Unity.Cinemachine;
+using UnityEngine.InputSystem;
 
 public class objectZoom : MonoBehaviour
 {
@@ -60,6 +61,20 @@ public class objectZoom : MonoBehaviour
     {
         if (mainObjHandler == null)
             EnsureHandler();
+
+
+        if (isInPuzzle && canInteract && Keyboard.current.escapeKey.wasPressedThisFrame)
+        {
+            canInteract = false;
+
+            ExitPuzzle();
+            isInPuzzle = false;
+
+            if (mainObjHandler != null)
+                mainObjHandler.IsInteracting = false;
+
+            Invoke(nameof(ResetInteract), 0.5f);
+        }
     }
 
     public void InteractZoomObj()

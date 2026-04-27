@@ -12,16 +12,16 @@ public class LaptopInteractable : Interactable
 
     private IEnumerator KillOutlineAfterSetup()
     {
-        // Wait exactly 1 frame for QuickOutline to finish turning itself on
+
         yield return new WaitForEndOfFrame();
 
-        // Safely shut it down so the laptop doesn't glow when the game starts!
+       
         DisableOutline();
     }
 
     public override void Interact()
     {
-        base.Interact(); // fires UnityEvent if needed
-        LaptopManager.Instance.ToggleLaptop();
+        base.Interact(); 
+        LaptopManager.Instance.StartInteraction();
     }
 }

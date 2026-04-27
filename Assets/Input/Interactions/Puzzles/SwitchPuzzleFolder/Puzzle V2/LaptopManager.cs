@@ -1,8 +1,8 @@
 using UnityEngine;
 using TMPro;
 
-// FOR LAPTOP'S PARENT OBJECT THAT HANDLES THE UI AND LOGIC OF THE QUESTION AND ANSWERS
-public class LaptopManager : MonoBehaviour
+// FOR LAPTOP'S PARENT OBJECT THAT HANDLES UI AND LOGIC
+public class LaptopManager : MonoBehaviour, IZoomInteractable
 {
     public static LaptopManager Instance;
 
@@ -12,7 +12,7 @@ public class LaptopManager : MonoBehaviour
     public TMP_Text feedbackText;
     public TMP_Text progressText;
 
-    [Header("3D Answer objects on the laptop (LaptopAnswerButton components)")]
+    [Header("3D Answer objects on the laptop")]
     public LaptopAnswerButton[] answerButtons;
     public TMP_Text[] answerLabels;
 
@@ -20,10 +20,15 @@ public class LaptopManager : MonoBehaviour
     private bool answersUnlocked = false;
     private string pendingHint = "";
 
+    public bool IsInteracting { get; set; }
+
     void Awake()
     {
         Instance = this;
-        laptopCanvas.SetActive(false);
+
+        if (laptopCanvas != null)
+            laptopCanvas.SetActive(false);
+
         SetupAnswerLabels();
         SetAnswerButtonsInteractable(false);
     }
@@ -31,41 +36,62 @@ public class LaptopManager : MonoBehaviour
     void SetupAnswerLabels()
     {
         if (answerLabels == null) return;
+
         for (int i = 0; i < answerLabels.Length; i++)
+        {
             if (answerLabels[i] != null)
                 answerLabels[i].text = "Button " + (i + 1);
+        }
     }
 
-    public void ToggleLaptop()
+
+    public void StartInteraction()
     {
-        laptopOpen = !laptopOpen;
-        laptopCanvas.SetActive(laptopOpen);
-        if (laptopOpen) RefreshUI();
+        IsInteracting = true;
+
+        laptopOpen = true;
+
+        if (laptopCanvas != null)
+            laptopCanvas.SetActive(true);
+
+        RefreshUI();
+    }
+
+
+    public void StopInteraction()
+    {
+        IsInteracting = false;
+
+        laptopOpen = false;
+
+        if (laptopCanvas != null)
+            laptopCanvas.SetActive(false);
     }
 
     void RefreshUI()
     {
         if (SwitchPuzzleManager.Instance.puzzleComplete) return;
+
         questionText.text = "Which button lights up the bulb?";
         UpdateProgress();
 
-        // Show bulb hint if player already checked it, otherwise show nothing
         feedbackText.text = pendingHint != "" ? pendingHint : "";
     }
 
     void UpdateProgress()
     {
         if (progressText != null)
-            progressText.text = "Round " + (SwitchPuzzleManager.Instance.completedCount + 1)
-                                + " / " + SwitchPuzzleManager.Instance.requiredCount;
+        {
+            progressText.text = "Round " +
+                (SwitchPuzzleManager.Instance.completedCount + 1) +
+                " / " + SwitchPuzzleManager.Instance.requiredCount;
+        }
     }
 
     public void UnlockAnswers()
     {
         answersUnlocked = true;
         SetAnswerButtonsInteractable(true);
-        // Do NOT clear pendingHint here — player may not have checked bulb yet
-        // pendingHint is only cleared when a new round fully begins
     }
 
     void LockAnswers()
@@ -85,13 +111,13 @@ public class LaptopManager : MonoBehaviour
         if (SwitchPuzzleManager.Instance.CheckAnswer(buttonIndex))
         {
             feedbackText.text = "You got the right answer!";
-            pendingHint = "";           // clear hint — new round starting
+            pendingHint = "";
             SwitchPuzzleManager.Instance.RegisterCorrectAnswer();
         }
         else
         {
             feedbackText.text = "That's wrong — try again!";
-            pendingHint = "";           // clear hint — player must press buttons again
+            pendingHint = "";
             SwitchPuzzleManager.Instance.RegisterWrongAnswer();
             ButtonController.Instance.UnlockButtons();
         }
@@ -100,8 +126,12 @@ public class LaptopManager : MonoBehaviour
     void SetAnswerButtonsInteractable(bool state)
     {
         if (answerButtons == null) return;
+
         foreach (var btn in answerButtons)
-            if (btn != null) btn.enabled = state;
+        {
+            if (btn != null)
+                btn.enabled = state;
+        }
     }
 
     public void ResetQuestion()
@@ -112,10 +142,10 @@ public class LaptopManager : MonoBehaviour
         UpdateProgress();
     }
 
-    // Bulb calls this — only updates text, never opens the laptop
     public void ShowHint(string message)
     {
         pendingHint = message;
+
         if (laptopOpen)
             feedbackText.text = pendingHint;
     }
@@ -123,10 +153,16 @@ public class LaptopManager : MonoBehaviour
     public void ShowObjectiveComplete()
     {
         laptopOpen = true;
-        laptopCanvas.SetActive(true);
+
+        if (laptopCanvas != null)
+            laptopCanvas.SetActive(true);
+
         questionText.text = "Objective complete!";
         feedbackText.text = "You solved all five rounds. Well done.";
-        if (progressText != null) progressText.text = "Done!";
+
+        if (progressText != null)
+            progressText.text = "Done!";
+
         SetAnswerButtonsInteractable(false);
     }
 }
