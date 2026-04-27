@@ -18,7 +18,8 @@ public class DoorControllerGeneral : Interactable
     // NEW: Reference to the tutorial manager
     private TutorialManager tutorialManager;
 
-    private void Awake()
+    // Replace Awake() with Start()
+    private void Start()
     {
         // Auto-find the TutorialManager in the scene so you don't have to drag-and-drop it manually
         tutorialManager = FindAnyObjectByType<TutorialManager>();

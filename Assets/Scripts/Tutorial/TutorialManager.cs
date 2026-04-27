@@ -81,7 +81,7 @@ public class TutorialManager : MonoBehaviour
             case TutorialState.Flashlight:
                 if (hasMouse && Mouse.current.rightButton.wasPressedThisFrame)
                 {
-                    if (itemOutline != null) itemOutline.enabled = true;
+                    // Removed the item outline trigger from here
                     AdvanceTutorial(TutorialState.Crouch, "Press Left Ctrl to crouch");
                 }
                 break;
@@ -89,6 +89,8 @@ public class TutorialManager : MonoBehaviour
             case TutorialState.Crouch:
                 if (hasKeyboard && Keyboard.current.leftCtrlKey.wasPressedThisFrame)
                 {
+                    // Added the item outline trigger here, right as the pickup step starts!
+                    if (itemOutline != null) itemOutline.enabled = true;
                     AdvanceTutorial(TutorialState.Pickup, "Press F to pick-up the item");
                 }
                 break;

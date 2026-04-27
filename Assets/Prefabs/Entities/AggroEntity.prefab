@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 3611706386184231585}
   - component: {fileID: 8934304621936965354}
   - component: {fileID: 8153744887335417617}
+  - component: {fileID: 1910312625541969482}
   m_Layer: 0
   m_Name: AggroEntity
   m_TagString: Untagged
@@ -173,6 +174,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AggroJumpscareTrigger
   catchRadius: 2.5
+--- !u!114 &1910312625541969482
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6382491877930326060}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d90cd422cce19164cbd9029d8599cdbd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EntityDespawner
+  despawnParticlePrefab: {fileID: 6447101056442956672, guid: 5ff1d84a33bb279478699070075a0c15, type: 3}
 --- !u!1 &6742883429937065023
 GameObject:
   m_ObjectHideFlags: 0

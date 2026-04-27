@@ -29,7 +29,7 @@ public class ButtonController : MonoBehaviour
     private int secondPressedButton = -1;
     private int pressCount = 0;
     private bool buttonsLocked = false;
-    private bool doorIsOpen = true;
+    // REMOVED: private bool doorIsOpen = true;
 
     void Awake()
     {
@@ -41,6 +41,8 @@ public class ButtonController : MonoBehaviour
         ApplyDoorState(true);
         SetBulbState(false);
 
+        // Note: You had these two lines written twice in your original script, 
+        // I left them as-is but you can safely delete one pair!
         ApplyDoorState(true);
         SetBulbState(false);
     }
@@ -49,15 +51,14 @@ public class ButtonController : MonoBehaviour
     {
         if (buttonsLocked) return;
         if (pressCount >= 2) return;
-        
+
         //First press
         if (pressCount == 0)
         {
-            
             firstPressedButton = buttonIndex;
             SetButtonVisual(buttonIndex, true);
 
-            doorIsOpen = false;
+            // REMOVED: doorIsOpen = false;
             ApplyDoorState(false);
 
             bool firstIsCorrect = SwitchPuzzleManager.Instance.CheckAnswer(buttonIndex);
@@ -75,7 +76,7 @@ public class ButtonController : MonoBehaviour
             secondPressedButton = buttonIndex;
             SetButtonVisual(buttonIndex, true);
 
-            doorIsOpen = true;
+            // REMOVED: doorIsOpen = true;
             ApplyDoorState(true);
 
             bool secondIsCorrect = SwitchPuzzleManager.Instance.CheckAnswer(buttonIndex);

@@ -20,6 +20,9 @@ public class InventoryManager : MonoBehaviour
         }
 
         Instance = this;
+
+        transform.SetParent(null);
+
         DontDestroyOnLoad(gameObject);
 
         while (slots.Count < hotbarSize)

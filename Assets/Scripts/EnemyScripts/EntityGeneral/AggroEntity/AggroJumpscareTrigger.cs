@@ -1,5 +1,6 @@
 using UnityEngine;
 
+[RequireComponent(typeof(EntityDespawner))] // This ensures the new script is always attached!
 public class AggroJumpscareTrigger : MonoBehaviour
 {
     [Header("Catch Settings")]
@@ -10,10 +11,12 @@ public class AggroJumpscareTrigger : MonoBehaviour
     private bool hasCaughtPlayer = false;
 
     private AggroEntityDetector entityDetector;
+    private EntityDespawner despawner; // Reference to our new script
 
     private void Start()
     {
         entityDetector = GetComponent<AggroEntityDetector>();
+        despawner = GetComponent<EntityDespawner>(); // Grab the script
 
         if (entityDetector == null)
         {
@@ -53,8 +56,17 @@ public class AggroJumpscareTrigger : MonoBehaviour
         // 2. Jumpscare Effects
         Debug.Log("[Jumpscare System] Jumpscare sequence initiated.");
 
-        // 3. Entity Disappears
+        // 3. Entity Disappears using the new script!
         Debug.Log("[Entity Action] Entity is now disappearing.");
-        Destroy(gameObject);
+
+        if (despawner != null)
+        {
+            despawner.DespawnWithParticles();
+        }
+        else
+        {
+            // Fallback just in case the component is missing
+            Destroy(gameObject);
+        }
     }
 }

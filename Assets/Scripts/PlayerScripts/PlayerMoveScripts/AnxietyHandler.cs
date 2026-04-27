@@ -19,10 +19,25 @@ public class AnxietyHandler : MonoBehaviour
     [SerializeField] private float proximityRadius = 5f;
     [SerializeField] private float gazeAnxietyRate = 5f;
     [SerializeField] private float proximityAnxietyRate = 2f;
-    [SerializeField] private float anxietyDecayRate = 1f;
 
     [Header("Chase State")]
     [SerializeField] private bool isBeingChased = false;
+    [SerializeField] private float chaseAnxietyRate = 4f;
+
+    [Header("Anxiety Limits")]
+    [Range(0f, 1f)]
+    [Tooltip("The max percentage anxiety can reach passively (e.g., 0.95 means it stops at 95% and won't kill the player).")]
+    [SerializeField] private float safeAnxietyThreshold = 0.95f;
+
+    [Header("Anxiety Cooldown Settings")]
+    [Tooltip("How many seconds the player must be completely safe before anxiety starts going down.")]
+    [SerializeField] private float decayDelay = 3f;
+    [Tooltip("The starting (slow) speed of anxiety decreasing.")]
+    [SerializeField] private float minDecayRate = 0.5f;
+    [Tooltip("The maximum (fast) speed of anxiety decreasing.")]
+    [SerializeField] private float maxDecayRate = 5f;
+    [Tooltip("How many seconds it takes for the decay to speed up from min to max rate.")]
+    [SerializeField] private float decayAccelerationTime = 4f;
 
     [Header("Vignette Settings")]
     [SerializeField] private float vignetteThreshold = 0.7f;
@@ -44,6 +59,8 @@ public class AnxietyHandler : MonoBehaviour
 
     private bool isLookingAtAnxietyObject = false;
     private bool isNearAnxietyObject = false;
+
+    private float safeTimer = 0f;
 
     private void Awake()
     {
@@ -93,7 +110,9 @@ public class AnxietyHandler : MonoBehaviour
 
     private void UpdateVisualEffects(float anxietyPercent)
     {
-        float t = Mathf.InverseLerp(vignetteThreshold, 1f, anxietyPercent);
+        float actualVignetteThreshold = Mathf.Min(vignetteThreshold, safeAnxietyThreshold - 0.05f);
+
+        float t = Mathf.InverseLerp(actualVignetteThreshold, safeAnxietyThreshold, anxietyPercent);
 
         float rawPulse = Mathf.Sin(Time.time * (pulseSpeed + anxietyPercent * 4f));
         float smoothPulse = rawPulse * rawPulse;
@@ -119,11 +138,9 @@ public class AnxietyHandler : MonoBehaviour
         {
             if (isBeingChased)
             {
-                float chaseT = Mathf.InverseLerp(vignetteThreshold, 1f, anxietyPercent);
-
-                float targetStart = Mathf.Lerp(0f, 2f, chaseT);
-                float targetEnd = Mathf.Lerp(3f, 0.5f, chaseT);
-                float targetRadius = Mathf.Lerp(0f, blurMax, chaseT) + pulse * 0.5f;
+                float targetStart = Mathf.Lerp(0f, 2f, t);
+                float targetEnd = Mathf.Lerp(3f, 0.5f, t);
+                float targetRadius = Mathf.Lerp(0f, blurMax, t) + pulse * 0.5f;
 
                 _dof.gaussianStart.value = Mathf.Lerp(_dof.gaussianStart.value, targetStart, Time.deltaTime * 2f);
                 _dof.gaussianEnd.value = Mathf.Lerp(_dof.gaussianEnd.value, targetEnd, Time.deltaTime * 2f);
@@ -137,12 +154,14 @@ public class AnxietyHandler : MonoBehaviour
             }
         }
 
-        // ─── LIFT / GAMMA / GAIN (ANXIETY ≥ 90 ONLY) ───
+        // ─── LIFT / GAMMA / GAIN ───
         if (_color != null && _color.active)
         {
-            if (anxietyPercent >= 0.9f)
+            float colorTriggerThreshold = Mathf.Min(0.9f, safeAnxietyThreshold - 0.05f);
+
+            if (anxietyPercent >= colorTriggerThreshold)
             {
-                float t90 = Mathf.InverseLerp(0.9f, 1f, anxietyPercent);
+                float t90 = Mathf.InverseLerp(colorTriggerThreshold, safeAnxietyThreshold, anxietyPercent);
 
                 float rawPulse90 = Mathf.Sin(Time.time * (pulseSpeed + anxietyPercent * 4f));
                 float smoothPulse90 = rawPulse90 * rawPulse90;
@@ -192,21 +211,48 @@ public class AnxietyHandler : MonoBehaviour
 
     private void UpdateAnxiety()
     {
-        if (isLookingAtAnxietyObject)
-            playerStats.AddStat(StatType.ANX, gazeAnxietyRate * Time.deltaTime);
-        else if (isNearAnxietyObject)
-            playerStats.AddStat(StatType.ANX, proximityAnxietyRate * Time.deltaTime);
+        float anxietyPercent = playerStats.Anxiety / playerStats.MaxAnxiety;
+
+        bool isAnxietyTriggered = isLookingAtAnxietyObject || isBeingChased || isNearAnxietyObject;
+
+        if (isAnxietyTriggered)
+        {
+            safeTimer = 0f;
+
+            if (anxietyPercent < safeAnxietyThreshold)
+            {
+                float rateToApply = 0f;
+
+                if (isLookingAtAnxietyObject) rateToApply = gazeAnxietyRate;
+                else if (isBeingChased) rateToApply = chaseAnxietyRate;
+                else if (isNearAnxietyObject) rateToApply = proximityAnxietyRate;
+
+                playerStats.AddStat(StatType.ANX, rateToApply * Time.deltaTime);
+            }
+        }
         else
-            playerStats.SubtractStat(StatType.ANX, anxietyDecayRate * Time.deltaTime);
+        {
+            safeTimer += Time.deltaTime;
+
+            if (safeTimer >= decayDelay)
+            {
+                float timeDecaying = safeTimer - decayDelay;
+                float accelerationProgress = Mathf.Clamp01(timeDecaying / decayAccelerationTime);
+                float currentDecayRate = Mathf.Lerp(minDecayRate, maxDecayRate, accelerationProgress);
+
+                playerStats.SubtractStat(StatType.ANX, currentDecayRate * Time.deltaTime);
+            }
+        }
     }
 
     private void UpdateHeartbeat(float anxietyPercent)
     {
         if (heartbeatAudio == null) return;
 
-        if (anxietyPercent >= 0.5f)
+        float threshold = Mathf.Min(0.5f, safeAnxietyThreshold - 0.1f);
+        if (anxietyPercent >= threshold)
         {
-            float t = Mathf.InverseLerp(0.5f, 1f, anxietyPercent);
+            float t = Mathf.InverseLerp(threshold, safeAnxietyThreshold, anxietyPercent);
             heartbeatAudio.volume = Mathf.Lerp(0.2f, 1f, t);
             heartbeatAudio.pitch = Mathf.Lerp(1f, 2f, t);
         }
@@ -220,9 +266,10 @@ public class AnxietyHandler : MonoBehaviour
     {
         if (tinnitusAudio == null) return;
 
-        if (anxietyPercent >= 0.7f)
+        float threshold = Mathf.Min(0.7f, safeAnxietyThreshold - 0.1f);
+        if (anxietyPercent >= threshold)
         {
-            float t = Mathf.InverseLerp(0.7f, 1f, anxietyPercent);
+            float t = Mathf.InverseLerp(threshold, safeAnxietyThreshold, anxietyPercent);
             tinnitusAudio.volume = Mathf.Lerp(0f, 0.8f, t);
         }
         else

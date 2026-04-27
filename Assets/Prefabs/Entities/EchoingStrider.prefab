@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 8675746594992830675}
   - component: {fileID: 2549337013168010615}
   - component: {fileID: 6990575794844935158}
+  - component: {fileID: 8729386197256166000}
   m_Layer: 0
   m_Name: EchoingStrider
   m_TagString: Untagged
@@ -171,6 +172,19 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.5358801, y: 2.1080883, z: 0.22580147}
   m_Center: {x: 0.00679636, y: 0.11819017, z: -0.020842552}
+--- !u!114 &8729386197256166000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1494158274258225996}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d90cd422cce19164cbd9029d8599cdbd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EntityDespawner
+  despawnParticlePrefab: {fileID: 6447101056442956672, guid: 5ff1d84a33bb279478699070075a0c15, type: 3}
 --- !u!1 &8711021652589354924
 GameObject:
   m_ObjectHideFlags: 0

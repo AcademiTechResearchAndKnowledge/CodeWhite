@@ -164,6 +164,7 @@ GameObject:
   - component: {fileID: 1040059604848658668}
   - component: {fileID: 1999547841456152935}
   - component: {fileID: 7262503085784493595}
+  - component: {fileID: 4132009113031236398}
   m_Layer: 0
   m_Name: Whisperer
   m_TagString: Untagged
@@ -319,3 +320,16 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.7771945, y: 1.2447749, z: 0.22580147}
   m_Center: {x: -0.014309168, y: -0.3134666, z: -0.020842552}
+--- !u!114 &4132009113031236398
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4949122076645541926}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d90cd422cce19164cbd9029d8599cdbd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EntityDespawner
+  despawnParticlePrefab: {fileID: 6447101056442956672, guid: 5ff1d84a33bb279478699070075a0c15, type: 3}
