@@ -22,9 +22,7 @@ public class objectZoom : MonoBehaviour
 
     void Start()
     {
-        mainObjHandler = GetComponent<IZoomInteractable>();
-        if (mainObjHandler == null)
-            mainObjHandler = GetComponentInParent<IZoomInteractable>();
+        EnsureHandler();
 
         if (playerController == null)
             playerController = FindFirstObjectByType<PlayerMovement>();
@@ -46,24 +44,29 @@ public class objectZoom : MonoBehaviour
         }
 
         if (playerVCam == null)
-            playerVCam = FindCamera("VCam");
+            playerVCam = FindCamera("vcam");
 
         if (puzzleVCam == null)
-            puzzleVCam = FindCamera("puzzleCam");
+            puzzleVCam = FindCamera("puzzlecam");
 
-        if (playerVCam != null) playerVCam.Priority = 20;
-        if (puzzleVCam != null) puzzleVCam.Priority = -10;
+        if (playerVCam != null)
+            playerVCam.Priority = 100;
+
+        if (puzzleVCam != null)
+            puzzleVCam.Priority = 0;
     }
 
     void Update()
     {
         if (mainObjHandler == null)
-            mainObjHandler = GetComponent<IZoomInteractable>();
+            EnsureHandler();
     }
 
     public void InteractZoomObj()
     {
         if (!canInteract) return;
+
+        EnsureHandler();
 
         canInteract = false;
         isInPuzzle = !isInPuzzle;
@@ -76,7 +79,7 @@ public class objectZoom : MonoBehaviour
         else
             ExitPuzzle();
 
-        Invoke(nameof(ResetInteract), 0.2f);
+        Invoke(nameof(ResetInteract), 0.5f);
     }
 
     private void EnterPuzzle()
@@ -84,8 +87,11 @@ public class objectZoom : MonoBehaviour
         if (interactableText != null)
             interactableText.SetActive(false);
 
-        if (playerVCam != null) playerVCam.Priority = 0;
-        if (puzzleVCam != null) puzzleVCam.Priority = 20;
+        if (playerVCam != null)
+            playerVCam.Priority = 0;
+
+        if (puzzleVCam != null)
+            puzzleVCam.Priority = 200;
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
@@ -100,12 +106,7 @@ public class objectZoom : MonoBehaviour
         }
 
         if (fl != null)
-        {
-            if (fl.torchLight != null)
-                fl.torchLight.enabled = false;
-
             fl.enabled = false;
-        }
 
         mainObjHandler?.StartInteraction();
     }
@@ -115,8 +116,11 @@ public class objectZoom : MonoBehaviour
         if (interactableText != null)
             interactableText.SetActive(true);
 
-        if (playerVCam != null) playerVCam.Priority = 20;
-        if (puzzleVCam != null) puzzleVCam.Priority = 0;
+        if (playerVCam != null)
+            playerVCam.Priority = 100;
+
+        if (puzzleVCam != null)
+            puzzleVCam.Priority = 0;
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
@@ -150,9 +154,20 @@ public class objectZoom : MonoBehaviour
         canInteract = true;
     }
 
+    private void EnsureHandler()
+    {
+        if (mainObjHandler == null)
+        {
+            mainObjHandler = GetComponent<IZoomInteractable>();
+            if (mainObjHandler == null)
+                mainObjHandler = GetComponentInParent<IZoomInteractable>();
+        }
+    }
+
     private CinemachineCamera FindCamera(string keyword)
     {
-        CinemachineCamera[] cams = FindObjectsByType<CinemachineCamera>(FindObjectsSortMode.None);
+        CinemachineCamera[] cams =
+            FindObjectsByType<CinemachineCamera>(FindObjectsSortMode.None);
 
         foreach (var cam in cams)
         {
