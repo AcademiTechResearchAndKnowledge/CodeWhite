@@ -13,6 +13,9 @@ public class PersistentUI : MonoBehaviour
         }
 
         instance = this;
+
+        transform.SetParent(null);
+
         DontDestroyOnLoad(gameObject);
     }
 }

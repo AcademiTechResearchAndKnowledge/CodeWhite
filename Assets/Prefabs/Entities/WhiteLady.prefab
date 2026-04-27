@@ -104,7 +104,7 @@ GameObject:
   - component: {fileID: 298422338705649736}
   - component: {fileID: 7918944528095286349}
   - component: {fileID: 3173191234832584804}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: WhiteLadySprite
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -175,7 +175,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -318233146, guid: f436004e3249e004089f583177546f67, type: 3}
+  m_Sprite: {fileID: -1722285446, guid: 53dc2eeb5f4f4e144a81ff4455b79f5b, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -359,8 +359,8 @@ MonoBehaviour:
   weepLocation: {fileID: 0}
   submitHitbox: {fileID: 141484224165313357}
   specialStateInterval: 5
-  teleportChance: 0
-  weepChance: 100
+  teleportChance: 75
+  weepChance: 20
   teleportSearchRadius: 10
   teleportSampleCount: 20
   teleportIdleDuration: 2
@@ -384,7 +384,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 0.3
+  m_Volume: 0.1
   m_Pitch: 1
   Loop: 0
   Mute: 0

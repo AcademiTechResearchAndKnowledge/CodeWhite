@@ -8,7 +8,7 @@ public class SlideScript : MonoBehaviour
     public float friction = 0.05f;
 
     private Rigidbody playerRb;
-    private bool isOnIce = false;
+    // REMOVED: private bool isOnIce = false;
     private Vector3 groundNormal;
 
     private void OnCollisionEnter(Collision collision)
@@ -16,7 +16,7 @@ public class SlideScript : MonoBehaviour
         if (collision.collider.CompareTag("Player"))
         {
             playerRb = collision.collider.GetComponent<Rigidbody>();
-            isOnIce = true;
+            // REMOVED: isOnIce = true;
         }
     }
 
@@ -24,7 +24,7 @@ public class SlideScript : MonoBehaviour
     {
         if (!collision.collider.CompareTag("Player")) return;
 
-        isOnIce = true;
+        // REMOVED: isOnIce = true;
         playerRb = collision.collider.GetComponent<Rigidbody>();
 
         ContactPoint contact = collision.GetContact(0);
@@ -37,7 +37,7 @@ public class SlideScript : MonoBehaviour
     {
         if (collision.collider.CompareTag("Player"))
         {
-            isOnIce = false;
+            // REMOVED: isOnIce = false;
             playerRb = null;
         }
     }

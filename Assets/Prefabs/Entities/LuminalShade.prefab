@@ -247,8 +247,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: abc6785d1e11ce84b8b32f3540ca5a7c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EntityWondering
+  currentState: 0
   wanderRadius: 5
   wanderTimer: 3
+  localSearchDuration: 10
+  relocateDistance: 30
 --- !u!114 &7235650958482405561
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -265,6 +268,7 @@ MonoBehaviour:
   hideAllowedRange: 12
   loseRange: 15
   crouchSafeDistance: 3
+  investigateStopDistance: 5
   isLookingPlayer: 0
   canHideFromEnemy: 0
   distanceToPlayer: 0

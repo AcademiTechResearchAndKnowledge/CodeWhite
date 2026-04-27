@@ -21,6 +21,9 @@ public class ObjectiveInventoryManager : MonoBehaviour
         }
 
         Instance = this;
+
+        transform.SetParent(null);
+
         DontDestroyOnLoad(gameObject);
 
         while (slots.Count < objectiveSize)

@@ -11,7 +11,7 @@ public class DoorController : Interactable
 
     public float autoCloseDelay = 3f;
 
-    private bool isBusy = false;
+    // REMOVED: private bool isBusy = false;
     private bool locked;
 
     private enum DoorState
@@ -31,7 +31,7 @@ public class DoorController : Interactable
     {
         if (locked || doorAnimator == null) return;
 
-        
+
         if (portal != null && !portal.CanInteractWithDoor())
             return;
 
