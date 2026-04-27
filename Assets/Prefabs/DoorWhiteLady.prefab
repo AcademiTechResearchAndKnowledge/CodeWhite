@@ -110,7 +110,7 @@ PrefabInstance:
       addedObject: {fileID: 9049597081826470664}
     - targetCorrespondingSourceObject: {fileID: 7083803182008094071, guid: 1e96889930e69ca4faa2610d07358561, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 4956663394824939060}
+      addedObject: {fileID: 2906287213468183046}
     - targetCorrespondingSourceObject: {fileID: 7083803182008094071, guid: 1e96889930e69ca4faa2610d07358561, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6238508163884624240}
@@ -160,7 +160,7 @@ MonoBehaviour:
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []
---- !u!114 &4956663394824939060
+--- !u!114 &2906287213468183046
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -169,16 +169,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 849936090570923539}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 516de8671fc917240bce7792817f7356, type: 3}
+  m_Script: {fileID: 11500000, guid: 68bcd56b88ca43646b69664ce473e6b0, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DoorController
+  m_EditorClassIdentifier: Assembly-CSharp::DoorControllerGeneral
   buttonText: F
   objectName: Door
-  actionName: Open Door
+  actionName: Interact Door
   onInteraction:
     m_PersistentCalls:
       m_Calls: []
-  doorAnimator: {fileID: 2505984464449708879}
+  doorAnimator: {fileID: 0}
   animationStepDelay: 0.5
 --- !u!65 &6238508163884624240
 BoxCollider:

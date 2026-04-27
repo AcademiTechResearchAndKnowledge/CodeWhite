@@ -3,6 +3,10 @@ using UnityEngine.InputSystem;
 
 public class PlayerMovement : MonoBehaviour
 {
+    [Header("Tutorial Locks")]
+    public bool canSprint = true;
+    public bool canCrouch = true;
+
     public Transform body;
     [SerializeField] private Transform cameraHolder;
 
@@ -67,7 +71,9 @@ public class PlayerMovement : MonoBehaviour
     void Update()
     {
         CheckGround();
-        isSprinting = Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed;
+
+        // SPRINT CHECK: Only sprint if canSprint is true
+        isSprinting = canSprint && Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed;
 
         HandleCrouch();
         HandleStamina();
@@ -100,8 +106,11 @@ public class PlayerMovement : MonoBehaviour
     {
         if (Keyboard.current == null) return;
 
-        bool wantsToCrouch = Keyboard.current.leftCtrlKey.isPressed;
+        // CROUCH CHECK: Only crouch if canCrouch is true
+        bool wantsToCrouch = canCrouch && Keyboard.current.leftCtrlKey.isPressed;
 
+        // Force the player to stay crouched if they let go (or if canCrouch suddenly turns false) 
+        // but there is a ceiling above them
         if (!wantsToCrouch && currentCrouchWeight > 0f && !CanStand())
         {
             wantsToCrouch = true;

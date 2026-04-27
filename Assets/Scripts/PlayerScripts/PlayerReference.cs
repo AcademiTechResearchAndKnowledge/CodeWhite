@@ -8,4 +8,5 @@ public class PlayerReferences : MonoBehaviour
     public Flashlight flashlightScript;
     public MeshRenderer bodyMeshRenderer;
     public CinemachineCamera playerCam;
+    public PlayerLook playerLook;
 }
