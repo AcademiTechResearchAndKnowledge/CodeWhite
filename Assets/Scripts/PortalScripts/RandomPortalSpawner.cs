@@ -7,11 +7,12 @@ public class RandomPortalSpawner : MonoBehaviour
     [SerializeField] private bool spawnOnlyOnce = true;
 
     [Header("Scene Settings")]
-    [SerializeField] private string nextSceneName; 
+    [SerializeField] private string nextSceneName;
 
     [Header("Where it can spawn")]
     [SerializeField] private BoxCollider[] spawnAreas;
     [SerializeField] private LayerMask portalspawnMask;
+    [SerializeField] private LayerMask ceilingMask;
 
     [Header("Spawn search")]
     [SerializeField] private int attempts = 25;
@@ -22,19 +23,8 @@ public class RandomPortalSpawner : MonoBehaviour
 
     public void SpawnPortalRandom()
     {
-        if (portalPrefab == null)
-        {
-            Debug.LogError("[RandomPortalSpawner] portalPrefab not assigned.");
-            return;
-        }
-
-        if (spawnOnlyOnce && spawned) return;
-
-        if (spawnAreas == null || spawnAreas.Length == 0)
-        {
-            Debug.LogError("[RandomPortalSpawner] Assign at least 1 BoxCollider in spawnAreas.");
-            return;
-        }
+        if (portalPrefab == null || spawned && spawnOnlyOnce) return;
+        if (spawnAreas == null || spawnAreas.Length == 0) return;
 
         for (int i = 0; i < attempts; i++)
         {
@@ -45,21 +35,28 @@ public class RandomPortalSpawner : MonoBehaviour
 
             if (Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, raycastHeight * 2f, portalspawnMask))
             {
-                Vector3 spawnPos = hit.point + Vector3.up * groundOffset;
+                Vector3 spawnPos;
 
+               
+                Vector3 ceilingOrigin = hit.point + Vector3.down * 0.5f;
 
-                GameObject portalInstance = Instantiate(portalPrefab, spawnPos, Quaternion.identity);
-
-
-                PortalNextStage portalScript = portalInstance.GetComponent<PortalNextStage>();
-
-                if (portalScript != null)
+                if (Physics.Raycast(ceilingOrigin, Vector3.up, out RaycastHit ceilingHit, raycastHeight * 2f, ceilingMask))
                 {
-                    portalScript.nextSceneName = nextSceneName;
+
+                    spawnPos = ceilingHit.point;
                 }
                 else
                 {
-                    Debug.LogWarning("[RandomPortalSpawner] PortalNextStage not found on prefab.");
+    
+                    spawnPos = hit.point + Vector3.up * groundOffset;
+                }
+
+                GameObject portalInstance = Instantiate(portalPrefab, spawnPos, Quaternion.identity);
+
+                PortalNextStage portalScript = portalInstance.GetComponent<PortalNextStage>();
+                if (portalScript != null)
+                {
+                    portalScript.nextSceneName = nextSceneName;
                 }
 
                 spawned = true;
@@ -67,7 +64,7 @@ public class RandomPortalSpawner : MonoBehaviour
             }
         }
 
-        Debug.LogWarning("[RandomPortalSpawner] Failed to find valid ground point.");
+        Debug.LogWarning("[RandomPortalSpawner] Failed to find valid spawn point.");
     }
 
     private Vector3 RandomPointInBox(Bounds b)

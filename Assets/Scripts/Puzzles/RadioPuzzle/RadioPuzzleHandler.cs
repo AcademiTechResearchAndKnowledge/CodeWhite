@@ -10,6 +10,7 @@ public class RadioPuzzleHandler : MonoBehaviour
     [SerializeField] public TextMeshPro frequencyText;
     [SerializeField] public KnobRotate knobValue;
     [SerializeField] public objectZoom objZoom;
+    public RandomPortalSpawner RPS;
 
     public float minTargetFrequency = 88.0f;
     public float maxTargetFrequency = 108.0f;
@@ -20,12 +21,14 @@ public class RadioPuzzleHandler : MonoBehaviour
     public float ominousPushForce = 5f;
     public float verticalPushForce = 2f;
 
+    [SerializeField] private int requiredSuccesses = 3;
+    private int currentSuccesses = 0;
+
     [SerializeField] private float maxFrequencyGain = 3f;
     [SerializeField] private float damping = 2f;
 
     [SerializeField] private float maxFilmGrain = 1f;
     [SerializeField] private float grainDamping = 2f;
-
 
     [SerializeField] private float maxVignette = 0.5f;
     [SerializeField] private float vignetteDamping = 2f;
@@ -37,7 +40,7 @@ public class RadioPuzzleHandler : MonoBehaviour
 
     private Volume postProcessVolume;
     private FilmGrain filmGrain;
-    private Vignette vignette; 
+    private Vignette vignette;
 
     private float targetFrequency;
     private float ominousFrequency;
@@ -46,6 +49,7 @@ public class RadioPuzzleHandler : MonoBehaviour
 
     private bool puzzleActive = false;
     private bool fadingOut = false;
+    private bool puzzleCompleted = false;
 
     void Start()
     {
@@ -56,7 +60,7 @@ public class RadioPuzzleHandler : MonoBehaviour
 
     void Update()
     {
-        if (puzzleActive && objZoom.isInPuzzle)
+        if (puzzleActive && objZoom.isInPuzzle && !puzzleCompleted)
         {
             HandlePuzzle();
         }
@@ -84,7 +88,7 @@ public class RadioPuzzleHandler : MonoBehaviour
         if (submitTimer <= 0f)
         {
             SubmitFrequency();
-            submitTimer = 0f;
+            submitTimer = submitDelay;
         }
 
         ApplyEffects(dist);
@@ -92,7 +96,6 @@ public class RadioPuzzleHandler : MonoBehaviour
 
     void ApplyEffects(float dist)
     {
-        // CAMERA SHAKE
         if (noise != null)
         {
             noise.FrequencyGain = dist < 0.5f
@@ -100,14 +103,12 @@ public class RadioPuzzleHandler : MonoBehaviour
                 : Mathf.Lerp(noise.FrequencyGain, 0f, Time.deltaTime * damping);
         }
 
-        // FILM GRAIN
         if (filmGrain != null)
         {
             filmGrain.intensity.value = dist < 0.5f
                 ? Mathf.Lerp(0f, maxFilmGrain, 1f - dist / 0.5f)
                 : Mathf.Lerp(filmGrain.intensity.value, 0f, Time.deltaTime * grainDamping);
         }
-
 
         if (vignette != null)
         {
@@ -129,23 +130,61 @@ public class RadioPuzzleHandler : MonoBehaviour
         if (filmGrain != null)
             filmGrain.intensity.value = Mathf.Lerp(filmGrain.intensity.value, 0f, t);
 
-
         if (vignette != null)
             vignette.intensity.value = Mathf.Lerp(vignette.intensity.value, 0f, t);
     }
 
     public void SubmitFrequency()
     {
-        if (Mathf.Abs(knobValue.frequency - ominousFrequency) < 0.1f)
+        float current = knobValue.frequency;
+
+        Debug.Log($"[SUBMIT] Player: {current:F1} | Target: {targetFrequency:F1} | Ominous: {ominousFrequency:F1}");
+
+        if (Mathf.Abs(current - ominousFrequency) < 0.1f)
         {
+            Debug.Log($"[OMINOUS HIT] {current:F1} | Round failed (progress preserved)");
             StartCoroutine(ExitAndPushPlayer());
             return;
         }
 
-        if (Mathf.Abs(knobValue.frequency - targetFrequency) < 0.1f)
+        if (Mathf.Abs(current - targetFrequency) < 0.1f)
         {
+            currentSuccesses++;
+            Debug.Log($"[CORRECT] {currentSuccesses}/{requiredSuccesses}");
+
+            if (currentSuccesses >= requiredSuccesses)
+            {
+                CompletePuzzle();
+            }
+            else
+            {
+                StartCoroutine(NextRound());
+            }
+
             knobValue.submitted = true;
         }
+        else
+        {
+            Debug.Log($"[WRONG] Player: {current:F1} | Target: {targetFrequency:F1} | Ominous: {ominousFrequency:F1}");
+        }
+    }
+
+    IEnumerator NextRound()
+    {
+        yield return new WaitForSeconds(1f);
+        ResetPuzzleImmediate();
+    }
+
+    void CompletePuzzle()
+    {
+        puzzleCompleted = true;
+        puzzleActive = false;
+
+        RPS.SpawnPortalRandom();
+
+        Debug.Log("[PUZZLE COMPLETED] All rounds finished");
+
+        objZoom.ExitPuzzle();
     }
 
     IEnumerator ExitAndPushPlayer()
@@ -172,11 +211,13 @@ public class RadioPuzzleHandler : MonoBehaviour
             rb.AddForce(dir * ominousPushForce, ForceMode.Impulse);
         }
 
-        ResetPuzzleImmediate();
+        StartCoroutine(NextRound());
     }
 
     void ResetPuzzleImmediate()
     {
+        if (puzzleCompleted) return;
+
         puzzleActive = true;
 
         knobValue.ResetKnob();
@@ -197,7 +238,8 @@ public class RadioPuzzleHandler : MonoBehaviour
         knobValue.frequency = knobValue.minFrequency;
         UpdateFrequency();
 
-        Debug.Log($"[RESET INSTANT] T:{targetFrequency:F1} | O:{ominousFrequency:F1}");
+        Debug.Log($"[ROUND START] {currentSuccesses}/{requiredSuccesses}");
+        Debug.Log($"[TARGET] {targetFrequency:F1} | [OMINOUS] {ominousFrequency:F1}");
     }
 
     void UpdateFrequency()
@@ -229,7 +271,7 @@ public class RadioPuzzleHandler : MonoBehaviour
         if (postProcessVolume != null)
         {
             postProcessVolume.profile.TryGet(out filmGrain);
-            postProcessVolume.profile.TryGet(out vignette); // ✅ GET VIGNETTE
+            postProcessVolume.profile.TryGet(out vignette);
         }
     }
 }

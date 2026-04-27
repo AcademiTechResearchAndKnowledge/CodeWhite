@@ -31,7 +31,8 @@ public class PortalNextStage : MonoBehaviour
     {
         playerLook = Object.FindFirstObjectByType<PlayerLook>();
 
-        CinemachineCamera[] cams = Object.FindObjectsByType<CinemachineCamera>(FindObjectsSortMode.None);
+        CinemachineCamera[] cams =
+            Object.FindObjectsByType<CinemachineCamera>(FindObjectsSortMode.None);
 
         foreach (var cam in cams)
         {
@@ -42,38 +43,30 @@ public class PortalNextStage : MonoBehaviour
                 lookUpCam = cam;
         }
 
-        if (lookUpCam == null && cams.Length > 1)
-            lookUpCam = cams[1];
-
         GameObject target = new GameObject("AutoLookTarget");
         lookTarget = target.transform;
+
+        if (lookUpCam != null)
+            lookUpCam.gameObject.SetActive(false);
     }
 
     private void Start()
     {
         fadeObject = GameObject.Find("FadeScreen");
 
-        if (fadeObject == null)
+        if (fadeObject != null)
         {
-            Debug.LogWarning("[PortalNextStage] FadeScreen not found.");
-            return;
+            fadeImage = fadeObject.GetComponentInChildren<Image>();
+
+            if (fadeImage != null)
+            {
+                Color c = fadeImage.color;
+                c.a = 0f;
+                fadeImage.color = c;
+            }
+
+            fadeObject.SetActive(true);
         }
-
-        fadeImage = fadeObject.GetComponentInChildren<Image>();
-
-        if (fadeImage == null)
-        {
-            Debug.LogWarning("[PortalNextStage] Image not found under FadeScreen.");
-            return;
-        }
-
-        Color c = fadeImage.color;
-        c.a = 0f;
-        fadeImage.color = c;
-
-        fadeObject.SetActive(true);
-
-        Debug.Log("[PortalNextStage] Fade system initialized.");
     }
 
     private void OnTriggerEnter(Collider other)
@@ -82,16 +75,11 @@ public class PortalNextStage : MonoBehaviour
         if (!other.CompareTag(playerTag)) return;
 
         used = true;
-
-        Debug.Log("[PortalNextStage] Trigger entered by player.");
-
         StartCoroutine(Sequence(other.transform));
     }
 
     private IEnumerator Sequence(Transform player)
     {
-        Debug.Log("[PortalNextStage] Sequence started.");
-
         Rigidbody rb = player.GetComponent<Rigidbody>();
         if (rb != null)
         {
@@ -104,13 +92,14 @@ public class PortalNextStage : MonoBehaviour
             playerLook.canLook = false;
 
         if (lookUpCam != null)
+        {
+            lookUpCam.gameObject.SetActive(true);
             lookUpCam.Priority = 100;
+            lookUpCam.LookAt = lookTarget;
+        }
 
         if (mainCam != null)
             mainCam.Priority = 0;
-
-        if (lookUpCam != null)
-            lookUpCam.LookAt = lookTarget;
 
         Vector3 startPos = player.position;
         Vector3 targetPos = transform.position;
@@ -130,12 +119,11 @@ public class PortalNextStage : MonoBehaviour
                 lookTarget.position = player.position + Vector3.up * lookHeight;
 
             float fadeT = Mathf.InverseLerp(fadeStartPoint, 1f, t);
-            fadeT = Mathf.Clamp01(fadeT);
 
             if (fadeImage != null)
             {
                 Color c = fadeImage.color;
-                c.a = fadeT;
+                c.a = Mathf.Clamp01(fadeT);
                 fadeImage.color = c;
             }
 
@@ -143,8 +131,6 @@ public class PortalNextStage : MonoBehaviour
         }
 
         player.position = transform.position + Vector3.up * liftHeight;
-
-        Debug.Log("[PortalNextStage] Movement finished, loading scene.");
 
         yield return new WaitForSeconds(0.3f);
 
@@ -154,14 +140,8 @@ public class PortalNextStage : MonoBehaviour
     void LoadNextScene()
     {
         if (!string.IsNullOrEmpty(nextSceneName))
-        {
-            Debug.Log("[PortalNextStage] Loading scene: " + nextSceneName);
             SceneManager.LoadScene(nextSceneName);
-        }
         else
-        {
-            Debug.Log("[PortalNextStage] Loading next scene index.");
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
-        }
     }
 }
