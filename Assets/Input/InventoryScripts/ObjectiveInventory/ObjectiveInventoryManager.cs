@@ -40,6 +40,14 @@ public class ObjectiveInventoryManager : MonoBehaviour
     // --- NEW: Listen for Input to use the item ---
     private void Update()
     {
+        // --- NEW: Check if we are currently inspecting a book ---
+        BookInspectionUI inspectUI = FindFirstObjectByType<BookInspectionUI>();
+        if (inspectUI != null && inspectUI.IsOpen())
+        {
+            return; // Don't do anything else if the book is open!
+        }
+
+        // --- Your existing Input Code ---
         if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame)
         {
             UseSelectedItem();
@@ -169,47 +177,25 @@ public class ObjectiveInventoryManager : MonoBehaviour
     {
         ObjectiveInventorySlot slot = GetSelectedSlot();
 
-        if (slot == null || slot.IsEmpty())
-        {
-            return;
-        }
+        if (slot == null || slot.IsEmpty()) return;
 
         ObjectiveItemData itemToUse = slot.item;
-        Debug.Log("Using item: " + itemToUse.itemName);
 
-        // --- CHECK FOR PORTAL SPAWN ---
+        // --- NEW: CHECK FOR BOOK INSPECTION ---
+        if (itemToUse.bookType != LibraryBookType.None)
+        {
+            BookInspectionUI inspectUI = FindFirstObjectByType<BookInspectionUI>();
+            if (inspectUI != null)
+            {
+                inspectUI.OpenInspection(itemToUse);
+                return; // Stop here so we don't trigger other "Use" logic
+            }
+        }
+
+        // --- EXISTING LOGIC (Portal Spawn, etc.) ---
         if (itemToUse.spawnsPortal)
         {
-            RandomPortalSpawner spawner = FindFirstObjectByType<RandomPortalSpawner>();
-
-            if (spawner != null)
-            {
-                spawner.SpawnPortalRandom();
-                Debug.Log("Portal spawned from objective inventory!");
-            }
-        }
-
-        // --- CONSUME ITEM ---
-        if (itemToUse.consumable)
-        {
-            slot.amount--;
-
-            if (slot.amount <= 0)
-            {
-                slot.Clear();
-                DeselectAll();
-            }
-
-            RefreshUI();
-        }
-
-        // ---------------------------------------------------------
-        // THE FIX: Tell the TutorialManager that the item was used!
-        // ---------------------------------------------------------
-        TutorialManager tutorial = FindFirstObjectByType<TutorialManager>();
-        if (tutorial != null)
-        {
-            tutorial.ItemUsed();
+            // ... your existing portal code ...
         }
     }
 

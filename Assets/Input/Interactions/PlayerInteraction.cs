@@ -81,10 +81,10 @@ public class PlayerInteraction : MonoBehaviour
 
         currentInteractable = newInteractable;
         currentInteractable.EnableOutline();
-        
+
         HUDInteractController.Instance.EnableInteractionText(
-            currentInteractable.buttonText, 
-            currentInteractable.objectName, 
+            currentInteractable.buttonText,
+            currentInteractable.objectName,
             currentInteractable.actionName
         );
     }
