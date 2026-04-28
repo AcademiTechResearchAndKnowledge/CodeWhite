@@ -1,7 +1,6 @@
 using UnityEngine;
 using Unity.Cinemachine;
 using UnityEngine.InputSystem;
-using System.Collections;
 
 public class objectZoom : MonoBehaviour
 {
@@ -10,9 +9,11 @@ public class objectZoom : MonoBehaviour
     [SerializeField] private MonoBehaviour interactableObject;
     private IZoomInteractable mainObjHandler;
 
-    public CinemachineCamera playerVCam;
-    public CinemachineCamera puzzleVCam;
+    [Header("Cameras")]
+    public CinemachineCamera playerVCam;   // runtime assigned
+    public CinemachineCamera puzzleVCam;   // assign in Inspector
 
+    [Header("Player")]
     public PlayerMovement playerController;
     public PlayerLook playerlookCamera;
     public Flashlight fl;
@@ -27,6 +28,15 @@ public class objectZoom : MonoBehaviour
     void Start()
     {
         EnsureHandler();
+
+    
+        playerVCam = PlayerCameraReference.Instance;
+
+        if (playerVCam == null)
+            Debug.LogError("Player VCam NOT FOUND (PlayerCameraReference missing)");
+
+        if (puzzleVCam == null)
+            Debug.LogError("Puzzle VCam NOT ASSIGNED in Inspector");
 
         if (playerController == null)
             playerController = FindFirstObjectByType<PlayerMovement>();
@@ -47,23 +57,8 @@ public class objectZoom : MonoBehaviour
                 interactableText = ui;
         }
 
-        if (playerVCam == null)
-            playerVCam = FindCamera("vcam");
 
-        if (puzzleVCam == null)
-            puzzleVCam = FindCamera("puzzlecam");
-
-        if (playerVCam != null)
-            playerVCam.Priority = 100;
-
-        if (puzzleVCam != null)
-            puzzleVCam.Priority = 0;
-
-        if (playerVCam == null)
-            Debug.LogError("Player VCam NOT FOUND");
-
-        if (puzzleVCam == null)
-            Debug.LogError("Puzzle VCam NOT FOUND");
+        SetCameraState(false);
     }
 
     void Update()
@@ -78,6 +73,8 @@ public class objectZoom : MonoBehaviour
 
             if (mainObjHandler != null)
                 mainObjHandler.IsInteracting = false;
+
+            SetCameraState(false);
         }
     }
 
@@ -98,20 +95,19 @@ public class objectZoom : MonoBehaviour
         else
             ExitPuzzle();
 
-        StartCoroutine(SwitchCamera());
+        SetCameraState(isInPuzzle);
     }
 
-    private IEnumerator SwitchCamera()
+    
+    private void SetCameraState(bool puzzleActive)
     {
-        yield return null;
-
         if (playerVCam != null)
-            playerVCam.Priority = isInPuzzle ? 0 : 100;
+            playerVCam.Priority = puzzleActive ? 0 : 100;
 
         if (puzzleVCam != null)
-            puzzleVCam.Priority = isInPuzzle ? 200 : 0;
+            puzzleVCam.Priority = puzzleActive ? 200 : 0;
 
-        Debug.Log("CAM SWITCH | playerCam: " + playerVCam.Priority + " puzzleCam: " + puzzleVCam.Priority);
+        Debug.Log($"CAM SWITCH | player: {playerVCam?.Priority} puzzle: {puzzleVCam?.Priority}");
     }
 
     private void EnterPuzzle()
@@ -183,19 +179,5 @@ public class objectZoom : MonoBehaviour
             if (mainObjHandler == null)
                 mainObjHandler = GetComponentInParent<IZoomInteractable>();
         }
-    }
-
-    private CinemachineCamera FindCamera(string keyword)
-    {
-        CinemachineCamera[] cams =
-            FindObjectsByType<CinemachineCamera>(FindObjectsSortMode.None);
-
-        foreach (var cam in cams)
-        {
-            if (cam.gameObject.name.ToLower().Contains(keyword.ToLower()))
-                return cam;
-        }
-
-        return null;
     }
 }
