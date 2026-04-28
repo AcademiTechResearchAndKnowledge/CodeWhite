@@ -11,6 +11,10 @@ public class InventoryManager : MonoBehaviour
 
     public int selectedSlot = 0;
 
+    // --- NEW: Audio Source Reference ---
+    [Header("Audio")]
+    public AudioSource audioSource;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -126,6 +130,14 @@ public class InventoryManager : MonoBehaviour
 
         ItemData item = slot.item;
 
+        // ---------------------------------------------------------
+        // NEW: PLAY THE SOUND EFFECT!
+        // ---------------------------------------------------------
+        if (audioSource != null && item.useSound != null)
+        {
+            audioSource.PlayOneShot(item.useSound);
+        }
+
         Debug.Log(item.useDebugMessage);
 
         if (item.affectsStats)
@@ -222,6 +234,7 @@ public class InventoryManager : MonoBehaviour
 
         RefreshUI();
     }
+
     public void DeselectAll()
     {
         selectedSlot = -1;

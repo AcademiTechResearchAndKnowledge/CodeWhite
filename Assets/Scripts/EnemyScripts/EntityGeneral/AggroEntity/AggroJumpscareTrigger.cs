@@ -7,7 +7,14 @@ public class AggroJumpscareTrigger : MonoBehaviour
     [Tooltip("How close the entity needs to be to catch the player.")]
     public float catchRadius = 2.5f;
 
+    // „Ÿ„Ÿ„Ÿ NEW: Anxiety Spike Settings „Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ
+    [Header("Anxiety Penalty")]
+    [Tooltip("Percentage of Max Anxiety to add when caught (e.g., 25 means 25% of the bar).")]
+    [Range(0f, 100f)]
+    public float anxietySpikePercentage = 25f;
+
     private Transform playerTransform;
+    private PlayerStats playerStats; // Reference to apply the anxiety spike
     private bool hasCaughtPlayer = false;
 
     private AggroEntityDetector entityDetector;
@@ -23,6 +30,7 @@ public class AggroJumpscareTrigger : MonoBehaviour
             Debug.LogError("AggroJumpscareTrigger: Cannot find AggroEntityDetector script on this entity!");
         }
 
+        // 1. Find PlayerFollow for the distance check
         GameObject playerObj = GameObject.FindGameObjectWithTag("PlayerFollow");
         if (playerObj != null)
         {
@@ -31,6 +39,21 @@ public class AggroJumpscareTrigger : MonoBehaviour
         else
         {
             Debug.LogError("AggroJumpscareTrigger: No object with tag 'PlayerFollow' found in the scene.");
+        }
+
+        // 2. Find the actual Player for the stats (Anxiety)
+        GameObject actualPlayer = GameObject.FindGameObjectWithTag("Player");
+        if (actualPlayer != null)
+        {
+            playerStats = actualPlayer.GetComponent<PlayerStats>();
+            if (playerStats == null)
+            {
+                Debug.LogError("AggroJumpscareTrigger: No PlayerStats found on the Player object!");
+            }
+        }
+        else
+        {
+            Debug.LogError("AggroJumpscareTrigger: No object with tag 'Player' found in the scene for stats.");
         }
     }
 
@@ -50,13 +73,18 @@ public class AggroJumpscareTrigger : MonoBehaviour
     {
         hasCaughtPlayer = true;
 
-        // 1. Placeholder for the Anxiety System
-        Debug.Log("[Anxiety System] Player caught! Anxiety increased by 25.");
+        // 1. Calculate and apply the Anxiety Spike
+        if (playerStats != null)
+        {
+            float anxietyToAdd = (anxietySpikePercentage / 100f) * playerStats.MaxAnxiety;
+            playerStats.AddStat(StatType.ANX, anxietyToAdd);
+            Debug.Log($"[Anxiety System] Player caught! Added {anxietySpikePercentage}% ({anxietyToAdd} raw points) to Anxiety.");
+        }
 
         // 2. Jumpscare Effects
         Debug.Log("[Jumpscare System] Jumpscare sequence initiated.");
 
-        // 3. Entity Disappears using the new script!
+        // 3. Entity Disappears using the despawner script
         Debug.Log("[Entity Action] Entity is now disappearing.");
 
         if (despawner != null)

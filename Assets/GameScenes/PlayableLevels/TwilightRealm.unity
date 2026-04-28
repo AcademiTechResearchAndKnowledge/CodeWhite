@@ -1042,12 +1042,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RandomPortalSpawner
   portalPrefab: {fileID: 5588175437650982449, guid: 382ee694ce2f65341919b2b76bb093ef, type: 3}
   spawnOnlyOnce: 1
-  nextSceneName: 
+  portalOrientation: 0
+  levelCounter: 0
+  excludedScenes: []
   spawnAreas:
   - {fileID: 987547883}
   portalspawnMask:
     serializedVersion: 2
     m_Bits: 128
+  ceilingMask:
+    serializedVersion: 2
+    m_Bits: 0
   attempts: 25
   raycastHeight: 50
   groundOffset: 1.1

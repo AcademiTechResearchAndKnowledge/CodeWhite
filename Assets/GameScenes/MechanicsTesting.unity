@@ -1064,7 +1064,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RandomPortalSpawner
   portalPrefab: {fileID: 5588175437650982449, guid: 382ee694ce2f65341919b2b76bb093ef, type: 3}
   spawnOnlyOnce: 1
-  nextSceneName: 
+  portalOrientation: 0
+  levelCounter: 0
+  excludedScenes: []
   spawnAreas:
   - {fileID: 987547883}
   portalspawnMask:
@@ -3289,7 +3291,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7372747374758709090, guid: 0b22c692fabe61e48840fcca9973ab18, type: 3}
       propertyPath: anxietySpikePercentage
-      value: 100
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 8381466429770710576, guid: 0b22c692fabe61e48840fcca9973ab18, type: 3}
       propertyPath: playerReference

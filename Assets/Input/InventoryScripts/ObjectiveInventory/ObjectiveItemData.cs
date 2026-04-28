@@ -24,6 +24,9 @@ public class ObjectiveItemData : ScriptableObject
     public bool consumable = true;
     public bool spawnsPortal = false;
 
+    [Header("Audio")]
+    public AudioClip useSound;
+
     [Header("Drop")]
     public GameObject worldPrefab;
 

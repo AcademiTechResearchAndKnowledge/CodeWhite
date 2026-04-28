@@ -35,4 +35,7 @@ public class ItemData : ScriptableObject
 
     [Header("Drop")]
     public GameObject worldPrefab;
+
+    [Header("Audio")]
+    public AudioClip useSound;
 }

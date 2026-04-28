@@ -14,8 +14,14 @@ public class BookInspectionUI : MonoBehaviour
     private bool isInspecting = false;
     private bool openedThisFrame = false;
 
+    // --- NEW: Cache the player references ---
+    private PlayerReferences playerRefs;
+
     private void Start()
     {
+        // Find the player references once when the game starts
+        playerRefs = FindFirstObjectByType<PlayerReferences>();
+
         CloseInspection();
     }
 
@@ -23,14 +29,12 @@ public class BookInspectionUI : MonoBehaviour
     {
         if (!isInspecting) return;
 
-        // Safeguard: Don't allow closing on the exact same frame it opened
         if (openedThisFrame)
         {
             openedThisFrame = false;
             return;
         }
 
-        // Check for E or ESC using the New Input System
         if (Keyboard.current != null)
         {
             if (Keyboard.current.eKey.wasPressedThisFrame || Keyboard.current.escapeKey.wasPressedThisFrame)
@@ -43,10 +47,9 @@ public class BookInspectionUI : MonoBehaviour
     public void OpenInspection(ObjectiveItemData bookData)
     {
         isInspecting = true;
-        openedThisFrame = true; // Prevents instant closing
+        openedThisFrame = true;
         mainPanel.SetActive(true);
 
-        // Reset visuals
         signedVisual.SetActive(false);
         forgedVisual.SetActive(false);
         unsignedVisual.SetActive(false);
@@ -58,16 +61,32 @@ public class BookInspectionUI : MonoBehaviour
             case LibraryBookType.Unsigned: unsignedVisual.SetActive(true); break;
         }
 
-        // Optional: Block player movement here
+        // --- NEW: Disable Mouse Look ---
+        if (playerRefs != null && playerRefs.playerLook != null)
+        {
+            playerRefs.playerLook.enabled = false;
+        }
+
+        // Unlock cursor so the player can use the UI "Close" button
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 
     public void CloseInspection()
     {
         isInspecting = false;
         mainPanel.SetActive(false);
-        // Optional: Re-enable player movement here
+
+        // --- NEW: Re-enable Mouse Look ---
+        if (playerRefs != null && playerRefs.playerLook != null)
+        {
+            playerRefs.playerLook.enabled = true;
+        }
+
+        // Lock cursor back to the center of the screen for gameplay
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 
-    // Helper method for the Inventory Manager to check status
     public bool IsOpen() => isInspecting;
 }

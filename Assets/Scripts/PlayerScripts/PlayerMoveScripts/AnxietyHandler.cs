@@ -80,13 +80,11 @@ public class AnxietyHandler : MonoBehaviour
         if (heartbeatAudio != null)
         {
             heartbeatAudio.volume = 0f;
-            if (!heartbeatAudio.isPlaying) heartbeatAudio.Play();
         }
 
         if (tinnitusAudio != null)
         {
             tinnitusAudio.volume = 0f;
-            if (!tinnitusAudio.isPlaying) tinnitusAudio.Play();
         }
     }
 
@@ -96,7 +94,7 @@ public class AnxietyHandler : MonoBehaviour
         CheckProximity();
         UpdateAnxiety();
 
-        float anxietyPercent = playerStats.Anxiety / playerStats.MaxAnxiety;
+        float anxietyPercent = (float)playerStats.Anxiety / (float)playerStats.MaxAnxiety;
 
         UpdateHeartbeat(anxietyPercent);
         UpdateTinnitus(anxietyPercent);
@@ -111,7 +109,6 @@ public class AnxietyHandler : MonoBehaviour
     private void UpdateVisualEffects(float anxietyPercent)
     {
         float actualVignetteThreshold = Mathf.Min(vignetteThreshold, safeAnxietyThreshold - 0.05f);
-
         float t = Mathf.InverseLerp(actualVignetteThreshold, safeAnxietyThreshold, anxietyPercent);
 
         float rawPulse = Mathf.Sin(Time.time * (pulseSpeed + anxietyPercent * 4f));
@@ -124,17 +121,12 @@ public class AnxietyHandler : MonoBehaviour
             float baseIntensity = Mathf.Lerp(0f, vignetteMaxIntensity, t);
             float intensity = baseIntensity + pulse * pulseStrength;
 
-            _vignette.intensity.value = Mathf.Lerp(
-                _vignette.intensity.value,
-                intensity,
-                Time.deltaTime * 2f
-            );
-
-            _vignette.color.value = Color.Lerp(Color.black, new Color(0.4f, 0f, 0f), t);
+            _vignette.intensity.Override(Mathf.Lerp(_vignette.intensity.value, intensity, Time.deltaTime * 2f));
+            _vignette.color.Override(Color.Lerp(Color.black, new Color(0.4f, 0f, 0f), t));
         }
 
         // ─── BLUR (CHASE ONLY) ────────────────────
-        if (_dof != null)
+        if (_dof != null && _dof.active)
         {
             if (isBeingChased)
             {
@@ -142,15 +134,15 @@ public class AnxietyHandler : MonoBehaviour
                 float targetEnd = Mathf.Lerp(3f, 0.5f, t);
                 float targetRadius = Mathf.Lerp(0f, blurMax, t) + pulse * 0.5f;
 
-                _dof.gaussianStart.value = Mathf.Lerp(_dof.gaussianStart.value, targetStart, Time.deltaTime * 2f);
-                _dof.gaussianEnd.value = Mathf.Lerp(_dof.gaussianEnd.value, targetEnd, Time.deltaTime * 2f);
-                _dof.gaussianMaxRadius.value = Mathf.Lerp(_dof.gaussianMaxRadius.value, targetRadius, Time.deltaTime * 2f);
+                _dof.gaussianStart.Override(Mathf.Lerp(_dof.gaussianStart.value, targetStart, Time.deltaTime * 2f));
+                _dof.gaussianEnd.Override(Mathf.Lerp(_dof.gaussianEnd.value, targetEnd, Time.deltaTime * 2f));
+                _dof.gaussianMaxRadius.Override(Mathf.Lerp(_dof.gaussianMaxRadius.value, targetRadius, Time.deltaTime * 2f));
             }
             else
             {
-                _dof.gaussianStart.value = Mathf.Lerp(_dof.gaussianStart.value, 10f, Time.deltaTime * 2f);
-                _dof.gaussianEnd.value = Mathf.Lerp(_dof.gaussianEnd.value, 20f, Time.deltaTime * 2f);
-                _dof.gaussianMaxRadius.value = Mathf.Lerp(_dof.gaussianMaxRadius.value, 0f, Time.deltaTime * 2f);
+                _dof.gaussianStart.Override(Mathf.Lerp(_dof.gaussianStart.value, 10f, Time.deltaTime * 2f));
+                _dof.gaussianEnd.Override(Mathf.Lerp(_dof.gaussianEnd.value, 20f, Time.deltaTime * 2f));
+                _dof.gaussianMaxRadius.Override(Mathf.Lerp(_dof.gaussianMaxRadius.value, 0f, Time.deltaTime * 2f));
             }
         }
 
@@ -173,9 +165,9 @@ public class AnxietyHandler : MonoBehaviour
                 Vector4 gamma = new Vector4(1f + pulseRed.x, 1f + pulseRed.y, 1f + pulseRed.z, 0f);
                 Vector4 gain = new Vector4(1f + pulseRed.x, 1f + pulseRed.y, 1f + pulseRed.z, 0f);
 
-                _color.lift.value = Vector4.Lerp(_color.lift.value, lift, Time.deltaTime * 2f);
-                _color.gamma.value = Vector4.Lerp(_color.gamma.value, gamma, Time.deltaTime * 2f);
-                _color.gain.value = Vector4.Lerp(_color.gain.value, gain, Time.deltaTime * 2f);
+                _color.lift.Override(Vector4.Lerp(_color.lift.value, lift, Time.deltaTime * 2f));
+                _color.gamma.Override(Vector4.Lerp(_color.gamma.value, gamma, Time.deltaTime * 2f));
+                _color.gain.Override(Vector4.Lerp(_color.gain.value, gain, Time.deltaTime * 2f));
             }
             else
             {
@@ -183,9 +175,9 @@ public class AnxietyHandler : MonoBehaviour
                 Vector4 neutralGamma = new Vector4(1f, 1f, 1f, 0f);
                 Vector4 neutralGain = new Vector4(1f, 1f, 1f, 0f);
 
-                _color.lift.value = Vector4.Lerp(_color.lift.value, neutralLift, Time.deltaTime * 2f);
-                _color.gamma.value = Vector4.Lerp(_color.gamma.value, neutralGamma, Time.deltaTime * 2f);
-                _color.gain.value = Vector4.Lerp(_color.gain.value, neutralGain, Time.deltaTime * 2f);
+                _color.lift.Override(Vector4.Lerp(_color.lift.value, neutralLift, Time.deltaTime * 2f));
+                _color.gamma.Override(Vector4.Lerp(_color.gamma.value, neutralGamma, Time.deltaTime * 2f));
+                _color.gain.Override(Vector4.Lerp(_color.gain.value, neutralGain, Time.deltaTime * 2f));
             }
         }
     }
@@ -193,7 +185,6 @@ public class AnxietyHandler : MonoBehaviour
     private void CheckGaze()
     {
         isLookingAtAnxietyObject = false;
-
         Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
 
         if (Physics.Raycast(ray, out RaycastHit hit, gazeDetectionRange))
@@ -211,8 +202,7 @@ public class AnxietyHandler : MonoBehaviour
 
     private void UpdateAnxiety()
     {
-        float anxietyPercent = playerStats.Anxiety / playerStats.MaxAnxiety;
-
+        float anxietyPercent = (float)playerStats.Anxiety / (float)playerStats.MaxAnxiety;
         bool isAnxietyTriggered = isLookingAtAnxietyObject || isBeingChased || isNearAnxietyObject;
 
         if (isAnxietyTriggered)
@@ -249,16 +239,27 @@ public class AnxietyHandler : MonoBehaviour
     {
         if (heartbeatAudio == null) return;
 
-        float threshold = Mathf.Min(0.5f, safeAnxietyThreshold - 0.1f);
+        // Start heartbeat early at 30%
+        float threshold = Mathf.Min(0.3f, safeAnxietyThreshold - 0.1f);
+
         if (anxietyPercent >= threshold)
         {
-            float t = Mathf.InverseLerp(threshold, safeAnxietyThreshold, anxietyPercent);
-            heartbeatAudio.volume = Mathf.Lerp(0.2f, 1f, t);
-            heartbeatAudio.pitch = Mathf.Lerp(1f, 2f, t);
+            if (!heartbeatAudio.isPlaying) heartbeatAudio.Play();
+
+            // Fades volume from 0.2 to 1.0 between 30% and 50% anxiety
+            float volumeT = Mathf.InverseLerp(threshold, 0.5f, anxietyPercent);
+            heartbeatAudio.volume = Mathf.Lerp(0.2f, 1f, volumeT);
+
+            // Pitch slowly ramps up from 30% all the way to max anxiety (95%)
+            float pitchT = Mathf.InverseLerp(threshold, safeAnxietyThreshold, anxietyPercent);
+            heartbeatAudio.pitch = Mathf.Lerp(1f, 2f, pitchT);
         }
         else
         {
             heartbeatAudio.volume = Mathf.MoveTowards(heartbeatAudio.volume, 0f, Time.deltaTime);
+
+            if (heartbeatAudio.volume <= 0f && heartbeatAudio.isPlaying)
+                heartbeatAudio.Stop();
         }
     }
 
@@ -269,12 +270,17 @@ public class AnxietyHandler : MonoBehaviour
         float threshold = Mathf.Min(0.7f, safeAnxietyThreshold - 0.1f);
         if (anxietyPercent >= threshold)
         {
+            if (!tinnitusAudio.isPlaying) tinnitusAudio.Play();
+
             float t = Mathf.InverseLerp(threshold, safeAnxietyThreshold, anxietyPercent);
             tinnitusAudio.volume = Mathf.Lerp(0f, 0.8f, t);
         }
         else
         {
             tinnitusAudio.volume = Mathf.MoveTowards(tinnitusAudio.volume, 0f, Time.deltaTime * 2f);
+
+            if (tinnitusAudio.volume <= 0f && tinnitusAudio.isPlaying)
+                tinnitusAudio.Stop();
         }
     }
 }

@@ -2,31 +2,33 @@ using UnityEngine;
 
 public class LibraryBook : MonoBehaviour
 {
-    [Header("Visual Randomization")]
-    [Tooltip("Drag the EMPTY PARENT objects of your different 3D models here.")]
-    public GameObject[] bookModels;
+    public GameObject[] bookModels; // Your Red, Blue, Green, Orange models
+    public int selectedVisualIndex = -1;
 
-    // --- ADD THIS LINE to store the choice ---
-    [HideInInspector] public int selectedVisualIndex = 0;
-
-    private void Awake()
+    private void Start()
     {
-        foreach (GameObject model in bookModels)
+        // If the index hasn't been set by the spawner/inventory yet, pick a random one
+        if (selectedVisualIndex == -1)
         {
-            if (model != null) model.SetActive(false);
+            selectedVisualIndex = Random.Range(0, bookModels.Length);
         }
 
-        if (bookModels.Length > 0)
+        UpdateVisuals();
+    }
+
+    // --- NEW: A public method to force the visuals to refresh ---
+    public void UpdateVisuals()
+    {
+        // 1. Turn them all off first
+        foreach (GameObject model in bookModels)
         {
-            int randomIndex = Random.Range(0, bookModels.Length);
+            model.SetActive(false);
+        }
 
-            // --- ADD THIS LINE to save the random number ---
-            selectedVisualIndex = randomIndex;
-
-            if (bookModels[randomIndex] != null)
-            {
-                bookModels[randomIndex].SetActive(true);
-            }
+        // 2. Turn on only the correct one
+        if (selectedVisualIndex >= 0 && selectedVisualIndex < bookModels.Length)
+        {
+            bookModels[selectedVisualIndex].SetActive(true);
         }
     }
 }

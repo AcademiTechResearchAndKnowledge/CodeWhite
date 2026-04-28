@@ -7,6 +7,7 @@ public class TutorialManager : MonoBehaviour
 {
     public enum TutorialState
     {
+        Intro, // <-- ADDED: Prevents input during the black screen cinematic
         Walk,
         Flashlight,
         Crouch,
@@ -33,7 +34,8 @@ public class TutorialManager : MonoBehaviour
     public Outline itemOutline;
     public Outline doorOutline;
 
-    private TutorialState currentState = TutorialState.Walk;
+    // Start in the Intro state so inputs are ignored until the cinematic finishes
+    private TutorialState currentState = TutorialState.Intro;
 
     // Tracks the current UI animation so we can interrupt it if the player is fast
     private Coroutine activeUICoroutine;
@@ -56,6 +58,8 @@ public class TutorialManager : MonoBehaviour
         {
             LockAdvancedControls();
 
+            // Bypass intro directly to walk state
+            currentState = TutorialState.Walk;
             if (activeUICoroutine != null) StopCoroutine(activeUICoroutine);
             activeUICoroutine = StartCoroutine(ShowMessage("WASD to walk"));
         }
@@ -81,7 +85,6 @@ public class TutorialManager : MonoBehaviour
             case TutorialState.Flashlight:
                 if (hasMouse && Mouse.current.rightButton.wasPressedThisFrame)
                 {
-                    // Removed the item outline trigger from here
                     AdvanceTutorial(TutorialState.Crouch, "Press Left Ctrl to crouch");
                 }
                 break;
@@ -89,7 +92,6 @@ public class TutorialManager : MonoBehaviour
             case TutorialState.Crouch:
                 if (hasKeyboard && Keyboard.current.leftCtrlKey.wasPressedThisFrame)
                 {
-                    // Added the item outline trigger here, right as the pickup step starts!
                     if (itemOutline != null) itemOutline.enabled = true;
                     AdvanceTutorial(TutorialState.Pickup, "Press F to pick-up the item");
                 }
@@ -162,20 +164,14 @@ public class TutorialManager : MonoBehaviour
         if (player == null) return;
         if (player.movementScript != null) player.movementScript.enabled = state;
         if (player.flashlightScript != null) player.flashlightScript.enabled = state;
-
-        // Target the playerLook script instead of playerCam
         if (player.playerLook != null) player.playerLook.canLook = state;
     }
 
     private void LockAdvancedControls()
     {
         if (player == null) return;
-
         if (player.movementScript != null) player.movementScript.enabled = true;
-
-        // Target the playerLook script instead of playerCam
         if (player.playerLook != null) player.playerLook.canLook = true;
-
         if (player.flashlightScript != null) player.flashlightScript.enabled = false;
 
         if (player.movementScript != null)
@@ -224,6 +220,9 @@ public class TutorialManager : MonoBehaviour
 
         LockAdvancedControls();
 
+        // Unlock the walk state now that the cinematic is over
+        currentState = TutorialState.Walk;
+
         if (activeUICoroutine != null) StopCoroutine(activeUICoroutine);
         activeUICoroutine = StartCoroutine(ShowMessage("WASD to walk"));
     }
@@ -260,10 +259,34 @@ public class TutorialManager : MonoBehaviour
         textCanvasGroup.alpha = 0;
     }
 
+    // FIXED: Flattened the coroutine. No more nested StartCoroutines. 
+    // Now if this is stopped mid-way, the entire process safely aborts.
     private IEnumerator TransitionMessage(string nextMessage)
     {
-        yield return StartCoroutine(HideMessage());
+        // 1. Hide current text
+        float timer = 0;
+        float startAlpha = textCanvasGroup.alpha;
+
+        while (timer < fadeDuration)
+        {
+            timer += Time.deltaTime;
+            textCanvasGroup.alpha = Mathf.Lerp(startAlpha, 0, timer / fadeDuration);
+            yield return null;
+        }
+        textCanvasGroup.alpha = 0;
+
         yield return new WaitForSeconds(0.2f);
-        yield return StartCoroutine(ShowMessage(nextMessage));
+
+        // 2. Show next text
+        tutorialText.text = nextMessage;
+        timer = 0;
+
+        while (timer < fadeDuration)
+        {
+            timer += Time.deltaTime;
+            textCanvasGroup.alpha = Mathf.Lerp(0, 1, timer / fadeDuration);
+            yield return null;
+        }
+        textCanvasGroup.alpha = 1;
     }
 }
