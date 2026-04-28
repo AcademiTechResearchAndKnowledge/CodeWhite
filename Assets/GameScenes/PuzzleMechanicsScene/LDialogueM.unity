@@ -1196,6 +1196,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DialogueDatabase
   dialogues:
   - {fileID: 11400000, guid: 82d789120d54dbb4eac902beb35a2be4, type: 2}
+  - {fileID: 11400000, guid: 3ebcfebc3d36bad4da43820b1c866280, type: 2}
 --- !u!1 &409016234
 GameObject:
   m_ObjectHideFlags: 0
@@ -3171,6 +3172,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 968ebc483823ada45ac2c82fdbfcdd1b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
+  canSprint: 1
+  canCrouch: 1
   body: {fileID: 145270582}
   cameraHolder: {fileID: 0}
   moveSpeed: 5
@@ -4657,7 +4660,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ee0ecef843a620947b42a114df20a1ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DialogueTrigger
-  dialogueID: 1
+  dialogueID: 2
 --- !u!1 &1695315116
 GameObject:
   m_ObjectHideFlags: 0

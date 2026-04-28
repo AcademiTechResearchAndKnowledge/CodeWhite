@@ -6812,7 +6812,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb20bcaa99817de439ae5cd11fcb6eff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::objectZoom
-  interactableText: {fileID: 0}
+  interactableText: {fileID: 1081306522}
   interactableObject: {fileID: 887010081}
   playerVCam: {fileID: 0}
   puzzleVCam: {fileID: 5801968454575741807}
@@ -6820,6 +6820,7 @@ MonoBehaviour:
   playerlookCamera: {fileID: 0}
   fl: {fileID: 0}
   isInPuzzle: 0
+  interactCooldown: 0.2
 --- !u!1 &901723428
 GameObject:
   m_ObjectHideFlags: 0
@@ -9208,7 +9209,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RandomPortalSpawner
   portalPrefab: {fileID: 5588175437650982449, guid: 382ee694ce2f65341919b2b76bb093ef, type: 3}
   spawnOnlyOnce: 1
-  nextSceneName: 
+  nextSceneName: L5
   spawnAreas:
   - {fileID: 2025656650}
   portalspawnMask:
@@ -16544,7 +16545,7 @@ GameObject:
   - component: {fileID: 2915428207297474631}
   - component: {fileID: 5801968454575741807}
   m_Layer: 0
-  m_Name: CameraPoint
+  m_Name: puzzleCam
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

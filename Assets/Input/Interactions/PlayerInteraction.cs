@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 public class PlayerInteraction : MonoBehaviour
 {
@@ -7,20 +8,46 @@ public class PlayerInteraction : MonoBehaviour
 
     private Camera _cam;
     private Interactable currentInteractable;
+    private HUDInteractController hud;
+
+    private void Awake()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
 
     void Start()
     {
         _cam = Camera.main;
 
         if (_cam == null)
-            Debug.LogError("PlayerInteraction: No camera tagged 'MainCamera' found.", this);
+            Debug.LogError("No MainCamera found");
+
+        hud = GetHUD();
+    }
+
+    void OnDestroy()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        Debug.Log("Scene loaded - resetting interaction system");
+
+        currentInteractable = null;
+        hud = null;
+
+        _cam = Camera.main;
+        hud = GetHUD();
     }
 
     void Update()
     {
         CheckInteraction();
 
-        if (Keyboard.current.fKey.wasPressedThisFrame && currentInteractable != null)
+        if (Keyboard.current != null &&
+            Keyboard.current.fKey.wasPressedThisFrame &&
+            currentInteractable != null)
         {
             currentInteractable.Interact();
         }
@@ -30,10 +57,9 @@ public class PlayerInteraction : MonoBehaviour
     {
         if (_cam == null) return;
 
-        RaycastHit hit;
         Ray ray = new Ray(_cam.transform.position, _cam.transform.forward);
 
-        if (Physics.Raycast(ray, out hit, playerReach))
+        if (Physics.Raycast(ray, out RaycastHit hit, playerReach))
         {
             if (hit.collider.CompareTag("Interactable"))
             {
@@ -46,18 +72,12 @@ public class PlayerInteraction : MonoBehaviour
                 }
 
                 if (currentInteractable != null && newInteractable != currentInteractable)
-                {
                     currentInteractable.DisableOutline();
-                }
 
                 if (newInteractable.enabled)
-                {
                     SetNewCurrentInteractable(newInteractable);
-                }
                 else
-                {
                     DisableCurrentInteractable();
-                }
             }
             else
             {
@@ -75,14 +95,16 @@ public class PlayerInteraction : MonoBehaviour
         if (currentInteractable == newInteractable) return;
 
         if (currentInteractable != null)
-        {
             currentInteractable.DisableOutline();
-        }
 
         currentInteractable = newInteractable;
         currentInteractable.EnableOutline();
 
-        HUDInteractController.Instance.EnableInteractionText(
+        hud = GetHUD();
+        if (hud == null)
+            return;
+
+        hud.EnableInteractionText(
             currentInteractable.buttonText,
             currentInteractable.objectName,
             currentInteractable.actionName
@@ -91,11 +113,40 @@ public class PlayerInteraction : MonoBehaviour
 
     void DisableCurrentInteractable()
     {
-        HUDInteractController.Instance.DisableInteractionText();
+        hud = GetHUD();
+
+        if (hud != null)
+            hud.DisableInteractionText();
+
         if (currentInteractable != null)
         {
             currentInteractable.DisableOutline();
             currentInteractable = null;
         }
+    }
+
+    HUDInteractController GetHUD()
+    {
+        if (hud != null)
+            return hud;
+
+        if (HUDInteractController.Instance != null)
+        {
+            hud = HUDInteractController.Instance;
+            return hud;
+        }
+
+        HUDInteractController found = Object.FindFirstObjectByType<HUDInteractController>();
+
+        if (found != null)
+        {
+            HUDInteractController.Instance = found;
+            hud = found;
+            Debug.Log("HUD re-linked");
+            return hud;
+        }
+
+        Debug.Log("HUD not found");
+        return null;
     }
 }
