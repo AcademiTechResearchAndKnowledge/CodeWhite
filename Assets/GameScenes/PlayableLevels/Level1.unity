@@ -803,6 +803,7 @@ MonoBehaviour:
   playerlookCamera: {fileID: 0}
   fl: {fileID: 0}
   isInPuzzle: 0
+  interactCooldown: 0.2
 --- !u!114 &23399956
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1017,6 +1018,7 @@ MonoBehaviour:
   playerlookCamera: {fileID: 0}
   fl: {fileID: 0}
   isInPuzzle: 0
+  interactCooldown: 0.2
 --- !u!114 &48002112
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9929,6 +9931,7 @@ MonoBehaviour:
   playerlookCamera: {fileID: 0}
   fl: {fileID: 0}
   isInPuzzle: 0
+  interactCooldown: 0.2
 --- !u!114 &270870671
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15212,6 +15215,7 @@ MonoBehaviour:
   playerlookCamera: {fileID: 0}
   fl: {fileID: 0}
   isInPuzzle: 0
+  interactCooldown: 0.2
 --- !u!114 &405839473
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20641,6 +20645,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 3544992279055200351, guid: f70b2793a1e3bae4e97cb334af19507d, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4335931957978498964, guid: f70b2793a1e3bae4e97cb334af19507d, type: 3}
       propertyPath: m_LocalPosition.x
       value: -51.975334
@@ -20680,6 +20688,18 @@ PrefabInstance:
     - target: {fileID: 4335931957978498964, guid: f70b2793a1e3bae4e97cb334af19507d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6911212938801584294, guid: f70b2793a1e3bae4e97cb334af19507d, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6911212938801584294, guid: f70b2793a1e3bae4e97cb334af19507d, type: 3}
+      propertyPath: StandbyUpdate
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6911212938801584294, guid: f70b2793a1e3bae4e97cb334af19507d, type: 3}
+      propertyPath: Priority.m_Value
+      value: -100
       objectReference: {fileID: 0}
     - target: {fileID: 7587743193427179702, guid: f70b2793a1e3bae4e97cb334af19507d, type: 3}
       propertyPath: m_LocalPosition.x
@@ -34378,7 +34398,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineCamera
   Priority:
-    Enabled: 0
+    Enabled: 1
     m_Value: 0
   OutputChannel: 1
   StandbyUpdate: 2
@@ -54089,7 +54109,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineCamera
   Priority:
-    Enabled: 0
+    Enabled: 1
     m_Value: 0
   OutputChannel: 1
   StandbyUpdate: 2
@@ -54194,6 +54214,7 @@ MonoBehaviour:
   playerlookCamera: {fileID: 0}
   fl: {fileID: 0}
   isInPuzzle: 0
+  interactCooldown: 0.2
 --- !u!114 &1514600877
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -62174,7 +62195,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineCamera
   Priority:
-    Enabled: 0
+    Enabled: 1
     m_Value: 0
   OutputChannel: 1
   StandbyUpdate: 2
@@ -62249,7 +62270,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineCamera
   Priority:
-    Enabled: 0
+    Enabled: 1
     m_Value: 0
   OutputChannel: 1
   StandbyUpdate: 2

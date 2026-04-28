@@ -1,6 +1,7 @@
 using UnityEngine;
 using Unity.Cinemachine;
 using UnityEngine.InputSystem;
+using System.Collections;
 
 public class objectZoom : MonoBehaviour
 {
@@ -17,9 +18,11 @@ public class objectZoom : MonoBehaviour
     public Flashlight fl;
 
     public bool isInPuzzle = false;
-    private bool canInteract = true;
 
     private Rigidbody playerRb;
+
+    private float lastInteractTime;
+    public float interactCooldown = 0.2f;
 
     void Start()
     {
@@ -55,6 +58,12 @@ public class objectZoom : MonoBehaviour
 
         if (puzzleVCam != null)
             puzzleVCam.Priority = 0;
+
+        if (playerVCam == null)
+            Debug.LogError("Player VCam NOT FOUND");
+
+        if (puzzleVCam == null)
+            Debug.LogError("Puzzle VCam NOT FOUND");
     }
 
     void Update()
@@ -62,28 +71,23 @@ public class objectZoom : MonoBehaviour
         if (mainObjHandler == null)
             EnsureHandler();
 
-
-        if (isInPuzzle && canInteract && Keyboard.current.escapeKey.wasPressedThisFrame)
+        if (isInPuzzle && Keyboard.current.escapeKey.wasPressedThisFrame)
         {
-            canInteract = false;
-
             ExitPuzzle();
             isInPuzzle = false;
 
             if (mainObjHandler != null)
                 mainObjHandler.IsInteracting = false;
-
-            Invoke(nameof(ResetInteract), 0.5f);
         }
     }
 
     public void InteractZoomObj()
     {
-        if (!canInteract) return;
+        if (Time.time - lastInteractTime < interactCooldown) return;
+        lastInteractTime = Time.time;
 
         EnsureHandler();
 
-        canInteract = false;
         isInPuzzle = !isInPuzzle;
 
         if (mainObjHandler != null)
@@ -94,19 +98,26 @@ public class objectZoom : MonoBehaviour
         else
             ExitPuzzle();
 
-        Invoke(nameof(ResetInteract), 0.5f);
+        StartCoroutine(SwitchCamera());
+    }
+
+    private IEnumerator SwitchCamera()
+    {
+        yield return null;
+
+        if (playerVCam != null)
+            playerVCam.Priority = isInPuzzle ? 0 : 100;
+
+        if (puzzleVCam != null)
+            puzzleVCam.Priority = isInPuzzle ? 200 : 0;
+
+        Debug.Log("CAM SWITCH | playerCam: " + playerVCam.Priority + " puzzleCam: " + puzzleVCam.Priority);
     }
 
     private void EnterPuzzle()
     {
         if (interactableText != null)
             interactableText.SetActive(false);
-
-        if (playerVCam != null)
-            playerVCam.Priority = 0;
-
-        if (puzzleVCam != null)
-            puzzleVCam.Priority = 200;
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
@@ -124,18 +135,14 @@ public class objectZoom : MonoBehaviour
             fl.enabled = false;
 
         mainObjHandler?.StartInteraction();
+
+        Debug.Log("ENTER PUZZLE");
     }
 
     public void ExitPuzzle()
     {
         if (interactableText != null)
             interactableText.SetActive(true);
-
-        if (playerVCam != null)
-            playerVCam.Priority = 100;
-
-        if (puzzleVCam != null)
-            puzzleVCam.Priority = 0;
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
@@ -146,13 +153,18 @@ public class objectZoom : MonoBehaviour
         if (playerController != null)
             playerController.enabled = true;
 
-        if (playerRb != null)
-            playerRb.isKinematic = false;
-
         if (fl != null)
             fl.enabled = true;
 
+        if (playerRb != null)
+        {
+            playerRb.linearVelocity = Vector3.zero;
+            playerRb.angularVelocity = Vector3.zero;
+        }
+
         mainObjHandler?.StopInteraction();
+
+        Debug.Log("EXIT PUZZLE");
     }
 
     private void StopPlayerInstantly()
@@ -161,12 +173,6 @@ public class objectZoom : MonoBehaviour
 
         playerRb.linearVelocity = Vector3.zero;
         playerRb.angularVelocity = Vector3.zero;
-        playerRb.isKinematic = true;
-    }
-
-    private void ResetInteract()
-    {
-        canInteract = true;
     }
 
     private void EnsureHandler()
