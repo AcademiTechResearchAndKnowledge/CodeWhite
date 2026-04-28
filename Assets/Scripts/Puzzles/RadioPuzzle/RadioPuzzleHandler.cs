@@ -142,7 +142,7 @@ public class RadioPuzzleHandler : MonoBehaviour
 
         if (Mathf.Abs(current - ominousFrequency) < 0.1f)
         {
-            Debug.Log($"[OMINOUS HIT] {current:F1} | Round failed (progress preserved)");
+            Debug.Log($"[OMINOUS HIT] {current:F1}");
             StartCoroutine(ExitAndPushPlayer());
             return;
         }
@@ -163,28 +163,6 @@ public class RadioPuzzleHandler : MonoBehaviour
 
             knobValue.submitted = true;
         }
-        else
-        {
-            Debug.Log($"[WRONG] Player: {current:F1} | Target: {targetFrequency:F1} | Ominous: {ominousFrequency:F1}");
-        }
-    }
-
-    IEnumerator NextRound()
-    {
-        yield return new WaitForSeconds(1f);
-        ResetPuzzleImmediate();
-    }
-
-    void CompletePuzzle()
-    {
-        puzzleCompleted = true;
-        puzzleActive = false;
-
-        RPS.SpawnPortalRandom();
-
-        Debug.Log("[PUZZLE COMPLETED] All rounds finished");
-
-        objZoom.ExitPuzzle();
     }
 
     IEnumerator ExitAndPushPlayer()
@@ -193,9 +171,9 @@ public class RadioPuzzleHandler : MonoBehaviour
         fadingOut = true;
 
         knobValue.dragging = false;
-        objZoom.isInPuzzle = false;
 
         objZoom.ExitPuzzle();
+        objZoom.isInPuzzle = false;
 
         yield return new WaitForFixedUpdate();
 
@@ -212,6 +190,24 @@ public class RadioPuzzleHandler : MonoBehaviour
         }
 
         StartCoroutine(NextRound());
+    }
+
+    IEnumerator NextRound()
+    {
+        yield return new WaitForSeconds(1f);
+        ResetPuzzleImmediate();
+    }
+
+    void CompletePuzzle()
+    {
+        puzzleCompleted = true;
+        puzzleActive = false;
+
+        RPS.SpawnPortalRandom();
+
+        Debug.Log("[PUZZLE COMPLETED]");
+
+        objZoom.InteractZoomObj();
     }
 
     void ResetPuzzleImmediate()
@@ -239,7 +235,6 @@ public class RadioPuzzleHandler : MonoBehaviour
         UpdateFrequency();
 
         Debug.Log($"[ROUND START] {currentSuccesses}/{requiredSuccesses}");
-        Debug.Log($"[TARGET] {targetFrequency:F1} | [OMINOUS] {ominousFrequency:F1}");
     }
 
     void UpdateFrequency()

@@ -1,6 +1,8 @@
 using UnityEngine;
 using Unity.Cinemachine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
+using System.Collections;
 
 public class objectZoom : MonoBehaviour
 {
@@ -10,8 +12,8 @@ public class objectZoom : MonoBehaviour
     private IZoomInteractable mainObjHandler;
 
     [Header("Cameras")]
-    public CinemachineCamera playerVCam;   // runtime assigned
-    public CinemachineCamera puzzleVCam;   // assign in Inspector
+    public CinemachineCamera playerVCam;
+    public CinemachineCamera puzzleVCam;
 
     [Header("Player")]
     public PlayerMovement playerController;
@@ -25,11 +27,21 @@ public class objectZoom : MonoBehaviour
     private float lastInteractTime;
     public float interactCooldown = 0.2f;
 
-    void Start()
+    void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+        StartCoroutine(StartRoutine());
+    }
+
+    void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private IEnumerator StartRoutine()
     {
         EnsureHandler();
 
-    
         playerVCam = PlayerCameraReference.Instance;
 
         if (playerVCam == null)
@@ -38,27 +50,77 @@ public class objectZoom : MonoBehaviour
         if (puzzleVCam == null)
             Debug.LogError("Puzzle VCam NOT ASSIGNED in Inspector");
 
-        if (playerController == null)
-            playerController = FindFirstObjectByType<PlayerMovement>();
+        yield return null;
 
-        if (playerlookCamera == null)
-            playerlookCamera = FindFirstObjectByType<PlayerLook>();
-
-        if (fl == null)
-            fl = FindFirstObjectByType<Flashlight>();
-
-        if (playerController != null)
-            playerRb = playerController.GetComponent<Rigidbody>();
-
-        if (interactableText == null)
-        {
-            GameObject ui = GameObject.FindWithTag("InteractText");
-            if (ui != null)
-                interactableText = ui;
-        }
-
+        StartCoroutine(BindAllRoutine());
 
         SetCameraState(false);
+
+        Debug.Log("INITIAL CAMERA STATE APPLIED");
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        Debug.Log("SCENE LOADED | Rebinding objectZoom references...");
+        StartCoroutine(BindAllRoutine());
+    }
+
+    private IEnumerator BindAllRoutine()
+    {
+        yield return null;
+
+        BindPlayer();
+        yield return null;
+        BindUI();
+        EnsureHandler();
+
+        Debug.Log("objectZoom BIND COMPLETE");
+    }
+
+    private void BindPlayer()
+    {
+        playerController = FindFirstObjectByType<PlayerMovement>();
+        playerlookCamera = FindFirstObjectByType<PlayerLook>();
+        fl = FindFirstObjectByType<Flashlight>();
+
+        if (playerController != null)
+        {
+            playerRb = playerController.GetComponent<Rigidbody>();
+            Debug.Log("PLAYER LINKED OK");
+        }
+        else
+        {
+            playerRb = null;
+            Debug.LogWarning("PLAYER NOT FOUND IN THIS SCENE");
+        }
+    }
+
+    private void BindUI()
+    {
+        StartCoroutine(WaitForUI());
+    }
+
+    private IEnumerator WaitForUI()
+    {
+        int attempts = 0;
+
+        while (interactableText == null && attempts < 50)
+        {
+            GameObject ui = GameObject.FindWithTag("InteractText");
+
+            if (ui != null)
+            {
+                interactableText = ui;
+                Debug.Log("INTERACTABLE TEXT LINKED");
+                yield break;
+            }
+
+            attempts++;
+            yield return new WaitForSeconds(0.1f);
+        }
+
+        if (interactableText == null)
+            Debug.LogWarning("INTERACTABLE TEXT NOT FOUND IN SCENE");
     }
 
     void Update()
@@ -98,7 +160,6 @@ public class objectZoom : MonoBehaviour
         SetCameraState(isInPuzzle);
     }
 
-    
     private void SetCameraState(bool puzzleActive)
     {
         if (playerVCam != null)
@@ -159,6 +220,9 @@ public class objectZoom : MonoBehaviour
         }
 
         mainObjHandler?.StopInteraction();
+
+        SetCameraState(false);   
+        isInPuzzle = false;
 
         Debug.Log("EXIT PUZZLE");
     }

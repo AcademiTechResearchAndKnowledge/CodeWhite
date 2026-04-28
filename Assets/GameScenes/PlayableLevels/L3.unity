@@ -181,15 +181,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6911212938801584294, guid: f70b2793a1e3bae4e97cb334af19507d, type: 3}
       propertyPath: Priority.Enabled
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6911212938801584294, guid: f70b2793a1e3bae4e97cb334af19507d, type: 3}
       propertyPath: Priority.m_Value
       value: -100
       objectReference: {fileID: 0}
+    - target: {fileID: 7056102068585018066, guid: f70b2793a1e3bae4e97cb334af19507d, type: 3}
+      propertyPath: UpdateMethod
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 7312554800435768850, guid: f70b2793a1e3bae4e97cb334af19507d, type: 3}
       propertyPath: FrequencyGain
-      value: 3.722799e-34
+      value: 0.1765029
       objectReference: {fileID: 0}
     - target: {fileID: 7587743193427179702, guid: f70b2793a1e3bae4e97cb334af19507d, type: 3}
       propertyPath: m_LocalPosition.x
@@ -2791,11 +2795,11 @@ Transform:
   m_GameObject: {fileID: 1421723162}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -17.556, y: 42.35, z: 23.216}
+  m_LocalPosition: {x: -7.7159996, y: 42.35, z: 6.736}
   m_LocalScale: {x: 0.31445467, y: 1, z: 0.22927237}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1600637135}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1425814002
 GameObject:
@@ -3039,6 +3043,51 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!1 &1504863296
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1504863299}
+  - component: {fileID: 1504863297}
+  m_Layer: 0
+  m_Name: SceneTransitionMANAGER
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1504863297
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1504863296}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f27564bf3c58f84188ccd0fab2c9e67, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SceneTransitionHandler
+  fadeInSpeed: 2
+--- !u!4 &1504863299
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1504863296}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -5.8852, y: 0.4901, z: 16.84534}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1557928690
 GameObject:
   m_ObjectHideFlags: 0
@@ -3421,7 +3470,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RandomPortalSpawner
   portalPrefab: {fileID: 5588175437650982449, guid: 382ee694ce2f65341919b2b76bb093ef, type: 3}
   spawnOnlyOnce: 1
-  nextSceneName: 
+  portalOrientation: 1
+  levelCounter: 0
+  excludedScenes:
+  - TwilightRealm
   spawnAreas:
   - {fileID: 1421723163}
   portalspawnMask:
@@ -3445,8 +3497,7 @@ Transform:
   m_LocalPosition: {x: 9.84, y: 0, z: -16.48}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1421723164}
+  m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1699347986
@@ -7516,7 +7567,7 @@ GameObject:
   - component: {fileID: 5922741356912687684}
   - component: {fileID: 5922731699977934978}
   m_Layer: 0
-  m_Name: CameraPoint
+  m_Name: puzzleCam
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7694,8 +7745,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineCamera
   Priority:
-    Enabled: 0
-    m_Value: 0
+    Enabled: 1
+    m_Value: -2
   OutputChannel: 1
   StandbyUpdate: 2
   m_StreamingVersion: 20241001
@@ -8191,7 +8242,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb20bcaa99817de439ae5cd11fcb6eff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::objectZoom
-  interactableText: {fileID: 0}
+  interactableText: {fileID: 1425814002}
   interactableObject: {fileID: 7601211301048259770}
   playerVCam: {fileID: 0}
   puzzleVCam: {fileID: 5922731699977934978}
@@ -9334,7 +9385,7 @@ MonoBehaviour:
   submitDelay: 1
   ominousPushForce: 7
   verticalPushForce: 0
-  requiredSuccesses: 5
+  requiredSuccesses: 1
   maxFrequencyGain: 1000
   damping: 2
   maxFilmGrain: 1
@@ -10372,6 +10423,7 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 3038944457152162397}
+  - {fileID: 1421723164}
   - {fileID: 1600637135}
   - {fileID: 1802395398}
   - {fileID: 7821413075335232124}
@@ -10379,3 +10431,4 @@ SceneRoots:
   - {fileID: 40192443}
   - {fileID: 270360142}
   - {fileID: 3039081}
+  - {fileID: 1504863299}

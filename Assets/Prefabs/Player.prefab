@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 3531240589429262252}
   - component: {fileID: 7312554800435768850}
   - component: {fileID: 8815314653631761598}
+  - component: {fileID: 8281319081041484129}
   m_Layer: 0
   m_Name: VCam
   m_TagString: Untagged
@@ -114,6 +115,18 @@ MonoBehaviour:
   swayX: 0.02
   swayZ: 0.02
   smooth: 12
+--- !u!114 &8281319081041484129
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 829992035326269312}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d15489710f5444f42904785019f55962, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerCameraReference
 --- !u!1 &2482385671022945450
 GameObject:
   m_ObjectHideFlags: 0
