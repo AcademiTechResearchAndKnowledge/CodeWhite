@@ -23,6 +23,9 @@ public class RandomPortalSpawner : MonoBehaviour
     [Header("Scene Exclusions")]
     [SerializeField] private string[] excludedScenes;
 
+    [Header("Manual Boss Scenes (IN ORDER)")]
+    [SerializeField] private string[] bossScenes;
+
     [Header("Spawn Areas")]
     [SerializeField] private BoxCollider[] spawnAreas;
     [SerializeField] private LayerMask portalspawnMask;
@@ -34,7 +37,6 @@ public class RandomPortalSpawner : MonoBehaviour
     [SerializeField] private float groundOffset = 0.05f;
 
     private bool spawned;
-
     private static RandomPortalSpawner instance;
 
     private void Awake()
@@ -69,13 +71,10 @@ public class RandomPortalSpawner : MonoBehaviour
 
         levelCounter++;
 
-        Debug.Log("SPAWNER LEVEL = " + levelCounter);
-
         List<string> validScenes = GetValidScenes();
 
         if (validScenes.Count == 0)
         {
-            Debug.LogError("No valid scenes available after exclusions!");
             return;
         }
 
@@ -83,7 +82,6 @@ public class RandomPortalSpawner : MonoBehaviour
         {
             BoxCollider area = spawnAreas[Random.Range(0, spawnAreas.Length)];
             Vector3 randomPoint = RandomPointInBox(area.bounds);
-
             Vector3 rayOrigin = randomPoint + Vector3.up * raycastHeight;
 
             if (Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, raycastHeight * 2f, portalspawnMask))
@@ -115,20 +113,49 @@ public class RandomPortalSpawner : MonoBehaviour
                 if (portal != null)
                 {
                     portal.SetLevel(levelCounter);
+                    portal.SetExcludedScenes(excludedScenes);
+
+                    bool isBoss = (levelCounter % 10 == 0);
+
+                    if (isBoss)
+                    {
+                        string bossScene = GetBossScene(levelCounter);
+                        portal.SetForcedScene(bossScene);
+                    }
+                    else
+                    {
+                        string normalScene = validScenes[Random.Range(0, validScenes.Count)];
+                        portal.SetForcedScene(normalScene);
+                    }
                 }
 
                 spawned = true;
                 return;
             }
         }
+    }
 
-        Debug.LogWarning("Failed to find valid spawn point");
+    private string GetBossScene(int level)
+    {
+        if (bossScenes == null || bossScenes.Length == 0)
+        {
+            return "";
+        }
+
+        int index = (level / 10) - 1;
+
+        if (index < 0)
+            index = 0;
+
+        if (index >= bossScenes.Length)
+            index = bossScenes.Length - 1;
+
+        return bossScenes[index];
     }
 
     private List<string> GetValidScenes()
     {
         List<string> scenes = new List<string>();
-
         int count = SceneManager.sceneCountInBuildSettings;
 
         for (int i = 0; i < count; i++)
