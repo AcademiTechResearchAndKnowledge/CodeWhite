@@ -11,17 +11,15 @@ public class PortalNextStage : MonoBehaviour
     public float liftHeight = 2f;
     public float lookHeight = 10f;
 
-    [Header("Boss Rule")]
-    [SerializeField] private int bossInterval = 10;
+    [Header("Scene Exclusions")]
+    [SerializeField] private string[] excludedScenes;
 
     [Header("Fade")]
     [SerializeField] private float fadeStart = 0.6f;
     [SerializeField] private float fadeSpeed = 1f;
 
     private int levelCounter;
-
     private string chosenScene;
-    private string[] allScenes;
 
     private Image fadeImage;
     private GameObject fadeObject;
@@ -36,7 +34,16 @@ public class PortalNextStage : MonoBehaviour
     public void SetLevel(int value)
     {
         levelCounter = value;
-        Debug.Log("PORTAL LEVEL SET = " + levelCounter);
+    }
+
+    public void SetExcludedScenes(string[] scenes)
+    {
+        excludedScenes = scenes;
+    }
+
+    public void SetForcedScene(string scene)
+    {
+        chosenScene = scene;
     }
 
     private void Awake()
@@ -60,8 +67,6 @@ public class PortalNextStage : MonoBehaviour
 
         if (lookUpCam != null)
             lookUpCam.gameObject.SetActive(false);
-
-        CacheScenes();
     }
 
     private void Start()
@@ -88,22 +93,6 @@ public class PortalNextStage : MonoBehaviour
 
             fadeObject.SetActive(true);
         }
-
-        Debug.Log("Portal initialized");
-    }
-
-    private void CacheScenes()
-    {
-        int count = SceneManager.sceneCountInBuildSettings;
-        allScenes = new string[count];
-
-        for (int i = 0; i < count; i++)
-        {
-            string path = SceneUtility.GetScenePathByBuildIndex(i);
-            allScenes[i] = System.IO.Path.GetFileNameWithoutExtension(path);
-        }
-
-        Debug.Log("Scenes cached: " + count);
     }
 
     private void OnTriggerEnter(Collider other)
@@ -113,34 +102,7 @@ public class PortalNextStage : MonoBehaviour
 
         used = true;
 
-        ChooseScene();
-
-        Debug.Log("Portal triggered → " + chosenScene);
-
         StartCoroutine(Sequence(other.transform));
-    }
-
-    private void ChooseScene()
-    {
-        if (allScenes == null || allScenes.Length == 0)
-        {
-            chosenScene = "";
-            return;
-        }
-
-        bool isBoss = (levelCounter % bossInterval == 0);
-
-        if (isBoss)
-        {
-            int index = (levelCounter / bossInterval - 1) % allScenes.Length;
-            chosenScene = allScenes[index];
-            Debug.Log("BOSS SCENE → " + chosenScene);
-        }
-        else
-        {
-            chosenScene = allScenes[Random.Range(0, allScenes.Length)];
-            Debug.Log("NORMAL SCENE → " + chosenScene);
-        }
     }
 
     private IEnumerator Sequence(Transform player)
@@ -189,8 +151,9 @@ public class PortalNextStage : MonoBehaviour
         }
 
         ForceFade();
-
         ResetCameras();
+
+        yield return new WaitForSeconds(0.1f);
 
         LoadScene();
     }
@@ -255,7 +218,6 @@ public class PortalNextStage : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("Fallback scene load");
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
         }
     }

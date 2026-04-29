@@ -19,6 +19,11 @@ public class PlayerStats : MonoBehaviour
     public float SpeedStat => speedStat;
     public float MaxStamina => maxStamina;
 
+     public void ResetAnxiety()
+    {
+        anxiety = 0f;
+    }
+
     public void AddStat(StatType type, float amount)
     {
         switch (type)

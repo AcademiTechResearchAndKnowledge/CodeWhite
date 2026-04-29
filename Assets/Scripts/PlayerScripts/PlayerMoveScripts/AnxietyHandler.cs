@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
+using System.Collections;
 
 public class AnxietyHandler : MonoBehaviour
 {
@@ -10,8 +11,9 @@ public class AnxietyHandler : MonoBehaviour
     [SerializeField] private Volume globalVolume;
 
     [Header("Audio")]
-    [SerializeField] private AudioSource heartbeatAudio;
-    [SerializeField] private AudioSource tinnitusAudio;
+    [SerializeField] public AudioSource heartbeatAudio;
+    [SerializeField] public AudioSource tinnitusAudio;
+    [SerializeField] private float audioFadeOutDuration = 1.5f;
 
     [Header("Anxiety Object Settings")]
     [SerializeField] private LayerMask anxietyLayerMask;
@@ -26,17 +28,12 @@ public class AnxietyHandler : MonoBehaviour
 
     [Header("Anxiety Limits")]
     [Range(0f, 1f)]
-    [Tooltip("The max percentage anxiety can reach passively (e.g., 0.95 means it stops at 95% and won't kill the player).")]
     [SerializeField] private float safeAnxietyThreshold = 0.95f;
 
     [Header("Anxiety Cooldown Settings")]
-    [Tooltip("How many seconds the player must be completely safe before anxiety starts going down.")]
     [SerializeField] private float decayDelay = 3f;
-    [Tooltip("The starting (slow) speed of anxiety decreasing.")]
     [SerializeField] private float minDecayRate = 0.5f;
-    [Tooltip("The maximum (fast) speed of anxiety decreasing.")]
     [SerializeField] private float maxDecayRate = 5f;
-    [Tooltip("How many seconds it takes for the decay to speed up from min to max rate.")]
     [SerializeField] private float decayAccelerationTime = 4f;
 
     [Header("Vignette Settings")]
@@ -61,6 +58,7 @@ public class AnxietyHandler : MonoBehaviour
     private bool isNearAnxietyObject = false;
 
     private float safeTimer = 0f;
+    private bool isFadingOutAudio = false;
 
     private void Awake()
     {
@@ -77,13 +75,28 @@ public class AnxietyHandler : MonoBehaviour
             globalVolume.profile.TryGet(out _color);
         }
 
+        ResetAudioState();
+    }
+
+    private void OnEnable()
+    {
+        ResetAudioState();
+    }
+
+    private void ResetAudioState()
+    {
+        isFadingOutAudio = false;
+
         if (heartbeatAudio != null)
         {
+            heartbeatAudio.Stop();
             heartbeatAudio.volume = 0f;
+            heartbeatAudio.pitch = 1f;
         }
 
         if (tinnitusAudio != null)
         {
+            tinnitusAudio.Stop();
             tinnitusAudio.volume = 0f;
         }
     }
@@ -96,9 +109,97 @@ public class AnxietyHandler : MonoBehaviour
 
         float anxietyPercent = (float)playerStats.Anxiety / (float)playerStats.MaxAnxiety;
 
+        if (anxietyPercent >= 1f && !isFadingOutAudio)
+        {
+            StartCoroutine(FadeOutAllAudio());
+        }
+
         UpdateHeartbeat(anxietyPercent);
         UpdateTinnitus(anxietyPercent);
         UpdateVisualEffects(anxietyPercent);
+    }
+
+    private IEnumerator FadeOutAllAudio()
+    {
+        isFadingOutAudio = true;
+
+        float startHeartbeat = heartbeatAudio != null ? heartbeatAudio.volume : 0f;
+        float startTinnitus = tinnitusAudio != null ? tinnitusAudio.volume : 0f;
+
+        float time = 0f;
+
+        while (time < audioFadeOutDuration)
+        {
+            time += Time.unscaledDeltaTime;
+            float t = time / audioFadeOutDuration;
+
+            if (heartbeatAudio != null)
+                heartbeatAudio.volume = Mathf.Lerp(startHeartbeat, 0f, t);
+
+            if (tinnitusAudio != null)
+                tinnitusAudio.volume = Mathf.Lerp(startTinnitus, 0f, t);
+
+            yield return null;
+        }
+
+        if (heartbeatAudio != null)
+        {
+            heartbeatAudio.volume = 0f;
+            heartbeatAudio.Stop();
+        }
+
+        if (tinnitusAudio != null)
+        {
+            tinnitusAudio.volume = 0f;
+            tinnitusAudio.Stop();
+        }
+
+        isFadingOutAudio = false;
+    }
+
+    private void UpdateHeartbeat(float anxietyPercent)
+    {
+        if (heartbeatAudio == null || isFadingOutAudio) return;
+
+        float threshold = Mathf.Min(0.3f, safeAnxietyThreshold - 0.1f);
+
+        if (anxietyPercent >= threshold)
+        {
+            if (!heartbeatAudio.isPlaying)
+                heartbeatAudio.Play();
+
+            heartbeatAudio.volume = Mathf.Lerp(0.2f, 1f, anxietyPercent);
+            heartbeatAudio.pitch = Mathf.Lerp(1f, 2f, anxietyPercent);
+        }
+        else
+        {
+            heartbeatAudio.volume = Mathf.MoveTowards(heartbeatAudio.volume, 0f, Time.deltaTime);
+
+            if (heartbeatAudio.volume <= 0f)
+                heartbeatAudio.Stop();
+        }
+    }
+
+    private void UpdateTinnitus(float anxietyPercent)
+    {
+        if (tinnitusAudio == null || isFadingOutAudio) return;
+
+        float threshold = Mathf.Min(0.7f, safeAnxietyThreshold - 0.1f);
+
+        if (anxietyPercent >= threshold)
+        {
+            if (!tinnitusAudio.isPlaying)
+                tinnitusAudio.Play();
+
+            tinnitusAudio.volume = Mathf.Lerp(0f, 0.8f, anxietyPercent);
+        }
+        else
+        {
+            tinnitusAudio.volume = Mathf.MoveTowards(tinnitusAudio.volume, 0f, Time.deltaTime * 2f);
+
+            if (tinnitusAudio.volume <= 0f)
+                tinnitusAudio.Stop();
+        }
     }
 
     public void SetChaseState(bool state)
@@ -115,7 +216,6 @@ public class AnxietyHandler : MonoBehaviour
         float smoothPulse = rawPulse * rawPulse;
         float pulse = smoothPulse * t;
 
-        // ─── VIGNETTE ─────────────────────────────
         if (_vignette != null && _vignette.active)
         {
             float baseIntensity = Mathf.Lerp(0f, vignetteMaxIntensity, t);
@@ -125,7 +225,6 @@ public class AnxietyHandler : MonoBehaviour
             _vignette.color.Override(Color.Lerp(Color.black, new Color(0.4f, 0f, 0f), t));
         }
 
-        // ─── BLUR (CHASE ONLY) ────────────────────
         if (_dof != null && _dof.active)
         {
             if (isBeingChased)
@@ -146,7 +245,6 @@ public class AnxietyHandler : MonoBehaviour
             }
         }
 
-        // ─── LIFT / GAMMA / GAIN ───
         if (_color != null && _color.active)
         {
             float colorTriggerThreshold = Mathf.Min(0.9f, safeAnxietyThreshold - 0.05f);
@@ -232,55 +330,6 @@ public class AnxietyHandler : MonoBehaviour
 
                 playerStats.SubtractStat(StatType.ANX, currentDecayRate * Time.deltaTime);
             }
-        }
-    }
-
-    private void UpdateHeartbeat(float anxietyPercent)
-    {
-        if (heartbeatAudio == null) return;
-
-        // Start heartbeat early at 30%
-        float threshold = Mathf.Min(0.3f, safeAnxietyThreshold - 0.1f);
-
-        if (anxietyPercent >= threshold)
-        {
-            if (!heartbeatAudio.isPlaying) heartbeatAudio.Play();
-
-            // Fades volume from 0.2 to 1.0 between 30% and 50% anxiety
-            float volumeT = Mathf.InverseLerp(threshold, 0.5f, anxietyPercent);
-            heartbeatAudio.volume = Mathf.Lerp(0.2f, 1f, volumeT);
-
-            // Pitch slowly ramps up from 30% all the way to max anxiety (95%)
-            float pitchT = Mathf.InverseLerp(threshold, safeAnxietyThreshold, anxietyPercent);
-            heartbeatAudio.pitch = Mathf.Lerp(1f, 2f, pitchT);
-        }
-        else
-        {
-            heartbeatAudio.volume = Mathf.MoveTowards(heartbeatAudio.volume, 0f, Time.deltaTime);
-
-            if (heartbeatAudio.volume <= 0f && heartbeatAudio.isPlaying)
-                heartbeatAudio.Stop();
-        }
-    }
-
-    private void UpdateTinnitus(float anxietyPercent)
-    {
-        if (tinnitusAudio == null) return;
-
-        float threshold = Mathf.Min(0.7f, safeAnxietyThreshold - 0.1f);
-        if (anxietyPercent >= threshold)
-        {
-            if (!tinnitusAudio.isPlaying) tinnitusAudio.Play();
-
-            float t = Mathf.InverseLerp(threshold, safeAnxietyThreshold, anxietyPercent);
-            tinnitusAudio.volume = Mathf.Lerp(0f, 0.8f, t);
-        }
-        else
-        {
-            tinnitusAudio.volume = Mathf.MoveTowards(tinnitusAudio.volume, 0f, Time.deltaTime * 2f);
-
-            if (tinnitusAudio.volume <= 0f && tinnitusAudio.isPlaying)
-                tinnitusAudio.Stop();
         }
     }
 }
