@@ -21,11 +21,8 @@ public class PauseMenu : MonoBehaviour
                 Pause();
             }
         }
-        if (GameIsPaused)
-        {
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
-        }
+
+        // REMOVED the continuous if(GameIsPaused) cursor spam from here
     }
 
     public void Resume()
@@ -34,6 +31,7 @@ public class PauseMenu : MonoBehaviour
         Time.timeScale = 1f;
         GameIsPaused = false;
 
+        // Lock cursor back to the game
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
@@ -43,6 +41,10 @@ public class PauseMenu : MonoBehaviour
         pauseMenuUI.SetActive(true);
         Time.timeScale = 0f;
         GameIsPaused = true;
+
+        // Unlock cursor ONCE for the UI menus
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 
     public void LoadMenu()

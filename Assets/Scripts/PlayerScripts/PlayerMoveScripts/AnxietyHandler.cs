@@ -332,4 +332,9 @@ public class AnxietyHandler : MonoBehaviour
             }
         }
     }
+    public void ResetSafeTimer()
+    {
+        // Resets the clock so anxiety pauses before decaying again
+        safeTimer = 0f;
+    }
 }

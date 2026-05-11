@@ -9,6 +9,7 @@ public class ClosetHidingSystem : MonoBehaviour
     public Animator closetAnim;
 
     [Header("Stalker Targeting")]
+    [Tooltip("Assign the empty GameObject positioned outside the closet door here.")]
     public GameObject stalkerFollowTarget;
 
     private Transform player;
@@ -58,6 +59,26 @@ public class ClosetHidingSystem : MonoBehaviour
         }
     }
 
+    // „Ÿ„Ÿ„Ÿ FIXED: ACCURATE CINEMACHINE 3 API „Ÿ„Ÿ„Ÿ
+    private void ResetCameraOrientation()
+    {
+        if (closetCam == null) return;
+
+        // 1. Align the base transform to match the prop's forward orientation
+        closetCam.transform.rotation = transform.rotation;
+
+        // 2. Grab PanTilt and directly zero out the cached look axes
+        CinemachinePanTilt panTilt = closetCam.GetComponent<CinemachinePanTilt>();
+        if (panTilt != null)
+        {
+            // Snaps the horizontal yaw straight forward relative to the prop
+            panTilt.PanAxis.Value = 0f;
+
+            // Snaps the vertical pitch perfectly level
+            panTilt.TiltAxis.Value = 0f;
+        }
+    }
+
     public IEnumerator GoInsideCloset_CO()
     {
         if (isTransitioning || InsideCloset) yield break;
@@ -70,20 +91,48 @@ public class ClosetHidingSystem : MonoBehaviour
 
         isTransitioning = true;
 
+        // --- SNAP CAMERA ORIENTATION HERE ---
+        ResetCameraOrientation();
+
         closetCam.Priority = 100;
         playerRefs.playerCam.Priority = 10;
 
+        // Freeze physics immediately upon entering
+        if (playerRefs.rb != null)
+        {
+            playerRefs.rb.linearVelocity = Vector3.zero;
+            playerRefs.rb.angularVelocity = Vector3.zero;
+            playerRefs.rb.isKinematic = true;
+        }
+
+        // Disable the player collider
+        if (playerRefs.playerCollider != null)
+        {
+            playerRefs.playerCollider.enabled = false;
+        }
+
+        // Disable movement
         if (playerRefs.movementScript != null)
             playerRefs.movementScript.enabled = false;
 
+        // Disable player look so mouse inputs don't fight the reset
+        if (playerRefs.playerLook != null)
+        {
+            playerRefs.playerLook.enabled = false;
+        }
+
+        // Ensure flashlight is fully off
         if (playerRefs.flashlightScript != null)
+        {
             playerRefs.flashlightScript.enabled = false;
+        }
 
         if (playerRefs.bodyMeshRenderer != null)
             playerRefs.bodyMeshRenderer.enabled = false;
 
         InsideCloset = true;
 
+        // Activate the target dummy object for the stalker to find
         if (stalkerFollowTarget != null)
         {
             stalkerFollowTarget.SetActive(true);
@@ -114,8 +163,6 @@ public class ClosetHidingSystem : MonoBehaviour
 
         if (playerRefs.rb != null)
         {
-            playerRefs.rb.linearVelocity = Vector3.zero;
-            playerRefs.rb.angularVelocity = Vector3.zero;
             playerRefs.rb.isKinematic = true;
         }
 
@@ -127,6 +174,7 @@ public class ClosetHidingSystem : MonoBehaviour
 
         InsideCloset = false;
 
+        // Deactivate the target dummy object
         if (stalkerFollowTarget != null)
         {
             stalkerFollowTarget.SetActive(false);
@@ -140,15 +188,30 @@ public class ClosetHidingSystem : MonoBehaviour
         if (closetAnim != null)
             closetAnim.SetInteger("C", 0);
 
+        // Re-enable movement
         if (playerRefs.movementScript != null)
             playerRefs.movementScript.enabled = true;
 
+        // Re-enable player look controls
+        if (playerRefs.playerLook != null)
+        {
+            playerRefs.playerLook.enabled = true;
+        }
+
+        // Enable flashlight script back on
         if (playerRefs.flashlightScript != null)
             playerRefs.flashlightScript.enabled = true;
 
         if (playerRefs.bodyMeshRenderer != null)
             playerRefs.bodyMeshRenderer.enabled = true;
 
+        // Re-enable the player collider
+        if (playerRefs.playerCollider != null)
+        {
+            playerRefs.playerCollider.enabled = true;
+        }
+
+        // Unfreeze physics safely
         if (playerRefs.rb != null)
         {
             playerRefs.rb.isKinematic = false;

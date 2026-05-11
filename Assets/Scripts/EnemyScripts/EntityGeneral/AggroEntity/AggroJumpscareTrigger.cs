@@ -7,7 +7,6 @@ public class AggroJumpscareTrigger : MonoBehaviour
     [Tooltip("How close the entity needs to be to catch the player.")]
     public float catchRadius = 2.5f;
 
-    // „Ÿ„Ÿ„Ÿ NEW: Anxiety Spike Settings „Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ
     [Header("Anxiety Penalty")]
     [Tooltip("Percentage of Max Anxiety to add when caught (e.g., 25 means 25% of the bar).")]
     [Range(0f, 100f)]
@@ -15,6 +14,7 @@ public class AggroJumpscareTrigger : MonoBehaviour
 
     private Transform playerTransform;
     private PlayerStats playerStats; // Reference to apply the anxiety spike
+    private AnxietyHandler anxietyHandler; // NEW: Reference to pause the decay
     private bool hasCaughtPlayer = false;
 
     private AggroEntityDetector entityDetector;
@@ -50,6 +50,13 @@ public class AggroJumpscareTrigger : MonoBehaviour
             {
                 Debug.LogError("AggroJumpscareTrigger: No PlayerStats found on the Player object!");
             }
+
+            // NEW: Grab the AnxietyHandler directly from the Player object (Fast & Clean)
+            anxietyHandler = actualPlayer.GetComponent<AnxietyHandler>();
+            if (anxietyHandler == null)
+            {
+                Debug.LogWarning("AggroJumpscareTrigger: No AnxietyHandler found on the Player object!");
+            }
         }
         else
         {
@@ -79,6 +86,13 @@ public class AggroJumpscareTrigger : MonoBehaviour
             float anxietyToAdd = (anxietySpikePercentage / 100f) * playerStats.MaxAnxiety;
             playerStats.AddStat(StatType.ANX, anxietyToAdd);
             Debug.Log($"[Anxiety System] Player caught! Added {anxietySpikePercentage}% ({anxietyToAdd} raw points) to Anxiety.");
+
+            // THE FIX: Reset the safe timer so the spiked anxiety holds before decaying
+            if (anxietyHandler != null)
+            {
+                anxietyHandler.ResetSafeTimer();
+                Debug.Log("[Anxiety System] Safe timer reset via Aggro Jumpscare. Decay paused.");
+            }
         }
 
         // 2. Jumpscare Effects

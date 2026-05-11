@@ -12,8 +12,6 @@ public class StalkerFollowScript : MonoBehaviour
     private enum SpawnReason { Idle, Closet }
     private SpawnReason spawnReason;
 
-    private Transform cachedClosetTarget;
-
     [Tooltip("The particle effect to spawn when the entity disappears.")]
     [SerializeField] private GameObject despawnParticlePrefab;
 
@@ -22,9 +20,11 @@ public class StalkerFollowScript : MonoBehaviour
         agent = GetComponent<NavMeshAgent>();
     }
 
-    public void InitializeForIdle(PlayerReferences refs, float threshold)
+    // UPDATED: Now accepts ClosetHidingSystem so Idle stalkers know when you hide.
+    public void InitializeForIdle(PlayerReferences refs, ClosetHidingSystem closet, float threshold)
     {
         playerRefs = refs;
+        closetSystem = closet;
         movementThreshold = threshold;
         spawnReason = SpawnReason.Idle;
 
@@ -48,23 +48,19 @@ public class StalkerFollowScript : MonoBehaviour
 
     private void UpdateDestination()
     {
+        // 1. If the closet system exists and the player is actively inside it
         if (closetSystem != null && closetSystem.InsideCloset)
         {
-            if (cachedClosetTarget == null)
+            // Directly target the assigned dummy object instead of searching by tag
+            if (closetSystem.stalkerFollowTarget != null)
             {
-                GameObject targetObj = GameObject.FindGameObjectWithTag("PlayerFollow");
-                if (targetObj != null)
-                {
-                    cachedClosetTarget = targetObj.transform;
-                }
-            }
-
-            if (cachedClosetTarget != null)
-            {
-                agent.SetDestination(cachedClosetTarget.position);
+                agent.SetDestination(closetSystem.stalkerFollowTarget.transform.position);
+                return;
             }
         }
-        else if (playerRefs != null)
+
+        // 2. Fallback: Follow the player directly
+        if (playerRefs != null)
         {
             agent.SetDestination(playerRefs.transform.position);
         }

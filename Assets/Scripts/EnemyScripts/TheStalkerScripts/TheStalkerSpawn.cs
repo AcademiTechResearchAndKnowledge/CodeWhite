@@ -117,7 +117,8 @@ public class IdleOrClosetEnemySpawner : MonoBehaviour
             }
             else
             {
-                stalkerScript.InitializeForIdle(playerRefs, idleSpeedThreshold);
+                // --- FIXED LINE: Added closetSystem as the second argument ---
+                stalkerScript.InitializeForIdle(playerRefs, closetSystem, idleSpeedThreshold);
             }
         }
         else

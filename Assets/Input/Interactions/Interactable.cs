@@ -8,7 +8,7 @@ public class Interactable : MonoBehaviour
 
     [Header("UI Prompts")]
     [Tooltip("The key/button to press (e.g., E, F, Mouse1)")]
-    public string buttonText = "E";
+    public string buttonText = "F";
 
     [Tooltip("What is this object? (e.g., Door, Closet, Document)")]
     public string objectName = "Object";

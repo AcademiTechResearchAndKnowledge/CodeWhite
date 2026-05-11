@@ -9,14 +9,18 @@ public class AggroEntityDetector : MonoBehaviour
     public float crouchSafeDistance = 3f;
 
     [Header("State")]
-    public bool isLookingPlayer = false; // Start false, because we are investigating, not chasing yet
+    public bool isLookingPlayer = false;
     public bool canHideFromEnemy;
     public float distanceToPlayer;
 
+    private bool isCurrentlyIgnoringHiddenPlayer = false;
+    private Vector3 lastKnownPlayerPosition;
+
     private Transform playerTransform;
     private PlayerMovement playerMovement;
-    private ClosetHideInteract playerHideInteract;
     private TableHideState playerTableState;
+
+    private ClosetHidingSystem[] allClosets;
 
     private AggroEntityAI entityAi;
     private AggroEntityWondering entityWondering;
@@ -31,28 +35,25 @@ public class AggroEntityDetector : MonoBehaviour
     {
         FindPlayerReferences();
 
-        // --- THE NEW SPAWN LOGIC ---
-        // Instead of locking onto the player dynamically, 
-        // we tell the entity to walk to the player's exact starting coordinate.
+        allClosets = FindObjectsByType<ClosetHidingSystem>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+
         isLookingPlayer = false;
+        isCurrentlyIgnoringHiddenPlayer = false;
 
         if (entityAi != null) entityAi.enabled = false;
 
         if (entityWondering != null && playerTransform != null)
         {
             entityWondering.enabled = true;
-            // Force the entity to investigate the spot you were standing in when it spawned
             entityWondering.InvestigateLocation(playerTransform.position);
         }
     }
 
     void FindPlayerReferences()
     {
-        // Grab hiding state scripts from the main Player object
         GameObject mainPlayerObj = GameObject.FindGameObjectWithTag("Player");
         if (mainPlayerObj != null)
         {
-            playerHideInteract = mainPlayerObj.GetComponent<ClosetHideInteract>();
             playerTableState = mainPlayerObj.GetComponent<TableHideState>();
 
             PlayerReferences refs = mainPlayerObj.GetComponent<PlayerReferences>();
@@ -66,7 +67,6 @@ public class AggroEntityDetector : MonoBehaviour
             Debug.LogError("AggroEntityDetector: No object with tag 'Player' found.");
         }
 
-        // Grab physical tracking purely from the PlayerFollow tag
         GameObject followObj = GameObject.FindGameObjectWithTag("PlayerFollow");
         if (followObj != null)
         {
@@ -88,21 +88,68 @@ public class AggroEntityDetector : MonoBehaviour
 
         bool playerIsCrouching = playerMovement != null && playerMovement.isCrouching;
 
-        bool isHidingInCloset = playerHideInteract != null && playerHideInteract.IsHiding;
+        bool isHidingInCloset = false;
+        if (allClosets != null)
+        {
+            foreach (var closet in allClosets)
+            {
+                if (closet != null && closet.InsideCloset)
+                {
+                    isHidingInCloset = true;
+                    break;
+                }
+            }
+        }
+
         bool isHidingUnderTable = playerTableState != null && playerTableState.isUnderTable && playerIsCrouching;
 
-        // Condition 1: Player manages to hide
+        // „Ÿ„Ÿ„Ÿ CONDITION 1: Player manages to hide „Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ
         if (isHidingInCloset || isHidingUnderTable)
         {
-            isLookingPlayer = false;
-            entityAi.enabled = false;
-
-            // Revert to wandering state if hidden
-            if (!entityWondering.enabled)
+            if (!isCurrentlyIgnoringHiddenPlayer)
             {
-                entityWondering.enabled = true;
+                isCurrentlyIgnoringHiddenPlayer = true;
+
+                // --- ADDED LOGIC: Did the entity actually notice you hide? ---
+                // It notices if it was already actively chasing you, OR if it happens to be close enough to see/hear you enter.
+                bool didEntityNoticeHiding = isLookingPlayer || (distanceToPlayer <= detectRange);
+
+                // Instantly disable jumpscare eligibility
+                isLookingPlayer = false;
+
+                if (entityAi != null) entityAi.enabled = false;
+
+                if (entityWondering != null)
+                {
+                    entityWondering.enabled = true;
+
+                    if (didEntityNoticeHiding)
+                    {
+                        // The monster saw you hide! Walk to the door to investigate.
+                        lastKnownPlayerPosition = playerTransform.position;
+                        entityWondering.InvestigateLocation(lastKnownPlayerPosition);
+                        Debug.Log("Player hid while detected! Entity is investigating the last known position.");
+                    }
+                    else
+                    {
+                        // The monster was far away and completely oblivious. Keep wandering normally.
+                        entityWondering.StartWanderingInstantly();
+                        Debug.Log("Player hid secretly. Entity is oblivious and continues normal wandering.");
+                    }
+                }
             }
             return;
+        }
+        else
+        {
+            // Reset the flag when the player leaves the hiding spot
+            isCurrentlyIgnoringHiddenPlayer = false;
+        }
+
+        // Keep updating the last known position while actively chasing
+        if (isLookingPlayer)
+        {
+            lastKnownPlayerPosition = playerTransform.position;
         }
 
         // Condition 2: Player is within detect range (and not hiding) -> The entity spots you!
