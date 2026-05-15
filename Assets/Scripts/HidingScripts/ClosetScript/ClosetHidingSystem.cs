@@ -17,6 +17,10 @@ public class ClosetHidingSystem : MonoBehaviour
 
     public bool InsideCloset = false;
     public bool isTransitioning = false;
+    public static ClosetHidingSystem ActiveCloset { get; private set; }
+
+    // --- NEW FLAG: Tells the exit routine if we are being kicked out by the stalker ---
+    public bool wasJumpscared = false;
 
     void Start()
     {
@@ -59,22 +63,16 @@ public class ClosetHidingSystem : MonoBehaviour
         }
     }
 
-    // „Ÿ„Ÿ„Ÿ FIXED: ACCURATE CINEMACHINE 3 API „Ÿ„Ÿ„Ÿ
     private void ResetCameraOrientation()
     {
         if (closetCam == null) return;
 
-        // 1. Align the base transform to match the prop's forward orientation
         closetCam.transform.rotation = transform.rotation;
 
-        // 2. Grab PanTilt and directly zero out the cached look axes
         CinemachinePanTilt panTilt = closetCam.GetComponent<CinemachinePanTilt>();
         if (panTilt != null)
         {
-            // Snaps the horizontal yaw straight forward relative to the prop
             panTilt.PanAxis.Value = 0f;
-
-            // Snaps the vertical pitch perfectly level
             panTilt.TiltAxis.Value = 0f;
         }
     }
@@ -83,21 +81,15 @@ public class ClosetHidingSystem : MonoBehaviour
     {
         if (isTransitioning || InsideCloset) yield break;
 
-        if (player == null || playerRefs == null)
-            FindPlayerReferences();
-
-        if (player == null || playerRefs == null || playerRefs.playerCam == null || closetCam == null)
-            yield break;
+        if (player == null || playerRefs == null) FindPlayerReferences();
+        if (player == null || playerRefs == null || playerRefs.playerCam == null || closetCam == null) yield break;
 
         isTransitioning = true;
-
-        // --- SNAP CAMERA ORIENTATION HERE ---
         ResetCameraOrientation();
 
         closetCam.Priority = 100;
         playerRefs.playerCam.Priority = 10;
 
-        // Freeze physics immediately upon entering
         if (playerRefs.rb != null)
         {
             playerRefs.rb.linearVelocity = Vector3.zero;
@@ -105,46 +97,20 @@ public class ClosetHidingSystem : MonoBehaviour
             playerRefs.rb.isKinematic = true;
         }
 
-        // Disable the player collider
-        if (playerRefs.playerCollider != null)
-        {
-            playerRefs.playerCollider.enabled = false;
-        }
-
-        // Disable movement
-        if (playerRefs.movementScript != null)
-            playerRefs.movementScript.enabled = false;
-
-        // Disable player look so mouse inputs don't fight the reset
-        if (playerRefs.playerLook != null)
-        {
-            playerRefs.playerLook.enabled = false;
-        }
-
-        // Ensure flashlight is fully off
-        if (playerRefs.flashlightScript != null)
-        {
-            playerRefs.flashlightScript.enabled = false;
-        }
-
-        if (playerRefs.bodyMeshRenderer != null)
-            playerRefs.bodyMeshRenderer.enabled = false;
+        if (playerRefs.playerCollider != null) playerRefs.playerCollider.enabled = false;
+        if (playerRefs.movementScript != null) playerRefs.movementScript.enabled = false;
+        if (playerRefs.playerLook != null) playerRefs.playerLook.enabled = false;
+        if (playerRefs.flashlightScript != null) playerRefs.flashlightScript.enabled = false;
+        if (playerRefs.bodyMeshRenderer != null) playerRefs.bodyMeshRenderer.enabled = false;
 
         InsideCloset = true;
+        ActiveCloset = this;
 
-        // Activate the target dummy object for the stalker to find
-        if (stalkerFollowTarget != null)
-        {
-            stalkerFollowTarget.SetActive(true);
-        }
+        if (stalkerFollowTarget != null) stalkerFollowTarget.SetActive(true);
 
-        if (closetAnim != null)
-            closetAnim.SetInteger("C", 1);
-
+        if (closetAnim != null) closetAnim.SetInteger("C", 1);
         yield return new WaitForSeconds(1f);
-
-        if (closetAnim != null)
-            closetAnim.SetInteger("C", 0);
+        if (closetAnim != null) closetAnim.SetInteger("C", 0);
 
         isTransitioning = false;
     }
@@ -153,18 +119,12 @@ public class ClosetHidingSystem : MonoBehaviour
     {
         if (isTransitioning || !InsideCloset) yield break;
 
-        if (player == null || playerRefs == null)
-            FindPlayerReferences();
-
-        if (player == null || playerRefs == null || playerRefs.playerCam == null || closetCam == null)
-            yield break;
+        if (player == null || playerRefs == null) FindPlayerReferences();
+        if (player == null || playerRefs == null || playerRefs.playerCam == null || closetCam == null) yield break;
 
         isTransitioning = true;
 
-        if (playerRefs.rb != null)
-        {
-            playerRefs.rb.isKinematic = true;
-        }
+        if (playerRefs.rb != null) playerRefs.rb.isKinematic = true;
 
         player.position = exitPoint.position;
         player.rotation = exitPoint.rotation;
@@ -173,45 +133,36 @@ public class ClosetHidingSystem : MonoBehaviour
         closetCam.Priority = 10;
 
         InsideCloset = false;
+        if (ActiveCloset == this) ActiveCloset = null;
 
-        // Deactivate the target dummy object
-        if (stalkerFollowTarget != null)
+        if (stalkerFollowTarget != null) stalkerFollowTarget.SetActive(false);
+
+        // „Ÿ„Ÿ„Ÿ THE FIX: SMART DOOR CLOSING „Ÿ„Ÿ„Ÿ
+        if (wasJumpscared)
         {
-            stalkerFollowTarget.SetActive(false);
+            // The stalker already opened and unpaused the door. 
+            // Skip the "Open" command entirely and just tell it to close!
+            if (closetAnim != null) closetAnim.SetInteger("C", 0);
+
+            yield return new WaitForSeconds(1f);
+
+            wasJumpscared = false; // Reset the flag for next time
+        }
+        else
+        {
+            // Standard Player Exit: Open the door, wait, then close the door
+            if (closetAnim != null) closetAnim.SetInteger("C", 1);
+            yield return new WaitForSeconds(1f);
+            if (closetAnim != null) closetAnim.SetInteger("C", 0);
         }
 
-        if (closetAnim != null)
-            closetAnim.SetInteger("C", 1);
+        // Re-enable all player controls
+        if (playerRefs.movementScript != null) playerRefs.movementScript.enabled = true;
+        if (playerRefs.playerLook != null) playerRefs.playerLook.enabled = true;
+        if (playerRefs.flashlightScript != null) playerRefs.flashlightScript.enabled = true;
+        if (playerRefs.bodyMeshRenderer != null) playerRefs.bodyMeshRenderer.enabled = true;
+        if (playerRefs.playerCollider != null) playerRefs.playerCollider.enabled = true;
 
-        yield return new WaitForSeconds(1f);
-
-        if (closetAnim != null)
-            closetAnim.SetInteger("C", 0);
-
-        // Re-enable movement
-        if (playerRefs.movementScript != null)
-            playerRefs.movementScript.enabled = true;
-
-        // Re-enable player look controls
-        if (playerRefs.playerLook != null)
-        {
-            playerRefs.playerLook.enabled = true;
-        }
-
-        // Enable flashlight script back on
-        if (playerRefs.flashlightScript != null)
-            playerRefs.flashlightScript.enabled = true;
-
-        if (playerRefs.bodyMeshRenderer != null)
-            playerRefs.bodyMeshRenderer.enabled = true;
-
-        // Re-enable the player collider
-        if (playerRefs.playerCollider != null)
-        {
-            playerRefs.playerCollider.enabled = true;
-        }
-
-        // Unfreeze physics safely
         if (playerRefs.rb != null)
         {
             playerRefs.rb.isKinematic = false;
@@ -220,5 +171,44 @@ public class ClosetHidingSystem : MonoBehaviour
         }
 
         isTransitioning = false;
+    }
+
+    // „Ÿ„Ÿ„Ÿ STALKER JUMPSCARE INTEGRATION METHODS „Ÿ„Ÿ„Ÿ
+
+    public void ForceOpenDoorsForJumpscare()
+    {
+        wasJumpscared = true; // Tell the exit script that a jumpscare is happening!
+        StartCoroutine(JumpscareDoorHoldRoutine());
+    }
+
+    private IEnumerator JumpscareDoorHoldRoutine()
+    {
+        if (closetAnim != null)
+        {
+            closetAnim.SetInteger("C", 1);
+            yield return new WaitForSeconds(0.5f);
+            closetAnim.speed = 0f; // Freeze it open
+        }
+    }
+
+    public void ForceExitCloset()
+    {
+        if (!InsideCloset) return;
+
+        if (closetAnim != null)
+        {
+            closetAnim.speed = 1f; // Unfreeze the animator so the GoOutside routine can close it
+        }
+
+        ClosetHideInteract interactScript = GetComponent<ClosetHideInteract>();
+        if (interactScript != null)
+        {
+            interactScript.ForceKickedOutByStalker();
+        }
+        else
+        {
+            isTransitioning = false;
+            StartCoroutine(GoOutsideCloset_CO());
+        }
     }
 }

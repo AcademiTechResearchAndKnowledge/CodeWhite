@@ -1647,7 +1647,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1135121473
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1662,7 +1662,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IdleOrClosetEnemySpawner
   enemyPrefab: {fileID: 2822117024503789482, guid: af616817420c8a140ae03b74070dd8d1, type: 3}
   playerRefs: {fileID: 8951522033556788330}
-  closetSystem: {fileID: 1916880523}
   idleSpawnDelay: 5
   closetSpawnDelay: 5
   idleSpeedThreshold: 0.1
@@ -2737,17 +2736,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1837363500}
   m_CullTransparentMesh: 1
---- !u!114 &1916880523 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 978541101553969535, guid: f78d1215f2e179349a569effc45a2f72, type: 3}
-  m_PrefabInstance: {fileID: 1188668110}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1db8ea0df8c8aa14d96fe9afb70520de, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ClosetHidingSystem
 --- !u!1 &1953839228
 GameObject:
   m_ObjectHideFlags: 0
@@ -3852,6 +3840,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4335931957978498964, guid: f70b2793a1e3bae4e97cb334af19507d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6664065972589260125, guid: f70b2793a1e3bae4e97cb334af19507d, type: 3}
+      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7629738588920685599, guid: f70b2793a1e3bae4e97cb334af19507d, type: 3}

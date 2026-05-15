@@ -212,6 +212,17 @@ public class ObjectiveInventoryManager : MonoBehaviour
     // --- THE MASTER USE METHOD ---
     public void UseSelectedItem()
     {
+        // ---------------------------------------------------------
+        // NEW: PREVENT USING/PLAYING SOUND IF THE BOOK IS ALREADY OPEN!
+        // ---------------------------------------------------------
+        BookInspectionUI inspectUI = FindFirstObjectByType<BookInspectionUI>();
+        if (inspectUI != null && inspectUI.IsOpen())
+        {
+            Debug.Log("[Use] The book is already open! Blocking sound and re-use.");
+            // Optional: If you want 'E' to close the book, you could call inspectUI.Close() here instead.
+            return; // Stops the code so the sound doesn't play!
+        }
+
         ObjectiveInventorySlot slot = GetSelectedSlot();
 
         if (slot == null || slot.IsEmpty()) return;
@@ -219,6 +230,7 @@ public class ObjectiveInventoryManager : MonoBehaviour
         ObjectiveItemData itemToUse = slot.item;
         Debug.Log("Using item: " + itemToUse.itemName);
 
+        // Now the sound will ONLY play if the UI wasn't already open!
         if (audioSource != null && itemToUse.useSound != null)
         {
             audioSource.PlayOneShot(itemToUse.useSound);
@@ -228,7 +240,6 @@ public class ObjectiveInventoryManager : MonoBehaviour
         // If it's a book, open the UI and STOP reading the rest of this code.
         if (itemToUse.bookType != LibraryBookType.None)
         {
-            BookInspectionUI inspectUI = FindFirstObjectByType<BookInspectionUI>();
             if (inspectUI != null)
             {
                 inspectUI.OpenInspection(itemToUse);

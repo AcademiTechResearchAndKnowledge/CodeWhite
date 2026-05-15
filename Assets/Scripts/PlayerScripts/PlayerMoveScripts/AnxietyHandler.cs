@@ -337,4 +337,19 @@ public class AnxietyHandler : MonoBehaviour
         // Resets the clock so anxiety pauses before decaying again
         safeTimer = 0f;
     }
+    public void AddAnxiety(float amount)
+    {
+        if (playerStats != null)
+        {
+            // Apply the instant anxiety penalty to the player's stats
+            playerStats.AddStat(StatType.ANX, amount);
+
+            // Reset the safe timer so the anxiety doesn't immediately start decaying
+            safeTimer = 0f;
+        }
+        else
+        {
+            Debug.LogWarning("AnxietyHandler: Cannot add anxiety because PlayerStats reference is missing.");
+        }
+    }
 }

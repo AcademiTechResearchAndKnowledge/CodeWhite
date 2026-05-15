@@ -202,4 +202,19 @@ public class ClosetHideInteract : MonoBehaviour
         }
         return null;
     }
+
+    // --- STALKER FORCED EXIT CLEANUP ---
+    public void ForceKickedOutByStalker()
+    {
+        exitUIShown = false;
+        isTransitioningToHide = false;
+        CanInteract = true;
+
+        // Clear the HUD instantly
+        HUDInteractController hud = GetHUD();
+        if (hud != null) hud.DisableInteractionText();
+
+        StartCoroutine(InputDelay());
+        StartCoroutine(ExitClosetRoutine());
+    }
 }
