@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: -860494957984491563}
   - component: {fileID: -4037706428010266766}
   - component: {fileID: 7193544550496847029}
-  - component: {fileID: 7372747374758709090}
+  - component: {fileID: -4318656114042153948}
   - component: {fileID: 5389960842350337224}
   m_Layer: 0
   m_Name: TheCorrector
@@ -122,6 +122,13 @@ MonoBehaviour:
   currentState: 0
   wanderRadius: 10
   wanderTimer: 5
+  investigationOffset: 3
+  edgeBufferDistance: 2
+  maxPointRetries: 10
+  stagnationRadius: 15
+  maxStagnationTime: 30
+  maxBreadcrumbs: 3
+  breadcrumbAvoidanceRadius: 6
   localSearchDuration: 10
   relocateDistance: 30
 --- !u!114 &7193544550496847029
@@ -137,7 +144,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AggroEntityAI
   movePositionTransform: {fileID: 0}
---- !u!114 &7372747374758709090
+--- !u!114 &-4318656114042153948
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -146,11 +153,55 @@ MonoBehaviour:
   m_GameObject: {fileID: 5222052619046087319}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6a65fc96eb51cf2468a945664be77905, type: 3}
+  m_Script: {fileID: 11500000, guid: 500fc40a0b094084089538eea15ae860, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CorrectorJumpscareTrigger
+  m_EditorClassIdentifier: Assembly-CSharp::AggroJumpscareTrigger
   catchRadius: 2.5
-  anxietySpikePercentage: 75
+  anxietySpikePercentage: 25
+  anxietyAuraRadius: 15
+  anxietyDistanceCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 60.099625
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 4.9991126
+      value: 50.09963
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 10
+      value: 30
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 15
+      value: 10
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  canvasJumpscare: {fileID: 0}
 --- !u!65 &5389960842350337224
 BoxCollider:
   m_ObjectHideFlags: 0

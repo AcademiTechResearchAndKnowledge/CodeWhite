@@ -1005,7 +1005,7 @@ CapsuleCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7629738588920685599}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 32609bd8f4be37b4880c5a32cee05672, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -1107,6 +1107,7 @@ MonoBehaviour:
   crouchCapsuleRadius: 0.15
   crouchSpeedMultiplier: 0.5
   crouchTransitionSpeed: 10
+  crouchCameraPos: {x: 0, y: 0, z: 0}
   groundCheck: {fileID: 5865876677150076168}
   groundDistance: 0.4
   groundMask:
@@ -1279,11 +1280,11 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 2048
   gazeDetectionRange: 15
-  proximityRadius: 5
+  proximityRadius: 10
+  maxProximityAnxiety: 50
   gazeAnxietyRate: 20
-  proximityAnxietyRate: 10
-  isBeingChased: 0
   chaseAnxietyRate: 4
+  isBeingChased: 0
   safeAnxietyThreshold: 0.9
   decayDelay: 10
   minDecayRate: 0.5

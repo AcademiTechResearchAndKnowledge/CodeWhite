@@ -22,6 +22,19 @@ public class WhiteLady : MonoBehaviour
     public Transform weepLocation;
     public GameObject submitHitbox;
 
+    [Header("Anxiety Proximity (Spatial)")]
+    public float anxietyAuraRadius = 15f;
+    [Tooltip("Graph: X-Axis is Distance, Y-Axis is Total Anxiety applied. Set X=0, Y=50 (close) and X=10, Y=10 (far).")]
+    public AnimationCurve anxietyDistanceCurve = new AnimationCurve(
+        new Keyframe(0f, 50f),
+        new Keyframe(5f, 25f),
+        new Keyframe(10f, 10f),
+        new Keyframe(15f, 0f)
+    );
+    private float highestAnxietyApplied = 0f;
+    private PlayerStats playerStats;
+    private AnxietyHandler anxietyHandler;
+
     [Header("Special State Timing")]
     public float specialStateInterval = 10f;
     [Range(0f, 100f)] public float teleportChance = 60f;
@@ -56,7 +69,6 @@ public class WhiteLady : MonoBehaviour
         navMeshAgent = GetComponent<NavMeshAgent>();
         detection = GetComponent<WhiteLadyDetection>();
         wander = GetComponent<WhiteLadyWander>();
-
         TryFindPlayer();
     }
 
@@ -74,6 +86,8 @@ public class WhiteLady : MonoBehaviour
             if (playerRef == null) return;
         }
 
+        UpdateAnxietyAura();
+
         switch (currentState)
         {
             case State.Wandering: UpdateWandering(); break;
@@ -90,6 +104,37 @@ public class WhiteLady : MonoBehaviour
         if (playerRef != null)
         {
             flashlight = playerRef.flashlightScript;
+            playerStats = playerRef.GetComponent<PlayerStats>();
+            anxietyHandler = playerRef.GetComponent<AnxietyHandler>();
+        }
+    }
+
+    private void UpdateAnxietyAura()
+    {
+        // Don't apply anxiety if she is teleporting, or if we are missing player stats
+        if (playerStats == null || currentState == State.Teleporting) return;
+
+        float distanceToPlayer = Vector3.Distance(transform.position, playerRef.transform.position);
+
+        if (distanceToPlayer <= anxietyAuraRadius)
+        {
+            float targetAnxiety = anxietyDistanceCurve.Evaluate(distanceToPlayer);
+
+            if (targetAnxiety > highestAnxietyApplied)
+            {
+                float amountToAdd = targetAnxiety - highestAnxietyApplied;
+                playerStats.AddStat(StatType.ANX, amountToAdd);
+                highestAnxietyApplied = targetAnxiety;
+
+                if (anxietyHandler != null)
+                    anxietyHandler.ResetSafeTimer();
+            }
+        }
+        else
+        {
+            // Optional: If the player escapes the radius entirely, we reset her "memory" 
+            // so if they re-enter, she can apply anxiety again.
+            highestAnxietyApplied = 0f;
         }
     }
 
@@ -135,14 +180,10 @@ public class WhiteLady : MonoBehaviour
         }
     }
 
-    // ─── FIXED: NO MORE PREMATURE TELEPORTING ───
     void UpdateInvestigating()
     {
-        // We completely removed the internal master timer.
-        // We now purely wait for the Wander module to report that its local sweep is 100% finished.
         if (wander != null && wander.HasFinishedLocalSearch)
         {
-            Debug.Log("[WhiteLady] Local sweep confirmed finished by Wander module. Initiating Teleport.");
             ChangeState(State.Teleporting);
         }
     }
@@ -222,14 +263,14 @@ public class WhiteLady : MonoBehaviour
     {
         SetNav(enabled: true);
         wander.enabled = true;
-
         wander.InvestigateLocation(detection.GetLastKnownPosition());
-
-        Debug.Log("[WhiteLady] Lost player. Delegating local sweep entirely to Wander module.");
     }
 
     void OnEnterTeleporting()
     {
+        // Reset her anxiety memory when she teleports, since it's a "new encounter"
+        highestAnxietyApplied = 0f;
+
         teleportIdleTimer = 0f;
         wander.enabled = false;
         SetNav(enabled: true);

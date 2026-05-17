@@ -18,13 +18,17 @@ public class AnxietyHandler : MonoBehaviour
     [Header("Anxiety Object Settings")]
     [SerializeField] private LayerMask anxietyLayerMask;
     [SerializeField] private float gazeDetectionRange = 20f;
-    [SerializeField] private float proximityRadius = 5f;
-    [SerializeField] private float gazeAnxietyRate = 5f;
-    [SerializeField] private float proximityAnxietyRate = 2f;
+    [Tooltip("The maximum distance the player can be before feeling proximity anxiety.")]
+    [SerializeField] private float proximityRadius = 10f;
 
-    [Header("Chase State")]
-    [SerializeField] private bool isBeingChased = false;
+    [Header("Proximity Floor Settings")]
+    [Tooltip("The absolute amount of anxiety applied when standing exactly 0 units away from the entity.")]
+    [SerializeField] private float maxProximityAnxiety = 50f;
+
+    [Header("Lingering Anxiety Settings (Gaze & Chase)")]
+    [SerializeField] private float gazeAnxietyRate = 5f;
     [SerializeField] private float chaseAnxietyRate = 4f;
+    [SerializeField] private bool isBeingChased = false;
 
     [Header("Anxiety Limits")]
     [Range(0f, 1f)]
@@ -50,6 +54,8 @@ public class AnxietyHandler : MonoBehaviour
     [Header("Color Anxiety (Red Pulse)")]
     [SerializeField] private float redPulseStrength = 0.4f;
 
+    public float externalProximityFloor = 0f;
+
     private Vignette _vignette;
     private DepthOfField _dof;
     private LiftGammaGain _color;
@@ -59,6 +65,12 @@ public class AnxietyHandler : MonoBehaviour
 
     private float safeTimer = 0f;
     private bool isFadingOutAudio = false;
+    private bool hasMaxedOutAudio = false;
+
+    private float currentProximityDistance = 0f;
+
+    // ─── REPLACED THE UNUSED VARIABLE ───
+    private float previousActiveFloor = 0f;
 
     private void Awake()
     {
@@ -109,9 +121,14 @@ public class AnxietyHandler : MonoBehaviour
 
         float anxietyPercent = (float)playerStats.Anxiety / (float)playerStats.MaxAnxiety;
 
-        if (anxietyPercent >= 1f && !isFadingOutAudio)
+        if (anxietyPercent >= 1f && !isFadingOutAudio && !hasMaxedOutAudio)
         {
+            hasMaxedOutAudio = true;
             StartCoroutine(FadeOutAllAudio());
+        }
+        else if (anxietyPercent <= safeAnxietyThreshold)
+        {
+            hasMaxedOutAudio = false;
         }
 
         UpdateHeartbeat(anxietyPercent);
@@ -294,57 +311,111 @@ public class AnxietyHandler : MonoBehaviour
 
     private void CheckProximity()
     {
-        isNearAnxietyObject =
-            Physics.OverlapSphere(transform.position, proximityRadius, anxietyLayerMask).Length > 0;
+        Collider[] hitColliders = Physics.OverlapSphere(transform.position, proximityRadius, anxietyLayerMask);
+        isNearAnxietyObject = hitColliders.Length > 0;
+
+        if (isNearAnxietyObject)
+        {
+            float closestDist = proximityRadius;
+            foreach (Collider col in hitColliders)
+            {
+                float dist = Vector3.Distance(transform.position, col.transform.position);
+                if (dist < closestDist)
+                {
+                    closestDist = dist;
+                }
+            }
+            currentProximityDistance = closestDist;
+        }
+        else
+        {
+            currentProximityDistance = proximityRadius; // Reset distance when out of range
+        }
     }
 
     private void UpdateAnxiety()
     {
-        float anxietyPercent = (float)playerStats.Anxiety / (float)playerStats.MaxAnxiety;
-        bool isAnxietyTriggered = isLookingAtAnxietyObject || isBeingChased || isNearAnxietyObject;
-
-        if (isAnxietyTriggered)
+        // ─── 1. DETERMINE THE ANXIETY FLOOR ───
+        float localFloor = 0f;
+        if (isNearAnxietyObject)
         {
-            safeTimer = 0f;
+            float distancePercent = Mathf.Clamp01(1f - (currentProximityDistance / proximityRadius));
+            localFloor = distancePercent * maxProximityAnxiety;
+        }
 
-            if (anxietyPercent < safeAnxietyThreshold)
+        // The "Active Floor" is whichever is higher: the local sphere check, 
+        // or the custom Animation Curve from your Aggro Entity.
+        float activeFloor = Mathf.Max(localFloor, externalProximityFloor);
+        float currentTotalAnxiety = playerStats.Anxiety;
+
+        // ─── 2. INSTANT PROXIMITY DROP ───
+        // If the floor drops (meaning you took a step backward away from the entity),
+        // we instantly subtract that exact difference from your total anxiety!
+        float floorDelta = activeFloor - previousActiveFloor;
+        if (floorDelta < 0f)
+        {
+            playerStats.SubtractStat(StatType.ANX, -floorDelta);
+            currentTotalAnxiety = playerStats.Anxiety; // Refresh local variable
+        }
+        previousActiveFloor = activeFloor; // Save for the next frame
+
+        // ─── 3. ENFORCE THE FLOOR ───
+        // If the player's anxiety is below the floor (e.g. stepping closer), instantly snap it up.
+        if (currentTotalAnxiety < activeFloor)
+        {
+            playerStats.AddStat(StatType.ANX, activeFloor - currentTotalAnxiety);
+            currentTotalAnxiety = playerStats.Anxiety;
+        }
+
+        // ─── 4. HANDLE LINGERING ANXIETY (GAZE / CHASE) ───
+        bool isLingeringTriggered = isLookingAtAnxietyObject || isBeingChased;
+
+        if (isLingeringTriggered)
+        {
+            safeTimer = 0f; // Lock the decay timer
+
+            if (currentTotalAnxiety < playerStats.MaxAnxiety)
             {
-                float rateToApply = 0f;
-
-                if (isLookingAtAnxietyObject) rateToApply = gazeAnxietyRate;
-                else if (isBeingChased) rateToApply = chaseAnxietyRate;
-                else if (isNearAnxietyObject) rateToApply = proximityAnxietyRate;
-
+                float rateToApply = isLookingAtAnxietyObject ? gazeAnxietyRate : chaseAnxietyRate;
                 playerStats.AddStat(StatType.ANX, rateToApply * Time.deltaTime);
             }
         }
         else
         {
-            safeTimer += Time.deltaTime;
-
-            if (safeTimer >= decayDelay)
+            // ─── 5. DECAY LOGIC ───
+            // ONLY decay if the player has Lingering Anxiety (Total is higher than the floor).
+            // Proximity anxiety is handled instantly by Step 2 above.
+            if (currentTotalAnxiety > activeFloor + 0.01f)
             {
-                float timeDecaying = safeTimer - decayDelay;
-                float accelerationProgress = Mathf.Clamp01(timeDecaying / decayAccelerationTime);
-                float currentDecayRate = Mathf.Lerp(minDecayRate, maxDecayRate, accelerationProgress);
+                safeTimer += Time.deltaTime;
 
-                playerStats.SubtractStat(StatType.ANX, currentDecayRate * Time.deltaTime);
+                if (safeTimer >= decayDelay)
+                {
+                    float timeDecaying = safeTimer - decayDelay;
+                    float accelerationProgress = Mathf.Clamp01(timeDecaying / decayAccelerationTime);
+                    float currentDecayRate = Mathf.Lerp(minDecayRate, maxDecayRate, accelerationProgress);
+
+                    float maxDecayAllowed = currentTotalAnxiety - activeFloor;
+                    float actualDecay = Mathf.Min(currentDecayRate * Time.deltaTime, maxDecayAllowed);
+
+                    playerStats.SubtractStat(StatType.ANX, actualDecay);
+                }
             }
         }
     }
+
     public void ResetSafeTimer()
     {
-        // Resets the clock so anxiety pauses before decaying again
         safeTimer = 0f;
     }
+
     public void AddAnxiety(float amount)
     {
         if (playerStats != null)
         {
-            // Apply the instant anxiety penalty to the player's stats
+            // Because this adds to Total Anxiety, it will naturally push the stat 
+            // ABOVE the proximity floor, and safely trigger the decay logic down the line.
             playerStats.AddStat(StatType.ANX, amount);
-
-            // Reset the safe timer so the anxiety doesn't immediately start decaying
             safeTimer = 0f;
         }
         else
