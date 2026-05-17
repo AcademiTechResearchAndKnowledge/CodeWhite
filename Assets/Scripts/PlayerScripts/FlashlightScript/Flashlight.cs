@@ -78,4 +78,21 @@ public class Flashlight : MonoBehaviour
         torchLight.enabled = originalState;
         flickerRoutine = null;
     }
+
+    // --- ADDED: SAFE SHUTOFF FOR HIDING ---
+    public void ForceTurnOff()
+    {
+        // Stop the flicker routine so it doesn't accidentally turn the light back on while hiding
+        if (flickerRoutine != null)
+        {
+            StopCoroutine(flickerRoutine);
+            flickerRoutine = null;
+        }
+
+        if (torchLight.enabled)
+        {
+            torchLight.enabled = false;
+            onFlashlightOff?.Invoke(); // Tells your AI/game systems the light is out
+        }
+    }
 }

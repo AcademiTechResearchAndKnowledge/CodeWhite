@@ -21,7 +21,7 @@ public class PlayerLook : MonoBehaviour
 
     private void Update()
     {
-        if (!canLook)
+        if (!canLook || PauseMenu.GameIsPaused)
             return;
 
         if (ignoreFrames > 0)
@@ -41,8 +41,8 @@ public class PlayerLook : MonoBehaviour
 
     void HandleMouseLook()
     {
-        float mouseX = lookInput.x * mouseSensitivity * Time.deltaTime;
-        float mouseY = lookInput.y * mouseSensitivity * Time.deltaTime;
+        float mouseX = lookInput.x * mouseSensitivity;
+        float mouseY = lookInput.y * mouseSensitivity;
 
         xRotation -= mouseY;
         xRotation = Mathf.Clamp(xRotation, -90f, 90f);

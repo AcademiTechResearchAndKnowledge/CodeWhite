@@ -2,12 +2,20 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections;
 
+[RequireComponent(typeof(ClosetHidingSystem))]
+[RequireComponent(typeof(Interactable))]
 public class ClosetHideInteract : MonoBehaviour
 {
     public bool CanInteract = true;
 
     [Header("White Lady Settings")]
     public float safeHideDistance = 12f;
+
+    [Header("Exit UI Prompts")]
+    [Tooltip("What the HUD should display when you are inside looking to exit.")]
+    public string exitButtonText = "G";
+    public string exitObjectName = "Closet";
+    public string exitActionName = "Exit";
 
     // --- Old AI References ---
     private EntityDetector entity;
@@ -21,15 +29,28 @@ public class ClosetHideInteract : MonoBehaviour
     private bool inputLocked = false;
 
     private ClosetHidingSystem currentCloset;
+    private Interactable closetInteractable;
+    private PlayerInteraction playerInteractionScript;
+    private Transform playerTransform;
 
-    // --- INSTANT HIDE FIX ---
     private bool isTransitioningToHide = false;
+    private bool exitUIShown = false;
 
-    // The White Lady will now read this as TRUE the exact millisecond you press F
     public bool IsHiding => (currentCloset != null && currentCloset.InsideCloset) || isTransitioningToHide;
 
     void Start()
     {
+        currentCloset = GetComponent<ClosetHidingSystem>();
+        closetInteractable = GetComponent<Interactable>();
+
+        // Cache player references
+        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+        if (playerObj != null)
+        {
+            playerTransform = playerObj.transform;
+            playerInteractionScript = playerObj.GetComponent<PlayerInteraction>();
+        }
+
         FindEntityReferences();
     }
 
@@ -54,66 +75,110 @@ public class ClosetHideInteract : MonoBehaviour
             FindEntityReferences();
         }
 
-        // --- EXIT CLOSET ---
-        if (Keyboard.current.gKey.wasPressedThisFrame && currentCloset != null && currentCloset.InsideCloset)
+        // --- WHILE INSIDE THE CLOSET ---
+        if (currentCloset != null && currentCloset.InsideCloset)
         {
-            isTransitioningToHide = false; // Player is coming out!
-            CanInteract = true;
-            StartCoroutine(InputDelay());
-            StartCoroutine(currentCloset.GoOutsideCloset_CO());
+            // 1. Push the Exit prompt to the HUD once fully inside
+            if (!exitUIShown)
+            {
+                HUDInteractController hud = GetHUD();
+                if (hud != null)
+                {
+                    hud.EnableInteractionText(exitButtonText, exitObjectName, exitActionName);
+                }
+                exitUIShown = true;
+            }
+
+            // 2. Listen for the Exit Key (G) directly
+            if (Keyboard.current.gKey.wasPressedThisFrame)
+            {
+                exitUIShown = false;
+                isTransitioningToHide = false;
+                CanInteract = true;
+
+                // Clear the HUD instantly
+                HUDInteractController hud = GetHUD();
+                if (hud != null) hud.DisableInteractionText();
+
+                StartCoroutine(InputDelay());
+                StartCoroutine(ExitClosetRoutine());
+            }
+        }
+    }
+
+    // --- TRIGGERED BY YOUR INTERACTABLE SCRIPT'S UNITY EVENT ---
+    public void TryEnterCloset()
+    {
+        if (!CanInteract || inputLocked || (currentCloset != null && currentCloset.InsideCloset)) return;
+
+        // Fallback reference check
+        if (playerTransform == null)
+        {
+            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null)
+            {
+                playerTransform = playerObj.transform;
+                playerInteractionScript = playerObj.GetComponent<PlayerInteraction>();
+            }
+        }
+
+        bool canHide = true;
+
+        if (entity != null && !entity.canHideFromEnemy)
+        {
+            canHide = false;
+        }
+
+        if (whiteLady != null && playerTransform != null)
+        {
+            float distanceToWL = Vector3.Distance(playerTransform.position, whiteLady.transform.position);
+
+            if (whiteLady.CurrentState == WhiteLady.State.Chasing && distanceToWL < safeHideDistance)
+            {
+                canHide = false;
+            }
+        }
+
+        if (!canHide)
+        {
+            Debug.Log("Enemy is too close. Cannot hide yet.");
             return;
         }
 
-        // --- ENTER CLOSET ---
-        if (Keyboard.current.fKey.wasPressedThisFrame && CanInteract)
+        // Apply AI overrides
+        if (entity != null)
         {
-            if (Camera.main == null) return;
+            if (entityAi != null) entityAi.enabled = false;
+            if (entityWondering != null) entityWondering.enabled = true;
+        }
 
-            Ray ray = new Ray(Camera.main.transform.position, Camera.main.transform.forward);
-            RaycastHit hit;
+        // 1. Disable the outline immediately
+        if (closetInteractable != null) closetInteractable.DisableOutline();
 
-            if (Physics.Raycast(ray, out hit, 5))
-            {
-                ClosetHidingSystem closet = hit.collider.GetComponentInParent<ClosetHidingSystem>();
+        // 2. Disable the PlayerInteraction script temporarily so it doesn't fight over the HUD while you hide
+        if (playerInteractionScript != null) playerInteractionScript.enabled = false;
 
-                if (closet != null && hit.collider.CompareTag("Closet"))
-                {
-                    bool canHide = true;
+        // 3. Clear the initial "Hide" prompt from the screen
+        HUDInteractController hud = GetHUD();
+        if (hud != null) hud.DisableInteractionText();
 
-                    if (entity != null && !entity.canHideFromEnemy)
-                    {
-                        canHide = false;
-                    }
+        CanInteract = false;
+        isTransitioningToHide = true;
+        exitUIShown = false;
 
-                    if (whiteLady != null)
-                    {
-                        float distanceToWL = Vector3.Distance(transform.position, whiteLady.transform.position);
+        StartCoroutine(InputDelay());
+        StartCoroutine(currentCloset.GoInsideCloset_CO());
+    }
 
-                        if (whiteLady.CurrentState == WhiteLady.State.Chasing && distanceToWL < safeHideDistance)
-                        {
-                            canHide = false;
-                        }
-                    }
+    private IEnumerator ExitClosetRoutine()
+    {
+        // Wait for your existing exit transition to finish moving the player
+        yield return StartCoroutine(currentCloset.GoOutsideCloset_CO());
 
-                    if (!canHide)
-                    {
-                        Debug.Log("Enemy is too close. Cannot hide yet.");
-                        return;
-                    }
-
-                    if (entity != null)
-                    {
-                        if (entityAi != null) entityAi.enabled = false;
-                        if (entityWondering != null) entityWondering.enabled = true;
-                    }
-
-                    currentCloset = closet;
-                    CanInteract = false;
-                    isTransitioningToHide = true; // The AI instantly drops chase here!
-                    StartCoroutine(InputDelay());
-                    StartCoroutine(currentCloset.GoInsideCloset_CO());
-                }
-            }
+        // Once fully outside, turn the player's standard raycaster back on
+        if (playerInteractionScript != null)
+        {
+            playerInteractionScript.enabled = true;
         }
     }
 
@@ -122,5 +187,34 @@ public class ClosetHideInteract : MonoBehaviour
         inputLocked = true;
         yield return new WaitForSeconds(inputDelay);
         inputLocked = false;
+    }
+
+    // Safely fetches your HUD singleton matching your PlayerInteraction style
+    HUDInteractController GetHUD()
+    {
+        if (HUDInteractController.Instance != null) return HUDInteractController.Instance;
+
+        HUDInteractController found = Object.FindFirstObjectByType<HUDInteractController>();
+        if (found != null)
+        {
+            HUDInteractController.Instance = found;
+            return found;
+        }
+        return null;
+    }
+
+    // --- STALKER FORCED EXIT CLEANUP ---
+    public void ForceKickedOutByStalker()
+    {
+        exitUIShown = false;
+        isTransitioningToHide = false;
+        CanInteract = true;
+
+        // Clear the HUD instantly
+        HUDInteractController hud = GetHUD();
+        if (hud != null) hud.DisableInteractionText();
+
+        StartCoroutine(InputDelay());
+        StartCoroutine(ExitClosetRoutine());
     }
 }

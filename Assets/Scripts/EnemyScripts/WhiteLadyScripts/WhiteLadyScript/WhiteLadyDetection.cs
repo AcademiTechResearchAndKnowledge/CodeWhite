@@ -1,10 +1,5 @@
 using UnityEngine;
 
-/// <summary>
-/// White Lady exclusive detection module.
-/// Pure data provider — answers questions about the player's state.
-/// Does NOT toggle components or make state decisions.
-/// </summary>
 public class WhiteLadyDetection : MonoBehaviour
 {
     [Header("Detection Settings")]
@@ -22,11 +17,13 @@ public class WhiteLadyDetection : MonoBehaviour
     [Header("Info (Read-Only)")]
     public float distanceToPlayer;
     public bool canHideFromEnemy;
+    public bool isLookingPlayer = false;
 
     private Transform playerTransform;
     private PlayerMovement playerMovement;
-    private ClosetHideInteract playerClosetInteract;
     private TableHideState playerTableState;
+    private ClosetHidingSystem[] allClosets;
+    private ClosetHideInteract playerClosetInteract;
 
     void Start()
     {
@@ -35,15 +32,48 @@ public class WhiteLadyDetection : MonoBehaviour
 
     void Update()
     {
+        // Continuous failsafe reference grab
+        if (playerTransform == null || allClosets == null || allClosets.Length == 0)
+        {
+            ResolvePlayerReferences();
+        }
+
         if (playerTransform == null) return;
 
         distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
-        canHideFromEnemy = distanceToPlayer > hideAllowedRange;
+
+        // Unified absolute check
+        bool isCurrentlyHiding = IsPlayerHiding();
+
+        // 1. Aggro Detection Logic
+        if (!isLookingPlayer)
+        {
+            // Must NOT be hiding to gain aggro
+            if (distanceToPlayer <= detectRange && !isCurrentlyHiding && HasLineOfSight())
+            {
+                if (!IsPlayerSneakingSuccessfully())
+                {
+                    isLookingPlayer = true;
+                }
+            }
+        }
+        else
+        {
+            // --- CRITICAL: Forces aggro off the moment hiding registers ---
+            if (distanceToPlayer > loseRange || isCurrentlyHiding)
+            {
+                isLookingPlayer = false;
+            }
+        }
+
+        // 2. Hide Condition
+        canHideFromEnemy = !isLookingPlayer || (distanceToPlayer > hideAllowedRange);
     }
 
     public bool HasLineOfSight()
     {
-        if (playerTransform == null) return false;
+        // Instantly kill the raycast if hidden
+        if (playerTransform == null || IsPlayerHiding()) return false;
 
         Vector3 startPos = transform.position + Vector3.up * eyeHeight;
         Vector3 targetPos = playerTransform.position + Vector3.up * playerCenterHeight;
@@ -66,12 +96,26 @@ public class WhiteLadyDetection : MonoBehaviour
         return true;
     }
 
+    // ─── UNIFIED SOURCE OF TRUTH FOR HIDING ───
     public bool IsPlayerHiding()
     {
-        bool inCloset = playerClosetInteract != null && playerClosetInteract.IsHiding;
-        bool underTable = playerTableState != null && playerTableState.isUnderTable
-                          && IsPlayerCrouching();
-        return inCloset || underTable;
+        // 1. Primary check: Player movement script disabled by closet prop
+        if (playerMovement != null && !playerMovement.enabled) return true;
+
+        // 2. Secondary check: Active Closet prop arrays
+        if (allClosets != null)
+        {
+            foreach (var closet in allClosets)
+            {
+                if (closet != null && closet.InsideCloset) return true;
+            }
+        }
+
+        // 3. Fallback checks
+        if (playerClosetInteract != null && playerClosetInteract.IsHiding) return true;
+        if (playerTableState != null && playerTableState.isUnderTable && IsPlayerCrouching()) return true;
+
+        return false;
     }
 
     public bool IsPlayerSneakingSuccessfully()
@@ -81,6 +125,12 @@ public class WhiteLadyDetection : MonoBehaviour
 
     public Vector3 GetLastKnownPosition()
     {
+        if (IsPlayerHiding())
+        {
+            GameObject followObj = GameObject.FindGameObjectWithTag("PlayerFollow");
+            if (followObj != null) return followObj.transform.position;
+        }
+
         if (playerTransform == null) return transform.position;
 
         Vector3 direction = (playerTransform.position - transform.position).normalized;
@@ -88,29 +138,28 @@ public class WhiteLadyDetection : MonoBehaviour
         return transform.position + direction * travelDist;
     }
 
-    bool IsPlayerCrouching()
+    private bool IsPlayerCrouching()
     {
         return playerMovement != null && playerMovement.isCrouching;
     }
 
-    void ResolvePlayerReferences()
+    private void ResolvePlayerReferences()
     {
-        // Now fully bulletproof: Uses Unity 6 search instead of relying on specific tags!
-        PlayerReferences refs = FindAnyObjectByType<PlayerReferences>();
-        if (refs != null)
+        GameObject mainPlayer = GameObject.FindGameObjectWithTag("Player");
+        if (mainPlayer != null)
         {
-            playerTransform = refs.transform;
-            playerMovement = refs.movementScript;
-        }
-        else
-        {
-            Debug.LogWarning("[WhiteLadyDetection] PlayerReferences not found.");
+            playerTransform = mainPlayer.transform;
+            playerMovement = mainPlayer.GetComponent<PlayerMovement>();
+            if (playerMovement == null)
+            {
+                PlayerReferences refs = mainPlayer.GetComponent<PlayerReferences>();
+                if (refs != null) playerMovement = refs.movementScript;
+            }
+
+            playerTableState = mainPlayer.GetComponent<TableHideState>();
+            playerClosetInteract = mainPlayer.GetComponent<ClosetHideInteract>();
         }
 
-        playerClosetInteract = FindAnyObjectByType<ClosetHideInteract>();
-        playerTableState = FindAnyObjectByType<TableHideState>();
-
-        if (playerClosetInteract == null)
-            Debug.LogWarning("[WhiteLadyDetection] ClosetHideInteract script not found in scene!");
+        allClosets = FindObjectsByType<ClosetHidingSystem>(FindObjectsInactive.Include, FindObjectsSortMode.None);
     }
 }

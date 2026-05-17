@@ -289,7 +289,7 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.23
-  m_Speed: 2
+  m_Speed: 1.5
   m_Acceleration: 20
   avoidancePriority: 50
   m_AngularSpeed: 120
@@ -314,7 +314,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WhiteLadyDetection
   detectRange: 6
-  loseRange: 10
+  loseRange: 15
   hideAllowedRange: 12
   crouchSafeDistance: 3
   investigateStopDistance: 5
@@ -325,6 +325,7 @@ MonoBehaviour:
   playerCenterHeight: 1
   distanceToPlayer: 0
   canHideFromEnemy: 0
+  isLookingPlayer: 0
 --- !u!114 &8524075316939704075
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -338,10 +339,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WhiteLadyWander
   currentState: 0
-  patrolRadius: 10
+  patrolRadius: 7
   patrolInterval: 5
-  localSearchDuration: 10
-  retreatDistance: 50
+  localSearchDuration: 20
+  searchRadius: 5
 --- !u!114 &453859888704035866
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -359,7 +360,7 @@ MonoBehaviour:
   weepLocation: {fileID: 0}
   submitHitbox: {fileID: 141484224165313357}
   specialStateInterval: 5
-  teleportChance: 75
+  teleportChance: 80
   weepChance: 20
   teleportSearchRadius: 10
   teleportSampleCount: 20

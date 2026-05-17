@@ -11,102 +11,70 @@ using UnityEngine.AI;
 [RequireComponent(typeof(WhiteLadyWander))]
 public class WhiteLady : MonoBehaviour
 {
-    // ─────────────────────────────────────────
-    //  State
-    // ─────────────────────────────────────────
-    public enum State { Wandering, Chasing, Teleporting, Weeping }
+    public enum State { Wandering, Chasing, Investigating, Teleporting, Weeping }
 
     [Header("State (Read-Only)")]
     [SerializeField] private State currentState = State.Wandering;
     public State CurrentState => currentState;
 
-    // ─────────────────────────────────────────
-    //  References
-    // ─────────────────────────────────────────
-    [Header("References (Auto-Assigned)")]
-    [Tooltip("The script will automatically find this at runtime!")]
+    [Header("References")]
     public PlayerReferences playerRef;
-
-    [Tooltip("Where she stands and weeps. Assign in Inspector.")]
     public Transform weepLocation;
-
-    [Header("Interaction")]
-    [Tooltip("Drag the child 'SubmitHitbox' object here so we can turn it on/off.")]
     public GameObject submitHitbox;
 
-    // ─────────────────────────────────────────
-    //  Special State Settings
-    // ─────────────────────────────────────────
+    [Header("Anxiety Proximity (Spatial)")]
+    public float anxietyAuraRadius = 15f;
+    [Tooltip("Graph: X-Axis is Distance, Y-Axis is Total Anxiety applied. Set X=0, Y=50 (close) and X=10, Y=10 (far).")]
+    public AnimationCurve anxietyDistanceCurve = new AnimationCurve(
+        new Keyframe(0f, 50f),
+        new Keyframe(5f, 25f),
+        new Keyframe(10f, 10f),
+        new Keyframe(15f, 0f)
+    );
+    private float highestAnxietyApplied = 0f;
+    private PlayerStats playerStats;
+    private AnxietyHandler anxietyHandler;
+
     [Header("Special State Timing")]
     public float specialStateInterval = 10f;
-
-    [Header("Special State Probabilities")]
-    [Tooltip("Percentage chance (0-100) she will Teleport when rolling a special state.")]
     [Range(0f, 100f)] public float teleportChance = 60f;
-
-    [Tooltip("Percentage chance (0-100) she will Weep when rolling a special state.")]
     [Range(0f, 100f)] public float weepChance = 15f;
 
-    // ─────────────────────────────────────────
-    //  Teleport Settings
-    // ─────────────────────────────────────────
     [Header("Teleport Settings")]
     public float teleportSearchRadius = 10f;
     public int teleportSampleCount = 20;
     public float teleportIdleDuration = 3f;
 
-    // ─────────────────────────────────────────
-    //  Weep Settings
-    // ─────────────────────────────────────────
     [Header("Weep Settings")]
     public float weepDuration = 20f;
 
-    // ─────────────────────────────────────────
-    //  Private — components
-    // ─────────────────────────────────────────
     private NavMeshAgent navMeshAgent;
     private WhiteLadyDetection detection;
     private WhiteLadyWander wander;
     private Flashlight flashlight;
 
-    // ─────────────────────────────────────────
-    //  Private — timers
-    // ─────────────────────────────────────────
     private float specialStateTimer;
     private float teleportIdleTimer;
     private float weepTimer;
 
-    // ─────────────────────────────────────────
-    //  SOUND EFFECTS
-    // ─────────────────────────────────────────
     [Header("SFX Settings")]
     public AudioSource audioSource;
     public AudioClip teleportSfx;
     public AudioClip chasingSfx;
     public AudioClip weepingSfx;
-
-    [Tooltip("Plays once when she loses the player and stops chasing.")]
     public AudioClip chasingStoppedSfx;
 
-    // ─────────────────────────────────────────
-    //  Lifecycle
-    // ─────────────────────────────────────────
     void Awake()
     {
         navMeshAgent = GetComponent<NavMeshAgent>();
         detection = GetComponent<WhiteLadyDetection>();
         wander = GetComponent<WhiteLadyWander>();
-
-        if (weepLocation == null) Debug.LogWarning("[WhiteLady] Weep location not assigned.");
-
         TryFindPlayer();
     }
 
     void Start()
     {
-        // Ensure the interaction hitbox is off when spawning
         if (submitHitbox != null) submitHitbox.SetActive(false);
-
         ChangeState(State.Wandering);
     }
 
@@ -118,10 +86,13 @@ public class WhiteLady : MonoBehaviour
             if (playerRef == null) return;
         }
 
+        UpdateAnxietyAura();
+
         switch (currentState)
         {
             case State.Wandering: UpdateWandering(); break;
             case State.Chasing: UpdateChasing(); break;
+            case State.Investigating: UpdateInvestigating(); break;
             case State.Teleporting: UpdateTeleporting(); break;
             case State.Weeping: UpdateWeeping(); break;
         }
@@ -130,18 +101,42 @@ public class WhiteLady : MonoBehaviour
     private void TryFindPlayer()
     {
         playerRef = FindAnyObjectByType<PlayerReferences>();
-
         if (playerRef != null)
         {
             flashlight = playerRef.flashlightScript;
-            if (flashlight == null)
-                Debug.LogWarning("[WhiteLady] Flashlight not found on PlayerReferences.");
+            playerStats = playerRef.GetComponent<PlayerStats>();
+            anxietyHandler = playerRef.GetComponent<AnxietyHandler>();
         }
     }
 
-    // ─────────────────────────────────────────
-    //  State — Update Ticks
-    // ─────────────────────────────────────────
+    private void UpdateAnxietyAura()
+    {
+        // Don't apply anxiety if she is teleporting, or if we are missing player stats
+        if (playerStats == null || currentState == State.Teleporting) return;
+
+        float distanceToPlayer = Vector3.Distance(transform.position, playerRef.transform.position);
+
+        if (distanceToPlayer <= anxietyAuraRadius)
+        {
+            float targetAnxiety = anxietyDistanceCurve.Evaluate(distanceToPlayer);
+
+            if (targetAnxiety > highestAnxietyApplied)
+            {
+                float amountToAdd = targetAnxiety - highestAnxietyApplied;
+                playerStats.AddStat(StatType.ANX, amountToAdd);
+                highestAnxietyApplied = targetAnxiety;
+
+                if (anxietyHandler != null)
+                    anxietyHandler.ResetSafeTimer();
+            }
+        }
+        else
+        {
+            // Optional: If the player escapes the radius entirely, we reset her "memory" 
+            // so if they re-enter, she can apply anxiety again.
+            highestAnxietyApplied = 0f;
+        }
+    }
 
     private float visibleTimer = 0f;
     public float detectionDelay = 0.3f;
@@ -157,7 +152,6 @@ public class WhiteLady : MonoBehaviour
             return;
         }
 
-        // Radius, Hiding, Sneaking, and X-Ray (Line of Sight) Check
         bool playerVisible = detection.distanceToPlayer <= detection.detectRange
                           && !detection.IsPlayerHiding()
                           && !detection.IsPlayerSneakingSuccessfully()
@@ -166,7 +160,6 @@ public class WhiteLady : MonoBehaviour
         if (playerVisible)
         {
             visibleTimer += Time.deltaTime;
-
             if (visibleTimer >= detectionDelay)
                 ChangeState(State.Chasing);
         }
@@ -181,24 +174,23 @@ public class WhiteLady : MonoBehaviour
         if (navMeshAgent.enabled)
             navMeshAgent.destination = playerRef.transform.position;
 
-        if (detection.IsPlayerHiding())
+        if (detection.IsPlayerHiding() || detection.distanceToPlayer > detection.loseRange)
         {
-            wander.InvestigateLocation(detection.GetLastKnownPosition());
-            ChangeState(State.Wandering);
-            return;
+            ChangeState(State.Investigating);
         }
+    }
 
-        if (detection.distanceToPlayer > detection.loseRange)
+    void UpdateInvestigating()
+    {
+        if (wander != null && wander.HasFinishedLocalSearch)
         {
-            wander.InvestigateLocation(detection.GetLastKnownPosition());
-            ChangeState(State.Wandering);
+            ChangeState(State.Teleporting);
         }
     }
 
     void UpdateTeleporting()
     {
         teleportIdleTimer += Time.deltaTime;
-
         if (teleportIdleTimer >= teleportIdleDuration)
             ChangeState(State.Wandering);
     }
@@ -206,21 +198,15 @@ public class WhiteLady : MonoBehaviour
     void UpdateWeeping()
     {
         weepTimer += Time.deltaTime;
-
         if (weepLocation != null)
         {
             transform.position = weepLocation.position;
-
             transform.rotation = weepLocation.rotation;
         }
 
         if (weepTimer >= weepDuration)
             ChangeState(State.Wandering);
     }
-
-    // ─────────────────────────────────────────
-    //  State — Transitions
-    // ─────────────────────────────────────────
 
     void ChangeState(State next)
     {
@@ -236,21 +222,17 @@ public class WhiteLady : MonoBehaviour
             audioSource.loop = false;
         }
 
-        // Toggle the interaction hitbox based on Weeping state
-        if (submitHitbox != null)
-        {
-            submitHitbox.SetActive(currentState == State.Weeping);
-        }
+        if (submitHitbox != null) submitHitbox.SetActive(currentState == State.Weeping);
 
         switch (next)
         {
             case State.Wandering: OnEnterWandering(); break;
             case State.Chasing: OnEnterChasing(); break;
+            case State.Investigating: OnEnterInvestigating(); break;
             case State.Teleporting: OnEnterTeleporting(); break;
             case State.Weeping: OnEnterWeeping(); break;
         }
 
-        // Play the "Chase Stopped" stinger if transitioning away from Chasing
         if (wasChasing && audioSource != null && chasingStoppedSfx != null)
         {
             audioSource.PlayOneShot(chasingStoppedSfx);
@@ -261,6 +243,7 @@ public class WhiteLady : MonoBehaviour
     {
         SetNav(enabled: true);
         wander.enabled = true;
+        wander.currentState = WhiteLadyWander.WanderState.Normal;
     }
 
     void OnEnterChasing()
@@ -268,19 +251,37 @@ public class WhiteLady : MonoBehaviour
         SetNav(enabled: true);
         wander.enabled = false;
 
-        audioSource.clip = chasingSfx;
-        audioSource.loop = true;
-        audioSource.Play();
+        if (chasingSfx != null)
+        {
+            audioSource.clip = chasingSfx;
+            audioSource.loop = true;
+            audioSource.Play();
+        }
+    }
+
+    void OnEnterInvestigating()
+    {
+        SetNav(enabled: true);
+        wander.enabled = true;
+        wander.InvestigateLocation(detection.GetLastKnownPosition());
     }
 
     void OnEnterTeleporting()
     {
+        // Reset her anxiety memory when she teleports, since it's a "new encounter"
+        highestAnxietyApplied = 0f;
+
         teleportIdleTimer = 0f;
         wander.enabled = false;
         SetNav(enabled: true);
-        navMeshAgent.Warp(FindTeleportPoint());
-        flashlight?.Flicker();
 
+        if (navMeshAgent.isOnNavMesh)
+        {
+            navMeshAgent.Warp(FindTeleportPoint());
+            navMeshAgent.ResetPath();
+        }
+
+        flashlight?.Flicker();
         if (teleportSfx != null) audioSource.PlayOneShot(teleportSfx);
     }
 
@@ -290,19 +291,15 @@ public class WhiteLady : MonoBehaviour
         wander.enabled = false;
         SetNav(enabled: false);
 
-        if (weepLocation != null)
+        if (weepLocation != null) transform.position = weepLocation.position;
+
+        if (weepingSfx != null)
         {
-            transform.position = weepLocation.position;
+            audioSource.clip = weepingSfx;
+            audioSource.loop = true;
+            audioSource.Play();
         }
-
-        audioSource.clip = weepingSfx;
-        audioSource.loop = true;
-        audioSource.Play();
     }
-
-    // ─────────────────────────────────────────
-    //  Private Helpers
-    // ─────────────────────────────────────────
 
     Vector3 FindTeleportPoint()
     {
@@ -320,7 +317,6 @@ public class WhiteLady : MonoBehaviour
                 if (dist > bestDistance) { bestDistance = dist; best = hit.position; }
             }
         }
-
         return best;
     }
 
@@ -341,14 +337,7 @@ public class WhiteLady : MonoBehaviour
     void RollSpecialState()
     {
         float roll = Random.Range(0f, 100f);
-
-        if (roll < teleportChance)
-        {
-            ChangeState(State.Teleporting);
-        }
-        else if (roll < (teleportChance + weepChance))
-        {
-            ChangeState(State.Weeping);
-        }
+        if (roll < teleportChance) ChangeState(State.Teleporting);
+        else if (roll < (teleportChance + weepChance)) ChangeState(State.Weeping);
     }
 }

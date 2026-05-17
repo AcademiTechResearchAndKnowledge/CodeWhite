@@ -847,7 +847,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &487496390
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1045,6 +1045,7 @@ MonoBehaviour:
   portalOrientation: 0
   levelCounter: 0
   excludedScenes: []
+  bossScenes: []
   spawnAreas:
   - {fileID: 987547883}
   portalspawnMask:
@@ -4374,7 +4375,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -5477749408508380018, guid: a4175a5dc4c29684592cdaff59c801a9, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.8
+      value: 0.87
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: a4175a5dc4c29684592cdaff59c801a9, type: 3}
       propertyPath: m_Name
@@ -4490,8 +4491,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: e465a86c6bfec5448b479a0c49fcc61f, type: 2}
+  m_sharedMaterial: {fileID: -5628365422750491017, guid: e465a86c6bfec5448b479a0c49fcc61f, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -4515,8 +4516,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 30
-  m_fontSizeBase: 30
+  m_fontSize: 35
+  m_fontSizeBase: 35
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -4554,7 +4555,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: -374.77484, y: 0, z: -528.8168, w: 0}
+  m_margin: {x: -825.2243, y: 0, z: -875.7466, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
