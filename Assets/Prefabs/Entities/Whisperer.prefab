@@ -159,11 +159,13 @@ GameObject:
   - component: {fileID: 2372065412471160546}
   - component: {fileID: 3215199719878911491}
   - component: {fileID: 7703170999515296061}
-  - component: {fileID: 8427012112668285363}
-  - component: {fileID: 7518593232922247569}
   - component: {fileID: 1040059604848658668}
-  - component: {fileID: 1999547841456152935}
   - component: {fileID: 7262503085784493595}
+  - component: {fileID: 1110594549683049206}
+  - component: {fileID: 3210650290628203127}
+  - component: {fileID: -2076279918773013417}
+  - component: {fileID: 5696980837424301592}
+  - component: {fileID: 5609364769523820459}
   m_Layer: 0
   m_Name: Whisperer
   m_TagString: Untagged
@@ -236,49 +238,6 @@ NavMeshAgent:
   m_BaseOffset: 1
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
---- !u!114 &8427012112668285363
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4949122076645541926}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5554cec3a05042d4289237d23bda026d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AggroEntityWondering
-  currentState: 0
-  wanderRadius: 10
-  wanderTimer: 5
-  investigationOffset: 3
-  edgeBufferDistance: 2
-  maxPointRetries: 10
-  stagnationRadius: 15
-  maxStagnationTime: 30
-  maxBreadcrumbs: 3
-  breadcrumbAvoidanceRadius: 6
-  localSearchDuration: 10
-  relocateDistance: 30
---- !u!114 &7518593232922247569
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4949122076645541926}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 757be479b27377d4b8b1beae5be901ad, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AggroEntityDetector
-  detectRange: 8
-  hideAllowedRange: 12
-  loseRange: 15
-  crouchSafeDistance: 3
-  isLookingPlayer: 0
-  canHideFromEnemy: 0
-  distanceToPlayer: 0
 --- !u!114 &1040059604848658668
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -292,64 +251,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AggroEntityAI
   movePositionTransform: {fileID: 0}
---- !u!114 &1999547841456152935
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4949122076645541926}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 500fc40a0b094084089538eea15ae860, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AggroJumpscareTrigger
-  catchRadius: 2.5
-  anxietySpikePercentage: 25
-  anxietyAuraRadius: 15
-  anxietyDistanceCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 60.099625
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 4.9991126
-      value: 50.09963
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 10
-      value: 30
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 15
-      value: 10
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  canvasJumpscare: {fileID: 0}
 --- !u!65 &7262503085784493595
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -371,3 +272,218 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.7771945, y: 1.2447749, z: 0.22580147}
   m_Center: {x: -0.014309168, y: -0.3134666, z: -0.020842552}
+--- !u!114 &1110594549683049206
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4949122076645541926}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 450be596812623e4fab6916c95cbc929, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DespawningEntityDetector
+  detectRange: 8
+  hideAllowedRange: 12
+  loseRange: 15
+  crouchSafeDistance: 3
+  isLookingPlayer: 0
+  canHideFromEnemy: 0
+  distanceToPlayer: 0
+  audioSource: {fileID: 5609364769523820459}
+  chasingSfx: {fileID: 8300000, guid: 311ca31f363a7324d967ead28bde37b6, type: 3}
+  chasingStoppedSfx: {fileID: 8300000, guid: cb45a497a8ab5884983dc4f840b53f6a, type: 3}
+--- !u!114 &3210650290628203127
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4949122076645541926}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7c619db79227934fa4564a3d931390d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DespawningEntityWondering
+  currentState: 0
+  wanderRadius: 10
+  wanderTimer: 5
+  investigationOffset: 3
+  edgeBufferDistance: 2
+  maxPointRetries: 10
+  stagnationRadius: 15
+  maxStagnationTime: 30
+  maxBreadcrumbs: 3
+  breadcrumbAvoidanceRadius: 6
+  localSearchDuration: 10
+--- !u!114 &-2076279918773013417
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4949122076645541926}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9bf88776055e6f40ac53cd932cd3cd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DespawningJumpscareTrigger
+  catchRadius: 2.5
+  anxietySpikePercentage: 25
+  anxietyAuraRadius: 15
+  anxietyDistanceCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 50
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 5
+      value: 25
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 10
+      value: 10
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 15
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  canvasJumpscare: {fileID: 0}
+--- !u!114 &5696980837424301592
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4949122076645541926}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d90cd422cce19164cbd9029d8599cdbd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EntityDespawner
+  despawnParticlePrefab: {fileID: 6447101056442956672, guid: 5ff1d84a33bb279478699070075a0c15, type: 3}
+  despawnSound: {fileID: 8300000, guid: cb45a497a8ab5884983dc4f840b53f6a, type: 3}
+  despawnVolume: 1
+--- !u!82 &5609364769523820459
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4949122076645541926}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4

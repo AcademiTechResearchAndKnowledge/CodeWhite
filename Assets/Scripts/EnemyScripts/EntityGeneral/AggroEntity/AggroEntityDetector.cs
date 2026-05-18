@@ -13,6 +13,15 @@ public class AggroEntityDetector : MonoBehaviour
     public bool canHideFromEnemy;
     public float distanceToPlayer;
 
+    [Header("Audio Settings")]
+    public AudioSource audioSource;
+    public AudioClip chasingSfx;
+    public AudioClip chasingStoppedSfx;
+
+    // --- NEW AUDIO TRACKING VARIABLES ---
+    private bool isChaseMusicPlaying = false;
+    private bool isWaitingToStopChaseMusic = false;
+
     private bool isCurrentlyIgnoringHiddenPlayer = false;
     private Vector3 lastKnownPlayerPosition;
 
@@ -29,6 +38,8 @@ public class AggroEntityDetector : MonoBehaviour
     {
         entityAi = GetComponent<AggroEntityAI>();
         entityWondering = GetComponent<AggroEntityWondering>();
+
+        if (audioSource == null) audioSource = GetComponent<AudioSource>();
     }
 
     void Start()
@@ -39,6 +50,8 @@ public class AggroEntityDetector : MonoBehaviour
 
         isLookingPlayer = false;
         isCurrentlyIgnoringHiddenPlayer = false;
+        isChaseMusicPlaying = false;
+        isWaitingToStopChaseMusic = false;
 
         if (entityAi != null) entityAi.enabled = false;
 
@@ -109,12 +122,9 @@ public class AggroEntityDetector : MonoBehaviour
             if (!isCurrentlyIgnoringHiddenPlayer)
             {
                 isCurrentlyIgnoringHiddenPlayer = true;
-
-                // --- ADDED LOGIC: Did the entity actually notice you hide? ---
-                // It notices if it was already actively chasing you, OR if it happens to be close enough to see/hear you enter.
                 bool didEntityNoticeHiding = isLookingPlayer || (distanceToPlayer <= detectRange);
 
-                // Instantly disable jumpscare eligibility
+                // Stop the logical chase instantly so we don't get attacked
                 isLookingPlayer = false;
 
                 if (entityAi != null) entityAi.enabled = false;
@@ -125,24 +135,41 @@ public class AggroEntityDetector : MonoBehaviour
 
                     if (didEntityNoticeHiding)
                     {
-                        // The monster saw you hide! Walk to the door to investigate.
                         lastKnownPlayerPosition = playerTransform.position;
                         entityWondering.InvestigateLocation(lastKnownPlayerPosition);
                         Debug.Log("Player hid while detected! Entity is investigating the last known position.");
+
+                        // Keep music playing and wait for the entity to give up
+                        SetChaseMusic(true);
+                        isWaitingToStopChaseMusic = true;
                     }
                     else
                     {
-                        // The monster was far away and completely oblivious. Keep wandering normally.
                         entityWondering.StartWanderingInstantly();
                         Debug.Log("Player hid secretly. Entity is oblivious and continues normal wandering.");
+
+                        // Instantly stop music because it never saw you hide
+                        SetChaseMusic(false);
+                        isWaitingToStopChaseMusic = false;
                     }
                 }
             }
+
+            // Monitor the entity's wandering state to stop the music when it relocates
+            if (isWaitingToStopChaseMusic && entityWondering != null)
+            {
+                if (entityWondering.currentState == AggroEntityWondering.WanderState.Relocating ||
+                    entityWondering.currentState == AggroEntityWondering.WanderState.Normal)
+                {
+                    isWaitingToStopChaseMusic = false;
+                    SetChaseMusic(false);
+                }
+            }
+
             return;
         }
         else
         {
-            // Reset the flag when the player leaves the hiding spot
             isCurrentlyIgnoringHiddenPlayer = false;
         }
 
@@ -152,7 +179,7 @@ public class AggroEntityDetector : MonoBehaviour
             lastKnownPlayerPosition = playerTransform.position;
         }
 
-        // Condition 2: Player is within detect range (and not hiding) -> The entity spots you!
+        // „Ÿ„Ÿ„Ÿ CONDITION 2: Player is within detect range (and not hiding) „Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ
         if (distanceToPlayer <= detectRange)
         {
             bool successfullySneaking = playerIsCrouching && distanceToPlayer > crouchSafeDistance;
@@ -160,13 +187,16 @@ public class AggroEntityDetector : MonoBehaviour
             if (isLookingPlayer || !successfullySneaking)
             {
                 isLookingPlayer = true;
+                isWaitingToStopChaseMusic = false; // Cancel any hiding timers
+                SetChaseMusic(true);
+
                 entityAi.enabled = true;
                 entityWondering.enabled = false;
                 return;
             }
         }
 
-        // Condition 3: Player is currently being chased, but hasn't escaped yet
+        // „Ÿ„Ÿ„Ÿ CONDITION 3: Player is currently being chased, but hasn't escaped yet
         if (isLookingPlayer && distanceToPlayer <= loseRange)
         {
             entityAi.enabled = true;
@@ -174,15 +204,53 @@ public class AggroEntityDetector : MonoBehaviour
             return;
         }
 
-        // Condition 4: Player ran far away (outside lose range)
+        // „Ÿ„Ÿ„Ÿ CONDITION 4: Player ran far away (outside lose range) „Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ
         if (distanceToPlayer > loseRange)
         {
             isLookingPlayer = false;
+            isWaitingToStopChaseMusic = false; // Cancel any hiding timers
+            SetChaseMusic(false);
+
             entityAi.enabled = false;
 
             if (!entityWondering.enabled)
             {
                 entityWondering.enabled = true;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Handles toggling the chase audio state independently of the AI behavior.
+    /// </summary>
+    private void SetChaseMusic(bool play)
+    {
+        // If we are already in the requested audio state, do nothing
+        if (isChaseMusicPlaying == play) return;
+
+        isChaseMusicPlaying = play;
+
+        if (audioSource != null)
+        {
+            if (play)
+            {
+                if (chasingSfx != null)
+                {
+                    audioSource.clip = chasingSfx;
+                    audioSource.loop = true;
+                    audioSource.Play();
+                }
+            }
+            else
+            {
+                audioSource.Stop();
+                audioSource.clip = null;
+                audioSource.loop = false;
+
+                if (chasingStoppedSfx != null)
+                {
+                    audioSource.PlayOneShot(chasingStoppedSfx);
+                }
             }
         }
     }

@@ -21,11 +21,13 @@ public class Flashlight : MonoBehaviour
     private void OnEnable()
     {
         WhispererManager.onWhisperFlicker += Flicker;
+        WhispererManager.onWhispererSpawned += ForceTurnOff;
     }
 
     private void OnDisable()
     {
         WhispererManager.onWhisperFlicker -= Flicker;
+        WhispererManager.onWhispererSpawned -= ForceTurnOff;
     }
 
     private void Awake()
@@ -37,6 +39,12 @@ public class Flashlight : MonoBehaviour
     {
         if (Mouse.current.rightButton.wasPressedThisFrame)
         {
+            // --- ADDED: Block turning the light ON if Whisperer is active ---
+            if (WhispererManager.IsWhispererActive && !torchLight.enabled)
+            {
+                return; // Do nothing, the light stays off.
+            }
+
             torchLight.enabled = !torchLight.enabled;
 
             if (torchLight.enabled)
@@ -79,10 +87,8 @@ public class Flashlight : MonoBehaviour
         flickerRoutine = null;
     }
 
-    // --- ADDED: SAFE SHUTOFF FOR HIDING ---
     public void ForceTurnOff()
     {
-        // Stop the flicker routine so it doesn't accidentally turn the light back on while hiding
         if (flickerRoutine != null)
         {
             StopCoroutine(flickerRoutine);
@@ -92,7 +98,7 @@ public class Flashlight : MonoBehaviour
         if (torchLight.enabled)
         {
             torchLight.enabled = false;
-            onFlashlightOff?.Invoke(); // Tells your AI/game systems the light is out
+            onFlashlightOff?.Invoke();
         }
     }
 }
