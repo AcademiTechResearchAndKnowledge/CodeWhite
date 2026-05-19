@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 public class DespawningEntityDetector : MonoBehaviour
 {
@@ -110,40 +110,55 @@ public class DespawningEntityDetector : MonoBehaviour
         }
 
         bool isHidingUnderTable = playerTableState != null && playerTableState.isUnderTable && playerIsCrouching;
+        bool isHiding = isHidingInCloset || isHidingUnderTable;
 
-        // „Ÿ„Ÿ„Ÿ CONDITION 1: Player manages to hide „Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ
-        if (isHidingInCloset || isHidingUnderTable)
+Â  Â  Â  Â  // â”€â”€â”€ CONDITION 1: Player attempts to hide â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+Â  Â  Â  Â  if (isHiding)
         {
             if (!isCurrentlyIgnoringHiddenPlayer)
             {
-                isCurrentlyIgnoringHiddenPlayer = true;
-                bool didEntityNoticeHiding = isLookingPlayer || (distanceToPlayer <= detectRange);
-
-                isLookingPlayer = false;
-                if (entityAi != null) entityAi.enabled = false;
-
-                if (entityWondering != null)
+Â  Â  Â  Â  Â  Â  Â  Â  // Check if the entity is too close when the hide attempt happens
+Â  Â  Â  Â  Â  Â  Â  Â  if (distanceToPlayer <= detectRange)
                 {
-                    entityWondering.enabled = true;
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  // FAILED HIDE: The entity sees through the trick
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  isLookingPlayer = true;
+                    Debug.Log("Player hid too close! Despawning entity is attacking!");
+                }
+                else
+                {
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  // SUCCESSFUL HIDE: Safe distance
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  isCurrentlyIgnoringHiddenPlayer = true;
+                    bool didEntityNoticeHiding = isLookingPlayer;
 
-                    if (didEntityNoticeHiding)
-                    {
-                        lastKnownPlayerPosition = playerTransform.position;
-                        entityWondering.InvestigateLocation(lastKnownPlayerPosition);
+                    isLookingPlayer = false;
+                    if (entityAi != null) entityAi.enabled = false;
 
-                        SetChaseMusic(true);
-                    }
-                    else
+                    if (entityWondering != null)
                     {
-                        entityWondering.StartWanderingInstantly();
-                        SetChaseMusic(false);
+                        entityWondering.enabled = true;
+
+                        if (didEntityNoticeHiding)
+                        {
+                            lastKnownPlayerPosition = playerTransform.position;
+                            entityWondering.InvestigateLocation(lastKnownPlayerPosition);
+                            SetChaseMusic(true);
+                        }
+                        else
+                        {
+                            entityWondering.StartWanderingInstantly();
+                            SetChaseMusic(false);
+                        }
                     }
                 }
             }
 
-            // Note: Since this entity despawns instead of relocating, the music will stop abruptly
-            // when the gameObject is destroyed.
-            return;
+Â  Â  Â  Â  Â  Â  // Only protect the player and return IF they successfully hid
+Â  Â  Â  Â  Â  Â  if (isCurrentlyIgnoringHiddenPlayer)
+            {
+Â  Â  Â  Â  Â  Â  Â  Â  // Note: Since this entity despawns instead of relocating, the music will stop abruptly
+Â  Â  Â  Â  Â  Â  Â  Â  // when the gameObject is destroyed.
+Â  Â  Â  Â  Â  Â  Â  Â  return; // Safe! Skip the chase logic below.
+Â  Â  Â  Â  Â  Â  }
         }
         else
         {
@@ -155,8 +170,8 @@ public class DespawningEntityDetector : MonoBehaviour
             lastKnownPlayerPosition = playerTransform.position;
         }
 
-        // „Ÿ„Ÿ„Ÿ CONDITION 2: Player is within detect range (and not hiding) „Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ
-        if (distanceToPlayer <= detectRange)
+Â  Â  Â  Â  // â”€â”€â”€ CONDITION 2: Player is within detect range (and not hiding) â”€â”€â”€â”€â”€â”€â”€â”€â”€
+Â  Â  Â  Â  if (distanceToPlayer <= detectRange)
         {
             bool successfullySneaking = playerIsCrouching && distanceToPlayer > crouchSafeDistance;
 
@@ -171,16 +186,16 @@ public class DespawningEntityDetector : MonoBehaviour
             }
         }
 
-        // „Ÿ„Ÿ„Ÿ CONDITION 3: Player is currently being chased, but hasn't escaped yet
-        if (isLookingPlayer && distanceToPlayer <= loseRange)
+Â  Â  Â  Â  // â”€â”€â”€ CONDITION 3: Player is currently being chased, but hasn't escaped yet
+Â  Â  Â  Â  if (isLookingPlayer && distanceToPlayer <= loseRange)
         {
             entityAi.enabled = true;
             entityWondering.enabled = false;
             return;
         }
 
-        // „Ÿ„Ÿ„Ÿ CONDITION 4: Player ran far away (outside lose range) „Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ
-        if (distanceToPlayer > loseRange)
+Â  Â  Â  Â  // â”€â”€â”€ CONDITION 4: Player ran far away (outside lose range) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+Â  Â  Â  Â  if (distanceToPlayer > loseRange)
         {
             isLookingPlayer = false;
             SetChaseMusic(false);

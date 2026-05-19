@@ -100,8 +100,14 @@ public class ClosetHidingSystem : MonoBehaviour
         if (playerRefs.playerCollider != null) playerRefs.playerCollider.enabled = false;
         if (playerRefs.movementScript != null) playerRefs.movementScript.enabled = false;
         if (playerRefs.playerLook != null) playerRefs.playerLook.enabled = false;
-        if (playerRefs.flashlightScript != null) playerRefs.flashlightScript.enabled = false;
         if (playerRefs.bodyMeshRenderer != null) playerRefs.bodyMeshRenderer.enabled = false;
+
+        // --- FLASHLIGHT FIX ---
+        // 1. Turn off the actual light component to plunge the closet into darkness
+        if (playerRefs.flashlightLightComponent != null) playerRefs.flashlightLightComponent.enabled = false;
+
+        // 2. Disable the toggle script so the player can't turn it back on inside
+        if (playerRefs.flashlightScript != null) playerRefs.flashlightScript.enabled = false;
 
         InsideCloset = true;
         ActiveCloset = this;
@@ -159,9 +165,13 @@ public class ClosetHidingSystem : MonoBehaviour
         // Re-enable all player controls
         if (playerRefs.movementScript != null) playerRefs.movementScript.enabled = true;
         if (playerRefs.playerLook != null) playerRefs.playerLook.enabled = true;
-        if (playerRefs.flashlightScript != null) playerRefs.flashlightScript.enabled = true;
         if (playerRefs.bodyMeshRenderer != null) playerRefs.bodyMeshRenderer.enabled = true;
         if (playerRefs.playerCollider != null) playerRefs.playerCollider.enabled = true;
+
+        // --- RE-ENABLE FLASHLIGHT SCRIPT ---
+        // We only enable the script so they can press their toggle key again.
+        // We leave flashlightLightComponent.enabled alone so it stays dark until activated.
+        if (playerRefs.flashlightScript != null) playerRefs.flashlightScript.enabled = true;
 
         if (playerRefs.rb != null)
         {

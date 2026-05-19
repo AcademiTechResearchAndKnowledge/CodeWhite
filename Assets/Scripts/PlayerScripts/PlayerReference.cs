@@ -10,4 +10,5 @@ public class PlayerReferences : MonoBehaviour
     public MeshRenderer bodyMeshRenderer;
     public CinemachineCamera playerCam;
     public PlayerLook playerLook;
+    public Light flashlightLightComponent;
 }

@@ -26,10 +26,10 @@ public class WhiteLady : MonoBehaviour
     public float anxietyAuraRadius = 15f;
     [Tooltip("Graph: X-Axis is Distance, Y-Axis is Total Anxiety applied. Set X=0, Y=50 (close) and X=10, Y=10 (far).")]
     public AnimationCurve anxietyDistanceCurve = new AnimationCurve(
-        new Keyframe(0f, 50f),
-        new Keyframe(5f, 25f),
-        new Keyframe(10f, 10f),
-        new Keyframe(15f, 0f)
+      new Keyframe(0f, 50f),
+      new Keyframe(5f, 25f),
+      new Keyframe(10f, 10f),
+      new Keyframe(15f, 0f)
     );
     private float highestAnxietyApplied = 0f;
     private PlayerStats playerStats;
@@ -64,6 +64,10 @@ public class WhiteLady : MonoBehaviour
     public AudioClip weepingSfx;
     public AudioClip chasingStoppedSfx;
 
+    // --- TRACKING VARIABLES ---
+    private bool isCurrentlyIgnoringHiddenPlayer = false;
+    private bool isWaitingToStopChaseMusic = false; // Added fake chase audio tracker
+
     void Awake()
     {
         navMeshAgent = GetComponent<NavMeshAgent>();
@@ -75,6 +79,8 @@ public class WhiteLady : MonoBehaviour
     void Start()
     {
         if (submitHitbox != null) submitHitbox.SetActive(false);
+        isCurrentlyIgnoringHiddenPlayer = false;
+        isWaitingToStopChaseMusic = false;
         ChangeState(State.Wandering);
     }
 
@@ -87,6 +93,40 @@ public class WhiteLady : MonoBehaviour
         }
 
         UpdateAnxietyAura();
+
+        // ─── TABLE MECHANIC LOGIC ────────────────────────────────────────────────
+        bool isHiding = detection.IsPlayerHiding();
+
+        if (isHiding)
+        {
+            if (!isCurrentlyIgnoringHiddenPlayer)
+            {
+                if (detection.distanceToPlayer <= detection.detectRange)
+                {
+                    if (currentState == State.Wandering || currentState == State.Investigating)
+                    {
+                        Debug.Log("Player hid too close! White Lady is attacking!");
+                        isWaitingToStopChaseMusic = false; // Cancel fake chase if she sees you
+                        ChangeState(State.Chasing);
+                    }
+                }
+                else
+                {
+                    isCurrentlyIgnoringHiddenPlayer = true;
+
+                    if (currentState == State.Chasing)
+                    {
+                        isWaitingToStopChaseMusic = true; // Trigger the fake chase audio hold
+                        ChangeState(State.Investigating);
+                    }
+                }
+            }
+        }
+        else
+        {
+            isCurrentlyIgnoringHiddenPlayer = false;
+        }
+        // ─────────────────────────────────────────────────────────────────────────
 
         switch (currentState)
         {
@@ -111,7 +151,6 @@ public class WhiteLady : MonoBehaviour
 
     private void UpdateAnxietyAura()
     {
-        // Don't apply anxiety if she is teleporting, or if we are missing player stats
         if (playerStats == null || currentState == State.Teleporting) return;
 
         float distanceToPlayer = Vector3.Distance(transform.position, playerRef.transform.position);
@@ -132,8 +171,6 @@ public class WhiteLady : MonoBehaviour
         }
         else
         {
-            // Optional: If the player escapes the radius entirely, we reset her "memory" 
-            // so if they re-enter, she can apply anxiety again.
             highestAnxietyApplied = 0f;
         }
     }
@@ -153,9 +190,9 @@ public class WhiteLady : MonoBehaviour
         }
 
         bool playerVisible = detection.distanceToPlayer <= detection.detectRange
-                          && !detection.IsPlayerHiding()
-                          && !detection.IsPlayerSneakingSuccessfully()
-                          && detection.HasLineOfSight();
+                 && !isCurrentlyIgnoringHiddenPlayer
+                 && !detection.IsPlayerSneakingSuccessfully()
+                 && detection.HasLineOfSight();
 
         if (playerVisible)
         {
@@ -174,7 +211,7 @@ public class WhiteLady : MonoBehaviour
         if (navMeshAgent.enabled)
             navMeshAgent.destination = playerRef.transform.position;
 
-        if (detection.IsPlayerHiding() || detection.distanceToPlayer > detection.loseRange)
+        if (detection.distanceToPlayer > detection.loseRange)
         {
             ChangeState(State.Investigating);
         }
@@ -213,9 +250,15 @@ public class WhiteLady : MonoBehaviour
         if (next == currentState) return;
 
         bool wasChasing = (currentState == State.Chasing);
+        bool wasFakeChasing = (currentState == State.Investigating && isWaitingToStopChaseMusic);
+
         currentState = next;
 
-        if (audioSource != null)
+        // Keep the chase music going if we are tricking the player, OR if we re-spotted them during the fake chase
+        bool keepChaseMusic = (wasChasing && next == State.Investigating && isWaitingToStopChaseMusic)
+             || (wasFakeChasing && next == State.Chasing);
+
+        if (!keepChaseMusic && audioSource != null)
         {
             audioSource.Stop();
             audioSource.clip = null;
@@ -233,9 +276,16 @@ public class WhiteLady : MonoBehaviour
             case State.Weeping: OnEnterWeeping(); break;
         }
 
-        if (wasChasing && audioSource != null && chasingStoppedSfx != null)
+        // Play the "lost player" SFX if we finally stopped the chase music
+        if (!keepChaseMusic && (wasChasing || wasFakeChasing) && audioSource != null && chasingStoppedSfx != null)
         {
             audioSource.PlayOneShot(chasingStoppedSfx);
+        }
+
+        // Clear the fake chase flag if we are moving out of the Investigating state
+        if (next != State.Investigating)
+        {
+            isWaitingToStopChaseMusic = false;
         }
     }
 
@@ -251,7 +301,8 @@ public class WhiteLady : MonoBehaviour
         SetNav(enabled: true);
         wander.enabled = false;
 
-        if (chasingSfx != null)
+        // Added check to prevent stuttering if she re-targets during a fake chase
+        if (chasingSfx != null && audioSource.clip != chasingSfx)
         {
             audioSource.clip = chasingSfx;
             audioSource.loop = true;
@@ -268,9 +319,7 @@ public class WhiteLady : MonoBehaviour
 
     void OnEnterTeleporting()
     {
-        // Reset her anxiety memory when she teleports, since it's a "new encounter"
         highestAnxietyApplied = 0f;
-
         teleportIdleTimer = 0f;
         wander.enabled = false;
         SetNav(enabled: true);
@@ -281,7 +330,23 @@ public class WhiteLady : MonoBehaviour
             navMeshAgent.ResetPath();
         }
 
-        flashlight?.Flicker();
+        // ─── SMART FLICKER ROUTING ──────────────────────────────────────────────────
+        if (ClosetHidingSystem.ActiveCloset != null && ClosetHidingSystem.ActiveCloset.InsideCloset)
+        {
+            // Player is in a closet -> Flicker the closet light
+            ClosetHideInteract closetInteract = ClosetHidingSystem.ActiveCloset.GetComponent<ClosetHideInteract>();
+            if (closetInteract != null)
+            {
+                closetInteract.TriggerClosetLightFlicker(1.5f);
+            }
+        }
+        else
+        {
+            // Player is NOT in a closet -> Flicker their personal flashlight
+            flashlight?.Flicker();
+        }
+        // ────────────────────────────────────────────────────────────────────────────
+
         if (teleportSfx != null) audioSource.PlayOneShot(teleportSfx);
     }
 

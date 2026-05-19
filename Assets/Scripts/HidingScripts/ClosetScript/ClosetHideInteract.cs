@@ -17,6 +17,10 @@ public class ClosetHideInteract : MonoBehaviour
     public string exitObjectName = "Closet";
     public string exitActionName = "Exit";
 
+    [Header("Closet Internal Light")]
+    [Tooltip("Assign the light component placed inside the closet here.")]
+    public Light internalClosetLight;
+
     // --- Old AI References ---
     private EntityDetector entity;
     private EntityAi entityAi;
@@ -36,12 +40,18 @@ public class ClosetHideInteract : MonoBehaviour
     private bool isTransitioningToHide = false;
     private bool exitUIShown = false;
 
+    // Added a flag to prevent toggling while it's currently flickering
+    private bool isFlickering = false;
+
     public bool IsHiding => (currentCloset != null && currentCloset.InsideCloset) || isTransitioningToHide;
 
     void Start()
     {
         currentCloset = GetComponent<ClosetHidingSystem>();
         closetInteractable = GetComponent<Interactable>();
+
+        // Ensure the inside closet light is off when the game starts
+        if (internalClosetLight != null) internalClosetLight.enabled = false;
 
         // Cache player references
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
@@ -89,14 +99,24 @@ public class ClosetHideInteract : MonoBehaviour
                 exitUIShown = true;
             }
 
-            // 2. Listen for the Exit Key (G) directly
+            // 2. Listen for Right-Click to toggle the internal closet light (only if not currently flickering)
+            if (Mouse.current != null && Mouse.current.rightButton.wasPressedThisFrame && !isFlickering)
+            {
+                if (internalClosetLight != null)
+                {
+                    internalClosetLight.enabled = !internalClosetLight.enabled;
+                }
+            }
+
+            // 3. Listen for the Exit Key (G) directly
             if (Keyboard.current.gKey.wasPressedThisFrame)
             {
+                if (internalClosetLight != null) internalClosetLight.enabled = false;
+
                 exitUIShown = false;
                 isTransitioningToHide = false;
                 CanInteract = true;
 
-                // Clear the HUD instantly
                 HUDInteractController hud = GetHUD();
                 if (hud != null) hud.DisableInteractionText();
 
@@ -106,12 +126,10 @@ public class ClosetHideInteract : MonoBehaviour
         }
     }
 
-    // --- TRIGGERED BY YOUR INTERACTABLE SCRIPT'S UNITY EVENT ---
     public void TryEnterCloset()
     {
         if (!CanInteract || inputLocked || (currentCloset != null && currentCloset.InsideCloset)) return;
 
-        // Fallback reference check
         if (playerTransform == null)
         {
             GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
@@ -124,15 +142,11 @@ public class ClosetHideInteract : MonoBehaviour
 
         bool canHide = true;
 
-        if (entity != null && !entity.canHideFromEnemy)
-        {
-            canHide = false;
-        }
+        if (entity != null && !entity.canHideFromEnemy) canHide = false;
 
         if (whiteLady != null && playerTransform != null)
         {
             float distanceToWL = Vector3.Distance(playerTransform.position, whiteLady.transform.position);
-
             if (whiteLady.CurrentState == WhiteLady.State.Chasing && distanceToWL < safeHideDistance)
             {
                 canHide = false;
@@ -145,20 +159,15 @@ public class ClosetHideInteract : MonoBehaviour
             return;
         }
 
-        // Apply AI overrides
         if (entity != null)
         {
             if (entityAi != null) entityAi.enabled = false;
             if (entityWondering != null) entityWondering.enabled = true;
         }
 
-        // 1. Disable the outline immediately
         if (closetInteractable != null) closetInteractable.DisableOutline();
-
-        // 2. Disable the PlayerInteraction script temporarily so it doesn't fight over the HUD while you hide
         if (playerInteractionScript != null) playerInteractionScript.enabled = false;
 
-        // 3. Clear the initial "Hide" prompt from the screen
         HUDInteractController hud = GetHUD();
         if (hud != null) hud.DisableInteractionText();
 
@@ -166,20 +175,16 @@ public class ClosetHideInteract : MonoBehaviour
         isTransitioningToHide = true;
         exitUIShown = false;
 
+        if (internalClosetLight != null) internalClosetLight.enabled = false;
+
         StartCoroutine(InputDelay());
         StartCoroutine(currentCloset.GoInsideCloset_CO());
     }
 
     private IEnumerator ExitClosetRoutine()
     {
-        // Wait for your existing exit transition to finish moving the player
         yield return StartCoroutine(currentCloset.GoOutsideCloset_CO());
-
-        // Once fully outside, turn the player's standard raycaster back on
-        if (playerInteractionScript != null)
-        {
-            playerInteractionScript.enabled = true;
-        }
+        if (playerInteractionScript != null) playerInteractionScript.enabled = true;
     }
 
     IEnumerator InputDelay()
@@ -189,11 +194,9 @@ public class ClosetHideInteract : MonoBehaviour
         inputLocked = false;
     }
 
-    // Safely fetches your HUD singleton matching your PlayerInteraction style
     HUDInteractController GetHUD()
     {
         if (HUDInteractController.Instance != null) return HUDInteractController.Instance;
-
         HUDInteractController found = Object.FindFirstObjectByType<HUDInteractController>();
         if (found != null)
         {
@@ -203,18 +206,50 @@ public class ClosetHideInteract : MonoBehaviour
         return null;
     }
 
-    // --- STALKER FORCED EXIT CLEANUP ---
     public void ForceKickedOutByStalker()
     {
+        if (internalClosetLight != null) internalClosetLight.enabled = false;
+
         exitUIShown = false;
         isTransitioningToHide = false;
         CanInteract = true;
 
-        // Clear the HUD instantly
         HUDInteractController hud = GetHUD();
         if (hud != null) hud.DisableInteractionText();
 
         StartCoroutine(InputDelay());
         StartCoroutine(ExitClosetRoutine());
+    }
+
+    // „Ÿ„Ÿ„Ÿ NEW: FLICKER LOGIC „Ÿ„Ÿ„Ÿ
+    public void TriggerClosetLightFlicker(float duration = 1.5f)
+    {
+        // Only flicker if we are actually hiding inside THIS closet
+        if (currentCloset != null && currentCloset.InsideCloset && internalClosetLight != null && !isFlickering)
+        {
+            StartCoroutine(FlickerRoutine(duration));
+        }
+    }
+
+    private IEnumerator FlickerRoutine(float duration)
+    {
+        isFlickering = true;
+        bool originalState = internalClosetLight.enabled; // Remember if they had it on or off
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            // Randomly toggle the light
+            internalClosetLight.enabled = Random.value > 0.5f;
+
+            // Random wait time between flashes (fast flicker)
+            float waitTime = Random.Range(0.05f, 0.15f);
+            yield return new WaitForSeconds(waitTime);
+            elapsed += waitTime;
+        }
+
+        // Restore to however they had it before the White Lady teleported
+        internalClosetLight.enabled = originalState;
+        isFlickering = false;
     }
 }

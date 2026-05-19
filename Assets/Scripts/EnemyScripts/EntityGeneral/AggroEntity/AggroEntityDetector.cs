@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 public class AggroEntityDetector : MonoBehaviour
 {
@@ -115,79 +115,88 @@ public class AggroEntityDetector : MonoBehaviour
         }
 
         bool isHidingUnderTable = playerTableState != null && playerTableState.isUnderTable && playerIsCrouching;
+        bool isHiding = isHidingInCloset || isHidingUnderTable;
 
-        // „Ÿ„Ÿ„Ÿ CONDITION 1: Player manages to hide „Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ
-        if (isHidingInCloset || isHidingUnderTable)
+Â  Â  Â  Â  // â”€â”€â”€ CONDITION 1: Player attempts to hide â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+Â  Â  Â  Â  if (isHiding)
         {
             if (!isCurrentlyIgnoringHiddenPlayer)
             {
-                isCurrentlyIgnoringHiddenPlayer = true;
-                bool didEntityNoticeHiding = isLookingPlayer || (distanceToPlayer <= detectRange);
-
-                // Stop the logical chase instantly so we don't get attacked
-                isLookingPlayer = false;
-
-                if (entityAi != null) entityAi.enabled = false;
-
-                if (entityWondering != null)
+Â  Â  Â  Â  Â  Â  Â  Â  // Check if the entity is too close when the hide attempt happens
+Â  Â  Â  Â  Â  Â  Â  Â  if (distanceToPlayer <= detectRange)
                 {
-                    entityWondering.enabled = true;
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  // FAILED HIDE: The entity is 8 units or closer. It sees through the trick.
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  // We force the chase state here so it bypasses crouching/sneaking protections below.
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  isLookingPlayer = true;
+                    Debug.Log("Player hid too close! Entity is attacking!");
+                }
+                else
+                {
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  // SUCCESSFUL HIDE: Player was safely outside detectRange
+Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  isCurrentlyIgnoringHiddenPlayer = true;
 
-                    if (didEntityNoticeHiding)
+                    // If they are > 8 units, they are only noticed if already being chased
+                    bool didEntityNoticeHiding = isLookingPlayer;
+
+                    isLookingPlayer = false;
+                    if (entityAi != null) entityAi.enabled = false;
+
+                    if (entityWondering != null)
                     {
-                        lastKnownPlayerPosition = playerTransform.position;
-                        entityWondering.InvestigateLocation(lastKnownPlayerPosition);
-                        Debug.Log("Player hid while detected! Entity is investigating the last known position.");
+                        entityWondering.enabled = true;
 
-                        // Keep music playing and wait for the entity to give up
-                        SetChaseMusic(true);
-                        isWaitingToStopChaseMusic = true;
-                    }
-                    else
-                    {
-                        entityWondering.StartWanderingInstantly();
-                        Debug.Log("Player hid secretly. Entity is oblivious and continues normal wandering.");
-
-                        // Instantly stop music because it never saw you hide
-                        SetChaseMusic(false);
-                        isWaitingToStopChaseMusic = false;
+                        if (didEntityNoticeHiding)
+                        {
+                            lastKnownPlayerPosition = playerTransform.position;
+                            entityWondering.InvestigateLocation(lastKnownPlayerPosition);
+                            SetChaseMusic(true);
+                            isWaitingToStopChaseMusic = true;
+                        }
+                        else
+                        {
+                            entityWondering.StartWanderingInstantly();
+                            SetChaseMusic(false);
+                            isWaitingToStopChaseMusic = false;
+                        }
                     }
                 }
             }
 
-            // Monitor the entity's wandering state to stop the music when it relocates
-            if (isWaitingToStopChaseMusic && entityWondering != null)
+Â  Â  Â  Â  Â  Â  // Only protect the player and return IF they successfully hid
+Â  Â  Â  Â  Â  Â  if (isCurrentlyIgnoringHiddenPlayer)
             {
-                if (entityWondering.currentState == AggroEntityWondering.WanderState.Relocating ||
-                    entityWondering.currentState == AggroEntityWondering.WanderState.Normal)
+                if (isWaitingToStopChaseMusic && entityWondering != null)
                 {
-                    isWaitingToStopChaseMusic = false;
-                    SetChaseMusic(false);
+                    if (entityWondering.currentState == AggroEntityWondering.WanderState.Relocating ||
+                      entityWondering.currentState == AggroEntityWondering.WanderState.Normal)
+                    {
+                        isWaitingToStopChaseMusic = false;
+                        SetChaseMusic(false);
+                    }
                 }
-            }
-
-            return;
+                return; // Safe! Skip the chase logic below.
+Â  Â  Â  Â  Â  Â  }
         }
         else
         {
             isCurrentlyIgnoringHiddenPlayer = false;
         }
 
-        // Keep updating the last known position while actively chasing
-        if (isLookingPlayer)
+Â  Â  Â  Â  // Keep updating the last known position while actively chasing
+Â  Â  Â  Â  if (isLookingPlayer)
         {
             lastKnownPlayerPosition = playerTransform.position;
         }
 
-        // „Ÿ„Ÿ„Ÿ CONDITION 2: Player is within detect range (and not hiding) „Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ
-        if (distanceToPlayer <= detectRange)
+Â  Â  Â  Â  // â”€â”€â”€ CONDITION 2: Player is within detect range (and not hidden safely) â”€â”€
+Â  Â  Â  Â  if (distanceToPlayer <= detectRange)
         {
             bool successfullySneaking = playerIsCrouching && distanceToPlayer > crouchSafeDistance;
 
             if (isLookingPlayer || !successfullySneaking)
             {
                 isLookingPlayer = true;
-                isWaitingToStopChaseMusic = false; // Cancel any hiding timers
+                isWaitingToStopChaseMusic = false;
                 SetChaseMusic(true);
 
                 entityAi.enabled = true;
@@ -196,19 +205,19 @@ public class AggroEntityDetector : MonoBehaviour
             }
         }
 
-        // „Ÿ„Ÿ„Ÿ CONDITION 3: Player is currently being chased, but hasn't escaped yet
-        if (isLookingPlayer && distanceToPlayer <= loseRange)
+Â  Â  Â  Â  // â”€â”€â”€ CONDITION 3: Player is currently being chased, but hasn't escaped yet
+Â  Â  Â  Â  if (isLookingPlayer && distanceToPlayer <= loseRange)
         {
             entityAi.enabled = true;
             entityWondering.enabled = false;
             return;
         }
 
-        // „Ÿ„Ÿ„Ÿ CONDITION 4: Player ran far away (outside lose range) „Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ
-        if (distanceToPlayer > loseRange)
+Â  Â  Â  Â  // â”€â”€â”€ CONDITION 4: Player ran far away (outside lose range) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+Â  Â  Â  Â  if (distanceToPlayer > loseRange)
         {
             isLookingPlayer = false;
-            isWaitingToStopChaseMusic = false; // Cancel any hiding timers
+            isWaitingToStopChaseMusic = false;
             SetChaseMusic(false);
 
             entityAi.enabled = false;
