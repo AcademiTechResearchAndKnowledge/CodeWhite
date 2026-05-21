@@ -14,15 +14,30 @@ public class DespawningEntityDetector : MonoBehaviour
     public float distanceToPlayer;
 
     [Header("Audio Settings")]
-    public AudioSource audioSource;
+    public AudioSource audioSource; // For chase music
+    public AudioSource ambientAudioSource; // For random entity noises
     public AudioClip chasingSfx;
     public AudioClip chasingStoppedSfx;
 
+    [Header("Ambient Noise Settings")]
+    [Tooltip("Add multiple clips for variety. The entity will pick one at random.")]
+    public AudioClip[] ambientNoises;
+    [Tooltip("Minimum time in seconds between random noises.")]
+    public float minNoiseInterval = 4f;
+    [Tooltip("Maximum time in seconds between random noises.")]
+    public float maxNoiseInterval = 10f;
+    [Tooltip("Volume for ambient noises.")]
+    [Range(0f, 1f)] public float ambientVolume = 0.8f;
+
+    private float noiseTimer;
+
     private bool isChaseMusicPlaying = false;
-    // REMOVED: isWaitingToStopChaseMusic
 
     private bool isCurrentlyIgnoringHiddenPlayer = false;
     private Vector3 lastKnownPlayerPosition;
+
+    // --- MODIFIED: Added flag to prevent losing the player on spawn ---
+    private bool isInitialSpawnChase = true;
 
     private Transform playerTransform;
     private PlayerMovement playerMovement;
@@ -31,14 +46,25 @@ public class DespawningEntityDetector : MonoBehaviour
     private ClosetHidingSystem[] allClosets;
 
     private AggroEntityAI entityAi;
-    private DespawningEntityWondering entityWondering; // Updated reference
+    private DespawningEntityWondering entityWondering;
 
     void Awake()
     {
         entityAi = GetComponent<AggroEntityAI>();
-        entityWondering = GetComponent<DespawningEntityWondering>(); // Updated reference
+        entityWondering = GetComponent<DespawningEntityWondering>();
 
         if (audioSource == null) audioSource = GetComponent<AudioSource>();
+
+        if (audioSource != null)
+        {
+            // Chase music is 2D (0f) so it plays everywhere at max volume
+            audioSource.spatialBlend = 0f;
+        }
+        if (ambientAudioSource != null)
+        {
+            // Ambient entity noises are 3D (1f) so you can tell where it is hiding
+            ambientAudioSource.spatialBlend = 1f;
+        }
     }
 
     void Start()
@@ -48,8 +74,12 @@ public class DespawningEntityDetector : MonoBehaviour
         allClosets = FindObjectsByType<ClosetHidingSystem>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         isCurrentlyIgnoringHiddenPlayer = false;
 
-        // --- MODIFIED: Force instant chase on spawn ---
+        ResetNoiseTimer();
+
+        // --- MODIFIED: Force instant chase on spawn and enable initial chase flag ---
         isLookingPlayer = true;
+        isInitialSpawnChase = true;
+
         if (entityAi != null) entityAi.enabled = true;
         if (entityWondering != null) entityWondering.enabled = false;
 
@@ -89,6 +119,9 @@ public class DespawningEntityDetector : MonoBehaviour
 
     void Update()
     {
+        // Now runs constantly, regardless of chase state
+        HandleAmbientNoises();
+
         if (playerTransform == null) return;
 
         distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
@@ -112,22 +145,22 @@ public class DespawningEntityDetector : MonoBehaviour
         bool isHidingUnderTable = playerTableState != null && playerTableState.isUnderTable && playerIsCrouching;
         bool isHiding = isHidingInCloset || isHidingUnderTable;
 
-        // ─── CONDITION 1: Player attempts to hide ─────────────────────────────────
-        if (isHiding)
+        // ─── CONDITION 1: Player attempts to hide ─────────────────────────────────
+        if (isHiding)
         {
             if (!isCurrentlyIgnoringHiddenPlayer)
             {
-                // Check if the entity is too close when the hide attempt happens
-                if (distanceToPlayer <= detectRange)
+                if (distanceToPlayer <= detectRange)
                 {
-                    // FAILED HIDE: The entity sees through the trick
-                    isLookingPlayer = true;
+                    isLookingPlayer = true;
                     Debug.Log("Player hid too close! Despawning entity is attacking!");
                 }
                 else
                 {
-                    // SUCCESSFUL HIDE: Safe distance
-                    isCurrentlyIgnoringHiddenPlayer = true;
+                    // --- MODIFIED: Player successfully hid, so we turn off the initial chase lock ---
+                    isInitialSpawnChase = false;
+
+                    isCurrentlyIgnoringHiddenPlayer = true;
                     bool didEntityNoticeHiding = isLookingPlayer;
 
                     isLookingPlayer = false;
@@ -152,13 +185,10 @@ public class DespawningEntityDetector : MonoBehaviour
                 }
             }
 
-            // Only protect the player and return IF they successfully hid
-            if (isCurrentlyIgnoringHiddenPlayer)
+            if (isCurrentlyIgnoringHiddenPlayer)
             {
-                // Note: Since this entity despawns instead of relocating, the music will stop abruptly
-                // when the gameObject is destroyed.
-                return; // Safe! Skip the chase logic below.
-            }
+                return;
+            }
         }
         else
         {
@@ -170,8 +200,8 @@ public class DespawningEntityDetector : MonoBehaviour
             lastKnownPlayerPosition = playerTransform.position;
         }
 
-        // ─── CONDITION 2: Player is within detect range (and not hiding) ─────────
-        if (distanceToPlayer <= detectRange)
+        // ─── CONDITION 2: Player is within detect range (and not hiding) ─────────
+        if (distanceToPlayer <= detectRange)
         {
             bool successfullySneaking = playerIsCrouching && distanceToPlayer > crouchSafeDistance;
 
@@ -186,16 +216,17 @@ public class DespawningEntityDetector : MonoBehaviour
             }
         }
 
-        // ─── CONDITION 3: Player is currently being chased, but hasn't escaped yet
-        if (isLookingPlayer && distanceToPlayer <= loseRange)
+        // ─── CONDITION 3: Player is currently being chased, but hasn't escaped yet
+        if (isLookingPlayer && distanceToPlayer <= loseRange)
         {
             entityAi.enabled = true;
             entityWondering.enabled = false;
             return;
         }
 
-        // ─── CONDITION 4: Player ran far away (outside lose range) ───────────────
-        if (distanceToPlayer > loseRange)
+        // ─── CONDITION 4: Player ran far away (outside lose range) ───────────────
+        // --- MODIFIED: Now checks if isInitialSpawnChase is false before losing the player via range ---
+        if (!isInitialSpawnChase && distanceToPlayer > loseRange)
         {
             isLookingPlayer = false;
             SetChaseMusic(false);
@@ -207,6 +238,36 @@ public class DespawningEntityDetector : MonoBehaviour
                 entityWondering.enabled = true;
             }
         }
+    }
+
+    private void HandleAmbientNoises()
+    {
+        if (ambientNoises != null && ambientNoises.Length > 0)
+        {
+            noiseTimer -= Time.deltaTime;
+
+            if (noiseTimer <= 0f)
+            {
+                PlayRandomAmbientNoise();
+                ResetNoiseTimer();
+            }
+        }
+    }
+
+    private void PlayRandomAmbientNoise()
+    {
+        if (ambientAudioSource != null && !ambientAudioSource.isPlaying)
+        {
+            AudioClip randomClip = ambientNoises[Random.Range(0, ambientNoises.Length)];
+            ambientAudioSource.clip = randomClip;
+            ambientAudioSource.volume = ambientVolume;
+            ambientAudioSource.Play();
+        }
+    }
+
+    private void ResetNoiseTimer()
+    {
+        noiseTimer = Random.Range(minNoiseInterval, maxNoiseInterval);
     }
 
     private void SetChaseMusic(bool play)

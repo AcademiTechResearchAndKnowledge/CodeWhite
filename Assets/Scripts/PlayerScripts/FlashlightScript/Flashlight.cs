@@ -18,6 +18,12 @@ public class Flashlight : MonoBehaviour
     [SerializeField] private InputActionReference toggleAction;
     [SerializeField] public Light torchLight;
 
+    // --- ADDED: Audio variables ---
+    [Header("Audio Settings")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip turnOnSound;
+    [SerializeField] private AudioClip turnOffSound;
+
     private void OnEnable()
     {
         WhispererManager.onWhisperFlicker += Flicker;
@@ -33,13 +39,18 @@ public class Flashlight : MonoBehaviour
     private void Awake()
     {
         torchLight.enabled = false;
+
+        // --- ADDED: Auto-grab the AudioSource if it exists on this object but wasn't assigned manually ---
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+        }
     }
 
     private void Update()
     {
         if (Mouse.current.rightButton.wasPressedThisFrame)
         {
-            // --- ADDED: Block turning the light ON if Whisperer is active ---
             if (WhispererManager.IsWhispererActive && !torchLight.enabled)
             {
                 return; // Do nothing, the light stays off.
@@ -49,10 +60,12 @@ public class Flashlight : MonoBehaviour
 
             if (torchLight.enabled)
             {
+                PlaySound(turnOnSound); // --- ADDED ---
                 onFlashlightOn?.Invoke();
             }
             else
             {
+                PlaySound(turnOffSound); // --- ADDED ---
                 onFlashlightOff?.Invoke();
             }
         }
@@ -98,7 +111,17 @@ public class Flashlight : MonoBehaviour
         if (torchLight.enabled)
         {
             torchLight.enabled = false;
+            PlaySound(turnOffSound); // --- ADDED ---
             onFlashlightOff?.Invoke();
+        }
+    }
+
+    // --- ADDED: Helper method to safely play the assigned clips ---
+    private void PlaySound(AudioClip clip)
+    {
+        if (audioSource != null && clip != null)
+        {
+            audioSource.PlayOneShot(clip);
         }
     }
 }

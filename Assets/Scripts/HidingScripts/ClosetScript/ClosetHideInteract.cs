@@ -21,6 +21,12 @@ public class ClosetHideInteract : MonoBehaviour
     [Tooltip("Assign the light component placed inside the closet here.")]
     public Light internalClosetLight;
 
+    // --- ADDED: Audio Settings ---
+    [Header("Audio Settings")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip turnOnSound;
+    [SerializeField] private AudioClip turnOffSound;
+
     // --- Old AI References ---
     private EntityDetector entity;
     private EntityAi entityAi;
@@ -52,6 +58,12 @@ public class ClosetHideInteract : MonoBehaviour
 
         // Ensure the inside closet light is off when the game starts
         if (internalClosetLight != null) internalClosetLight.enabled = false;
+
+        // --- ADDED: Auto-grab AudioSource if not assigned ---
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+        }
 
         // Cache player references
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
@@ -105,13 +117,31 @@ public class ClosetHideInteract : MonoBehaviour
                 if (internalClosetLight != null)
                 {
                     internalClosetLight.enabled = !internalClosetLight.enabled;
+
+                    // --- ADDED: Play toggle sounds ---
+                    if (internalClosetLight.enabled)
+                    {
+                        PlaySound(turnOnSound);
+                    }
+                    else
+                    {
+                        PlaySound(turnOffSound);
+                    }
                 }
             }
 
             // 3. Listen for the Exit Key (G) directly
             if (Keyboard.current.gKey.wasPressedThisFrame)
             {
-                if (internalClosetLight != null) internalClosetLight.enabled = false;
+                if (internalClosetLight != null)
+                {
+                    // --- ADDED: Only play the off sound if it was actually on when we exited ---
+                    if (internalClosetLight.enabled)
+                    {
+                        PlaySound(turnOffSound);
+                    }
+                    internalClosetLight.enabled = false;
+                }
 
                 exitUIShown = false;
                 isTransitioningToHide = false;
@@ -208,7 +238,15 @@ public class ClosetHideInteract : MonoBehaviour
 
     public void ForceKickedOutByStalker()
     {
-        if (internalClosetLight != null) internalClosetLight.enabled = false;
+        if (internalClosetLight != null)
+        {
+            // --- ADDED: Play the off sound if the stalker kicks us out while the light is on ---
+            if (internalClosetLight.enabled)
+            {
+                PlaySound(turnOffSound);
+            }
+            internalClosetLight.enabled = false;
+        }
 
         exitUIShown = false;
         isTransitioningToHide = false;
@@ -251,5 +289,14 @@ public class ClosetHideInteract : MonoBehaviour
         // Restore to however they had it before the White Lady teleported
         internalClosetLight.enabled = originalState;
         isFlickering = false;
+    }
+
+    // --- ADDED: Helper method to safely play audio ---
+    private void PlaySound(AudioClip clip)
+    {
+        if (audioSource != null && clip != null)
+        {
+            audioSource.PlayOneShot(clip);
+        }
     }
 }

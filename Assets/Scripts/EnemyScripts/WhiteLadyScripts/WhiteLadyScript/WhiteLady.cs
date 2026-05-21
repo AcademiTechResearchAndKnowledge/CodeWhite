@@ -64,6 +64,19 @@ public class WhiteLady : MonoBehaviour
     public AudioClip weepingSfx;
     public AudioClip chasingStoppedSfx;
 
+    [Header("Ambient Noise Settings")]
+    public AudioSource ambientAudioSource; // For random entity noises
+    [Tooltip("Add multiple clips for variety. The entity will pick one at random.")]
+    public AudioClip[] ambientNoises;
+    [Tooltip("Minimum time in seconds between random noises.")]
+    public float minNoiseInterval = 4f;
+    [Tooltip("Maximum time in seconds between random noises.")]
+    public float maxNoiseInterval = 10f;
+    [Tooltip("Volume for ambient noises.")]
+    [Range(0f, 1f)] public float ambientVolume = 0.8f;
+
+    private float noiseTimer;
+
     // --- TRACKING VARIABLES ---
     private bool isCurrentlyIgnoringHiddenPlayer = false;
     private bool isWaitingToStopChaseMusic = false; // Added fake chase audio tracker
@@ -74,6 +87,15 @@ public class WhiteLady : MonoBehaviour
         detection = GetComponent<WhiteLadyDetection>();
         wander = GetComponent<WhiteLadyWander>();
         TryFindPlayer();
+
+        if (audioSource != null)
+        {
+            audioSource.spatialBlend = 1f;
+        }
+        if (ambientAudioSource != null)
+        {
+            ambientAudioSource.spatialBlend = 1f;
+        }
     }
 
     void Start()
@@ -81,11 +103,17 @@ public class WhiteLady : MonoBehaviour
         if (submitHitbox != null) submitHitbox.SetActive(false);
         isCurrentlyIgnoringHiddenPlayer = false;
         isWaitingToStopChaseMusic = false;
+
+        ResetNoiseTimer();
+
         ChangeState(State.Wandering);
     }
 
     void Update()
     {
+        // Constantly handle ambient noises across all states
+        HandleAmbientNoises();
+
         if (playerRef == null)
         {
             TryFindPlayer();
@@ -136,6 +164,36 @@ public class WhiteLady : MonoBehaviour
             case State.Teleporting: UpdateTeleporting(); break;
             case State.Weeping: UpdateWeeping(); break;
         }
+    }
+
+    private void HandleAmbientNoises()
+    {
+        if (ambientNoises != null && ambientNoises.Length > 0)
+        {
+            noiseTimer -= Time.deltaTime;
+
+            if (noiseTimer <= 0f)
+            {
+                PlayRandomAmbientNoise();
+                ResetNoiseTimer();
+            }
+        }
+    }
+
+    private void PlayRandomAmbientNoise()
+    {
+        if (ambientAudioSource != null && !ambientAudioSource.isPlaying)
+        {
+            AudioClip randomClip = ambientNoises[Random.Range(0, ambientNoises.Length)];
+            ambientAudioSource.clip = randomClip;
+            ambientAudioSource.volume = ambientVolume;
+            ambientAudioSource.Play();
+        }
+    }
+
+    private void ResetNoiseTimer()
+    {
+        noiseTimer = Random.Range(minNoiseInterval, maxNoiseInterval);
     }
 
     private void TryFindPlayer()
