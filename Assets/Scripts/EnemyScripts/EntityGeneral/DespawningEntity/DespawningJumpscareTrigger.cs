@@ -21,7 +21,8 @@ public class DespawningJumpscareTrigger : MonoBehaviour
     );
 
     [Header("Canvas Jumpscare Setup")]
-    [SerializeField] private JumpscareMechanic canvasJumpscare;
+    [Tooltip("Drag the specific Jumpscare Canvas PREFAB for this entity here.")]
+    [SerializeField] private JumpscareMechanic jumpscarePrefab;
 
     private Transform playerTransform;
     private PlayerStats playerStats;
@@ -36,8 +37,7 @@ public class DespawningJumpscareTrigger : MonoBehaviour
         if (entityDetector == null)
             Debug.LogError("DespawningJumpscareTrigger: Cannot find DespawningEntityDetector script!");
 
-        if (canvasJumpscare == null)
-            canvasJumpscare = FindAnyObjectByType<JumpscareMechanic>();
+        // REMOVED FindAnyObjectByType so it doesn't grab the wrong canvas!
 
         GameObject playerObj = GameObject.FindGameObjectWithTag("PlayerFollow");
         if (playerObj != null) playerTransform = playerObj.transform;
@@ -95,10 +95,13 @@ public class DespawningJumpscareTrigger : MonoBehaviour
         if (lookPos != Vector3.zero) transform.rotation = Quaternion.LookRotation(lookPos);
 
         float waitTime = 2.0f;
-        if (canvasJumpscare != null)
+
+        // --- NEW LOGIC: Spawn the specific jumpscare prefab! ---
+        if (jumpscarePrefab != null)
         {
-            canvasJumpscare.TriggerJumpscare();
-            waitTime = canvasJumpscare.animationDuration - 0.5f;
+            JumpscareMechanic spawnedJumpscare = Instantiate(jumpscarePrefab);
+            spawnedJumpscare.TriggerJumpscare();
+            waitTime = spawnedJumpscare.animationDuration - 0.5f;
         }
 
         yield return new WaitForSeconds(waitTime);
@@ -113,7 +116,6 @@ public class DespawningJumpscareTrigger : MonoBehaviour
             if (anxietyHandler != null) anxietyHandler.ResetSafeTimer();
         }
 
-        // --- MODIFIED: Removed the particle despawner. Now it just dies silently. ---
         Destroy(gameObject);
     }
 

@@ -15,7 +15,8 @@ public class WhiteLadyJumpscareTrigger : MonoBehaviour
     public float anxietySpikePercentage = 25f;
 
     [Header("Canvas Jumpscare Setup")]
-    [SerializeField] private JumpscareMechanic canvasJumpscare;
+    [Tooltip("Drag the specific Jumpscare Canvas PREFAB for this entity here.")]
+    [SerializeField] private JumpscareMechanic jumpscarePrefab;
 
     private Transform playerTransform;
     private PlayerStats playerStats;
@@ -28,8 +29,7 @@ public class WhiteLadyJumpscareTrigger : MonoBehaviour
     {
         whiteLady = GetComponent<WhiteLady>();
 
-        if (canvasJumpscare == null)
-            canvasJumpscare = FindAnyObjectByType<JumpscareMechanic>();
+        // REMOVED: FindAnyObjectByType so it doesn't grab the wrong canvas!
 
         GameObject playerObj = GameObject.FindGameObjectWithTag("PlayerFollow");
         if (playerObj != null) playerTransform = playerObj.transform;
@@ -87,12 +87,15 @@ public class WhiteLadyJumpscareTrigger : MonoBehaviour
         lookPos.y = 0f;
         if (lookPos != Vector3.zero) transform.rotation = Quaternion.LookRotation(lookPos);
 
-        // 4. Trigger UI Canvas
+        // 4. Trigger UI Canvas using the Prefab approach
         float waitTime = 2.0f;
-        if (canvasJumpscare != null)
+
+        // --- NEW LOGIC: Spawn the specific jumpscare prefab! ---
+        if (jumpscarePrefab != null)
         {
-            canvasJumpscare.TriggerJumpscare();
-            waitTime = canvasJumpscare.animationDuration - 0.5f;
+            JumpscareMechanic spawnedJumpscare = Instantiate(jumpscarePrefab);
+            spawnedJumpscare.TriggerJumpscare();
+            waitTime = spawnedJumpscare.animationDuration - 0.5f;
         }
 
         yield return new WaitForSeconds(waitTime);

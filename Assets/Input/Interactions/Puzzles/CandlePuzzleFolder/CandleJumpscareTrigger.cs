@@ -25,8 +25,8 @@ public class CandleJumpscareTrigger : MonoBehaviour
     );
 
     [Header("Canvas Jumpscare Setup")]
-    [Tooltip("Drag the GameObject with your JumpscareMechanic script here.")]
-    [SerializeField] private JumpscareMechanic canvasJumpscare;
+    [Tooltip("Drag the specific Jumpscare Canvas PREFAB for this entity here.")]
+    [SerializeField] private JumpscareMechanic jumpscarePrefab;
 
     private Transform playerTransform;
     private PlayerStats playerStats;
@@ -47,11 +47,7 @@ public class CandleJumpscareTrigger : MonoBehaviour
             Debug.LogError("CandleJumpscareTrigger: Cannot find AggroEntityDetector script on this entity!");
         }
 
-        // Auto-find the jumpscare mechanic if it wasn't dragged into the inspector
-        if (canvasJumpscare == null)
-        {
-            canvasJumpscare = FindAnyObjectByType<JumpscareMechanic>();
-        }
+        // REMOVED: FindAnyObjectByType so it doesn't grab the wrong canvas in the scene!
 
         // 1. Find PlayerFollow for the distance check
         GameObject playerObj = GameObject.FindGameObjectWithTag("PlayerFollow");
@@ -146,12 +142,13 @@ public class CandleJumpscareTrigger : MonoBehaviour
             transform.rotation = Quaternion.LookRotation(lookPos);
         }
 
-        // 3. Trigger Canvas Jumpscare
+        // 3. Trigger Canvas Jumpscare using the Prefab approach
         float waitTime = 2.0f;
-        if (canvasJumpscare != null)
+        if (jumpscarePrefab != null)
         {
-            canvasJumpscare.TriggerJumpscare();
-            waitTime = canvasJumpscare.animationDuration - 0.5f;
+            JumpscareMechanic spawnedJumpscare = Instantiate(jumpscarePrefab);
+            spawnedJumpscare.TriggerJumpscare();
+            waitTime = spawnedJumpscare.animationDuration - 0.5f;
         }
 
         yield return new WaitForSeconds(waitTime);

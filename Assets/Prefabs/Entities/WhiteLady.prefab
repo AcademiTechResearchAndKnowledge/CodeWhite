@@ -417,7 +417,8 @@ MonoBehaviour:
   weepingSfx: {fileID: 8300000, guid: 33ca0b41e64a7c248a3c2513bb39a0fc, type: 3}
   chasingStoppedSfx: {fileID: 8300000, guid: cb45a497a8ab5884983dc4f840b53f6a, type: 3}
   ambientAudioSource: {fileID: 4725844612474646293}
-  ambientNoises: []
+  ambientNoises:
+  - {fileID: 8300000, guid: 5ae82d2ea2a576242ac57bdcb7b02b5d, type: 3}
   minNoiseInterval: 4
   maxNoiseInterval: 10
   ambientVolume: 0.8
@@ -581,7 +582,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WhiteLadyJumpscareTrigger
   catchRadius: 2.5
   anxietySpikePercentage: 70
-  canvasJumpscare: {fileID: 0}
+  jumpscarePrefab: {fileID: 3132454766472499540, guid: af1d18327e810fa40ab054c4da97ead9, type: 3}
 --- !u!82 &4725844612474646293
 AudioSource:
   m_ObjectHideFlags: 0

@@ -13,20 +13,15 @@ public class JumpscareMechanic : MonoBehaviour
     public string triggerParameterName = "PlayJumpscare";
     public float animationDuration = 1.0f;
 
-    private bool isJumpscaring = false;
+    [Header("Cleanup Options")]
+    [Tooltip("If true, destroys the object after playing. Best for spawned prefabs.")]
+    public bool destroyAfterPlaying = true;
 
-    void Start()
-    {
-        // Hide the entire container on start
-        if (jumpscareContainer != null)
-        {
-            jumpscareContainer.SetActive(false);
-        }
-    }
+    private bool isJumpscaring = false;
 
     void Update()
     {
-        // Listen for the "U" key
+        // Note: If testing this in the scene, pressing 'U' will trigger it. 
         if (Keyboard.current != null && Keyboard.current.uKey.wasPressedThisFrame)
         {
             TriggerJumpscare();
@@ -35,7 +30,6 @@ public class JumpscareMechanic : MonoBehaviour
 
     public void TriggerJumpscare()
     {
-        // Only trigger if we aren't already jumpscaring
         if (!isJumpscaring && jumpscareContainer != null && jumpscareAnimator != null)
         {
             StartCoroutine(JumpscareRoutine());
@@ -46,25 +40,26 @@ public class JumpscareMechanic : MonoBehaviour
     {
         isJumpscaring = true;
 
-        // 1. Activate the parent container
         jumpscareContainer.SetActive(true);
 
-        // 2. Play sound if assigned
         if (jumpscareAudio != null)
         {
             jumpscareAudio.Play();
         }
 
-        // 3. Fire the trigger on the Animator
         jumpscareAnimator.SetTrigger(triggerParameterName);
 
-        // 4. THE FIX: Wait out the animation MINUS 0.05 seconds. 
-        // This hides the canvas 3-4 frames *before* the Animator snaps back to the T-pose.
-        // The player won't notice the missing microsecond, but it completely removes the visual glitch.
         yield return new WaitForSeconds(animationDuration - 0.5f);
 
-        // 5. Hide the container
-        jumpscareContainer.SetActive(false);
-        isJumpscaring = false;
+        // --- NEW LOGIC: Clean up the spawned canvas ---
+        if (destroyAfterPlaying)
+        {
+            Destroy(gameObject);
+        }
+        else
+        {
+            jumpscareContainer.SetActive(false);
+            isJumpscaring = false;
+        }
     }
 }

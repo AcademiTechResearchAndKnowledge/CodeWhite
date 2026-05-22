@@ -88,13 +88,21 @@ public class WhiteLady : MonoBehaviour
         wander = GetComponent<WhiteLadyWander>();
         TryFindPlayer();
 
+        // 1. Chase & Special SFX: Set to 2D (Plays everywhere at max volume)
         if (audioSource != null)
         {
-            audioSource.spatialBlend = 1f;
+            audioSource.spatialBlend = 0f; 
         }
+        
+        // 2. Ambient Noises: Set to 3D (Player can hear where she is directionally)
         if (ambientAudioSource != null)
         {
             ambientAudioSource.spatialBlend = 1f;
+            
+            // Fix the 3D volume drop-off so her noises don't instantly go silent
+            ambientAudioSource.rolloffMode = AudioRolloffMode.Linear;
+            ambientAudioSource.minDistance = 10f; // Loud within 10 units
+            ambientAudioSource.maxDistance = 40f; // Fades out completely at 40 units
         }
     }
 
