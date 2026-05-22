@@ -10130,6 +10130,7 @@ MonoBehaviour:
   jumpscareAudio: {fileID: 1308218971}
   triggerParameterName: PlayJumpscare
   animationDuration: 1
+  destroyAfterPlaying: 1
 --- !u!4 &1308218973
 Transform:
   m_ObjectHideFlags: 0
@@ -11487,6 +11488,7 @@ GameObject:
   - component: {fileID: 1508869107}
   - component: {fileID: 1508869109}
   - component: {fileID: 1508869108}
+  - component: {fileID: 1508869110}
   m_Layer: 0
   m_Name: PersistentUI
   m_TagString: Untagged
@@ -11545,6 +11547,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5dd717e1a3d4fc44b866ad1a5dc014d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PersistentUI
+--- !u!225 &1508869110
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1508869106}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &1513675538
 GameObject:
   m_ObjectHideFlags: 0

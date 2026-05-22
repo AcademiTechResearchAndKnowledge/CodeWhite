@@ -71,7 +71,6 @@ public class objectZoom : MonoBehaviour
 
         BindPlayer();
         yield return null;
-        BindUI();
         EnsureHandler();
 
         Debug.Log("objectZoom BIND COMPLETE");
@@ -95,37 +94,9 @@ public class objectZoom : MonoBehaviour
         }
     }
 
-    private void BindUI()
-    {
-        StartCoroutine(WaitForUI());
-    }
-
-    private IEnumerator WaitForUI()
-    {
-        int attempts = 0;
-
-        while (interactableText == null && attempts < 50)
-        {
-            GameObject ui = GameObject.FindWithTag("InteractText");
-
-            if (ui != null)
-            {
-                interactableText = ui;
-                Debug.Log("INTERACTABLE TEXT LINKED");
-                yield break;
-            }
-
-            attempts++;
-            yield return new WaitForSeconds(0.1f);
-        }
-
-        if (interactableText == null)
-            Debug.LogWarning("INTERACTABLE TEXT NOT FOUND IN SCENE");
-    }
-
     void Update()
     {
-        if (mainObjHandler == null)
+        if (mainObjHandler == null || interactableText == null)
             EnsureHandler();
 
         if (isInPuzzle && Keyboard.current.escapeKey.wasPressedThisFrame)
@@ -221,7 +192,7 @@ public class objectZoom : MonoBehaviour
 
         mainObjHandler?.StopInteraction();
 
-        SetCameraState(false);   
+        SetCameraState(false);
         isInPuzzle = false;
 
         Debug.Log("EXIT PUZZLE");
@@ -242,6 +213,16 @@ public class objectZoom : MonoBehaviour
             mainObjHandler = GetComponent<IZoomInteractable>();
             if (mainObjHandler == null)
                 mainObjHandler = GetComponentInParent<IZoomInteractable>();
+        }
+
+        if (interactableText == null)
+        {
+            interactableText = GameObject.FindWithTag("InteractText");
+
+            if (interactableText != null)
+                Debug.Log("INTERACTABLE TEXT AUTO-FOUND");
+            else
+                Debug.LogWarning("INTERACTABLE TEXT NOT FOUND — ensure tag 'InteractText' is assigned");
         }
     }
 }
