@@ -96,11 +96,22 @@ public class objectZoom : MonoBehaviour
 
     void Update()
     {
-        if (mainObjHandler == null || interactableText == null)
+        if (mainObjHandler == null)
             EnsureHandler();
+
+        
+
+        if (interactableText == null && !isInPuzzle)
+            interactableText = GameObject.FindWithTag("InteractText");
+
+        if(interactableText != null && isInPuzzle)
+            interactableText.SetActive(false);
 
         if (isInPuzzle && Keyboard.current.escapeKey.wasPressedThisFrame)
         {
+            if (interactableText != null)
+                interactableText.SetActive(true);
+
             ExitPuzzle();
             isInPuzzle = false;
 
@@ -119,6 +130,10 @@ public class objectZoom : MonoBehaviour
         EnsureHandler();
 
         isInPuzzle = !isInPuzzle;
+
+        
+        if (interactableText != null)
+            interactableText.SetActive(!isInPuzzle);
 
         if (mainObjHandler != null)
             mainObjHandler.IsInteracting = isInPuzzle;
@@ -144,11 +159,9 @@ public class objectZoom : MonoBehaviour
 
     private void EnterPuzzle()
     {
-        if (interactableText != null)
-            interactableText.SetActive(false);
-
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+        
 
         if (playerlookCamera != null)
             playerlookCamera.enabled = false;
@@ -169,9 +182,6 @@ public class objectZoom : MonoBehaviour
 
     public void ExitPuzzle()
     {
-        if (interactableText != null)
-            interactableText.SetActive(true);
-
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
