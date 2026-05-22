@@ -14,11 +14,25 @@ public class DeathMenu : MonoBehaviour
     [Header("Refs")]
     [SerializeField] private PlayerStats playerStats;
 
+    [Header("Main Menu")]
+    [SerializeField] private string mainMenuSceneName = "MainMenu";
+
     private bool isDead;
     private bool canCheckDeath;
 
+    private static DeathMenu instance;
+
     private void Awake()
     {
+        if (instance != null && instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        instance = this;
+        DontDestroyOnLoad(gameObject);
+
         Time.timeScale = 1f;
 
         isDead = false;
@@ -37,6 +51,12 @@ public class DeathMenu : MonoBehaviour
     private void OnEnable()
     {
         AudioReset();
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
     private IEnumerator EnableDeathCheckNextFrame()
@@ -70,7 +90,9 @@ public class DeathMenu : MonoBehaviour
 
         StopAllCoroutines();
         StartCoroutine(FadeIn());
+
         playerStats.ResetAnxiety();
+
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
@@ -116,6 +138,26 @@ public class DeathMenu : MonoBehaviour
         ResetUIState();
 
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    public void LoadMainMenu()
+    {
+        playerStats.ResetAnxiety();
+        Time.timeScale = 1f;
+
+        AudioReset();
+
+        SceneManager.LoadScene(mainMenuSceneName);
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        ResetUIState();
+
+        isDead = false;
+        canCheckDeath = false;
+
+        StartCoroutine(EnableDeathCheckNextFrame());
     }
 
     private void AudioReset()
