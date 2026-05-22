@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class AggroEntityDetector : MonoBehaviour
 {
@@ -9,14 +9,39 @@ public class AggroEntityDetector : MonoBehaviour
     public float crouchSafeDistance = 3f;
 
     [Header("State")]
-    public bool isLookingPlayer = false; // Start false, because we are investigating, not chasing yet
+    public bool isLookingPlayer = false;
     public bool canHideFromEnemy;
     public float distanceToPlayer;
 
+    [Header("Audio Settings")]
+    public AudioSource audioSource; // For chase music
+    public AudioSource ambientAudioSource; // For random entity noises
+    public AudioClip chasingSfx;
+    public AudioClip chasingStoppedSfx;
+
+    [Header("Ambient Noise Settings")]
+    [Tooltip("Add multiple clips for variety. The entity will pick one at random.")]
+    public AudioClip[] ambientNoises;
+    [Tooltip("Minimum time in seconds between random noises.")]
+    public float minNoiseInterval = 4f;
+    [Tooltip("Maximum time in seconds between random noises.")]
+    public float maxNoiseInterval = 10f;
+    [Tooltip("Volume for ambient noises.")]
+    [Range(0f, 1f)] public float ambientVolume = 0.8f;
+
+    private float noiseTimer;
+
+    private bool isChaseMusicPlaying = false;
+    private bool isWaitingToStopChaseMusic = false;
+
+    private bool isCurrentlyIgnoringHiddenPlayer = false;
+    private Vector3 lastKnownPlayerPosition;
+
     private Transform playerTransform;
     private PlayerMovement playerMovement;
-    private ClosetHideInteract playerHideInteract;
     private TableHideState playerTableState;
+
+    private ClosetHidingSystem[] allClosets;
 
     private AggroEntityAI entityAi;
     private AggroEntityWondering entityWondering;
@@ -25,34 +50,48 @@ public class AggroEntityDetector : MonoBehaviour
     {
         entityAi = GetComponent<AggroEntityAI>();
         entityWondering = GetComponent<AggroEntityWondering>();
+
+        if (audioSource == null) audioSource = GetComponent<AudioSource>();
+
+        if (audioSource != null)
+        {
+            // Set chase music to 2D so it plays everywhere at maximum volume
+            audioSource.spatialBlend = 0f;
+        }
+        if (ambientAudioSource != null)
+        {
+            // Keep ambient entity noises in 3D so the player can track them
+            ambientAudioSource.spatialBlend = 1f;
+        }
     }
 
     void Start()
     {
         FindPlayerReferences();
 
-        // --- THE NEW SPAWN LOGIC ---
-        // Instead of locking onto the player dynamically, 
-        // we tell the entity to walk to the player's exact starting coordinate.
+        allClosets = FindObjectsByType<ClosetHidingSystem>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+
         isLookingPlayer = false;
+        isCurrentlyIgnoringHiddenPlayer = false;
+        isChaseMusicPlaying = false;
+        isWaitingToStopChaseMusic = false;
+
+        ResetNoiseTimer();
 
         if (entityAi != null) entityAi.enabled = false;
 
         if (entityWondering != null && playerTransform != null)
         {
             entityWondering.enabled = true;
-            // Force the entity to investigate the spot you were standing in when it spawned
             entityWondering.InvestigateLocation(playerTransform.position);
         }
     }
 
     void FindPlayerReferences()
     {
-        // Grab hiding state scripts from the main Player object
         GameObject mainPlayerObj = GameObject.FindGameObjectWithTag("Player");
         if (mainPlayerObj != null)
         {
-            playerHideInteract = mainPlayerObj.GetComponent<ClosetHideInteract>();
             playerTableState = mainPlayerObj.GetComponent<TableHideState>();
 
             PlayerReferences refs = mainPlayerObj.GetComponent<PlayerReferences>();
@@ -66,7 +105,6 @@ public class AggroEntityDetector : MonoBehaviour
             Debug.LogError("AggroEntityDetector: No object with tag 'Player' found.");
         }
 
-        // Grab physical tracking purely from the PlayerFollow tag
         GameObject followObj = GameObject.FindGameObjectWithTag("PlayerFollow");
         if (followObj != null)
         {
@@ -81,6 +119,8 @@ public class AggroEntityDetector : MonoBehaviour
 
     void Update()
     {
+        HandleAmbientNoises();
+
         if (playerTransform == null) return;
 
         distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
@@ -88,24 +128,84 @@ public class AggroEntityDetector : MonoBehaviour
 
         bool playerIsCrouching = playerMovement != null && playerMovement.isCrouching;
 
-        bool isHidingInCloset = playerHideInteract != null && playerHideInteract.IsHiding;
-        bool isHidingUnderTable = playerTableState != null && playerTableState.isUnderTable && playerIsCrouching;
-
-        // Condition 1: Player manages to hide
-        if (isHidingInCloset || isHidingUnderTable)
+        bool isHidingInCloset = false;
+        if (allClosets != null)
         {
-            isLookingPlayer = false;
-            entityAi.enabled = false;
-
-            // Revert to wandering state if hidden
-            if (!entityWondering.enabled)
+            foreach (var closet in allClosets)
             {
-                entityWondering.enabled = true;
+                if (closet != null && closet.InsideCloset)
+                {
+                    isHidingInCloset = true;
+                    break;
+                }
             }
-            return;
         }
 
-        // Condition 2: Player is within detect range (and not hiding) -> The entity spots you!
+        bool isHidingUnderTable = playerTableState != null && playerTableState.isUnderTable && playerIsCrouching;
+        bool isHiding = isHidingInCloset || isHidingUnderTable;
+
+        if (isHiding)
+        {
+            if (!isCurrentlyIgnoringHiddenPlayer)
+            {
+                if (distanceToPlayer <= detectRange)
+                {
+                    isLookingPlayer = true;
+                    Debug.Log("Player hid too close! Entity is attacking!");
+                }
+                else
+                {
+                    isCurrentlyIgnoringHiddenPlayer = true;
+                    bool didEntityNoticeHiding = isLookingPlayer;
+
+                    isLookingPlayer = false;
+                    if (entityAi != null) entityAi.enabled = false;
+
+                    if (entityWondering != null)
+                    {
+                        entityWondering.enabled = true;
+
+                        if (didEntityNoticeHiding)
+                        {
+                            lastKnownPlayerPosition = playerTransform.position;
+                            entityWondering.InvestigateLocation(lastKnownPlayerPosition);
+                            SetChaseMusic(true);
+                            isWaitingToStopChaseMusic = true;
+                        }
+                        else
+                        {
+                            entityWondering.StartWanderingInstantly();
+                            SetChaseMusic(false);
+                            isWaitingToStopChaseMusic = false;
+                        }
+                    }
+                }
+            }
+
+            if (isCurrentlyIgnoringHiddenPlayer)
+            {
+                if (isWaitingToStopChaseMusic && entityWondering != null)
+                {
+                    if (entityWondering.currentState == AggroEntityWondering.WanderState.Relocating ||
+                      entityWondering.currentState == AggroEntityWondering.WanderState.Normal)
+                    {
+                        isWaitingToStopChaseMusic = false;
+                        SetChaseMusic(false);
+                    }
+                }
+                return;
+            }
+        }
+        else
+        {
+            isCurrentlyIgnoringHiddenPlayer = false;
+        }
+
+        if (isLookingPlayer)
+        {
+            lastKnownPlayerPosition = playerTransform.position;
+        }
+
         if (distanceToPlayer <= detectRange)
         {
             bool successfullySneaking = playerIsCrouching && distanceToPlayer > crouchSafeDistance;
@@ -113,13 +213,15 @@ public class AggroEntityDetector : MonoBehaviour
             if (isLookingPlayer || !successfullySneaking)
             {
                 isLookingPlayer = true;
+                isWaitingToStopChaseMusic = false;
+                SetChaseMusic(true);
+
                 entityAi.enabled = true;
                 entityWondering.enabled = false;
                 return;
             }
         }
 
-        // Condition 3: Player is currently being chased, but hasn't escaped yet
         if (isLookingPlayer && distanceToPlayer <= loseRange)
         {
             entityAi.enabled = true;
@@ -127,15 +229,80 @@ public class AggroEntityDetector : MonoBehaviour
             return;
         }
 
-        // Condition 4: Player ran far away (outside lose range)
         if (distanceToPlayer > loseRange)
         {
             isLookingPlayer = false;
+            isWaitingToStopChaseMusic = false;
+            SetChaseMusic(false);
+
             entityAi.enabled = false;
 
             if (!entityWondering.enabled)
             {
                 entityWondering.enabled = true;
+            }
+        }
+    }
+
+    private void HandleAmbientNoises()
+    {
+        if (!isChaseMusicPlaying && ambientNoises != null && ambientNoises.Length > 0)
+        {
+            noiseTimer -= Time.deltaTime;
+
+            if (noiseTimer <= 0f)
+            {
+                PlayRandomAmbientNoise();
+                ResetNoiseTimer();
+            }
+        }
+    }
+
+    private void PlayRandomAmbientNoise()
+    {
+        if (ambientAudioSource != null && !ambientAudioSource.isPlaying)
+        {
+            AudioClip randomClip = ambientNoises[Random.Range(0, ambientNoises.Length)];
+            ambientAudioSource.clip = randomClip;
+            ambientAudioSource.volume = ambientVolume;
+            ambientAudioSource.Play();
+        }
+    }
+
+    private void ResetNoiseTimer()
+    {
+        noiseTimer = Random.Range(minNoiseInterval, maxNoiseInterval);
+    }
+
+    private void SetChaseMusic(bool play)
+    {
+        if (isChaseMusicPlaying == play) return;
+
+        isChaseMusicPlaying = play;
+
+        if (audioSource != null)
+        {
+            if (play)
+            {
+                if (ambientAudioSource != null) ambientAudioSource.Stop();
+
+                if (chasingSfx != null)
+                {
+                    audioSource.clip = chasingSfx;
+                    audioSource.loop = true;
+                    audioSource.Play();
+                }
+            }
+            else
+            {
+                audioSource.Stop();
+                audioSource.clip = null;
+                audioSource.loop = false;
+
+                if (chasingStoppedSfx != null)
+                {
+                    audioSource.PlayOneShot(chasingStoppedSfx);
+                }
             }
         }
     }

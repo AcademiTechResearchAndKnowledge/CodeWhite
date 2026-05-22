@@ -11,137 +11,227 @@ using UnityEngine.AI;
 [RequireComponent(typeof(WhiteLadyWander))]
 public class WhiteLady : MonoBehaviour
 {
-    // ─────────────────────────────────────────
-    //  State
-    // ─────────────────────────────────────────
-    public enum State { Wandering, Chasing, Teleporting, Weeping }
+    public enum State { Wandering, Chasing, Investigating, Teleporting, Weeping }
 
     [Header("State (Read-Only)")]
     [SerializeField] private State currentState = State.Wandering;
     public State CurrentState => currentState;
 
-    // ─────────────────────────────────────────
-    //  References
-    // ─────────────────────────────────────────
-    [Header("References (Auto-Assigned)")]
-    [Tooltip("The script will automatically find this at runtime!")]
+    [Header("References")]
     public PlayerReferences playerRef;
-
-    [Tooltip("Where she stands and weeps. Assign in Inspector.")]
     public Transform weepLocation;
-
-    [Header("Interaction")]
-    [Tooltip("Drag the child 'SubmitHitbox' object here so we can turn it on/off.")]
     public GameObject submitHitbox;
 
-    // ─────────────────────────────────────────
-    //  Special State Settings
-    // ─────────────────────────────────────────
+    [Header("Anxiety Proximity (Spatial)")]
+    public float anxietyAuraRadius = 15f;
+    [Tooltip("Graph: X-Axis is Distance, Y-Axis is Total Anxiety applied. Set X=0, Y=50 (close) and X=10, Y=10 (far).")]
+    public AnimationCurve anxietyDistanceCurve = new AnimationCurve(
+      new Keyframe(0f, 50f),
+      new Keyframe(5f, 25f),
+      new Keyframe(10f, 10f),
+      new Keyframe(15f, 0f)
+    );
+    private float highestAnxietyApplied = 0f;
+    private PlayerStats playerStats;
+    private AnxietyHandler anxietyHandler;
+
     [Header("Special State Timing")]
     public float specialStateInterval = 10f;
-
-    [Header("Special State Probabilities")]
-    [Tooltip("Percentage chance (0-100) she will Teleport when rolling a special state.")]
     [Range(0f, 100f)] public float teleportChance = 60f;
-
-    [Tooltip("Percentage chance (0-100) she will Weep when rolling a special state.")]
     [Range(0f, 100f)] public float weepChance = 15f;
 
-    // ─────────────────────────────────────────
-    //  Teleport Settings
-    // ─────────────────────────────────────────
     [Header("Teleport Settings")]
     public float teleportSearchRadius = 10f;
     public int teleportSampleCount = 20;
     public float teleportIdleDuration = 3f;
 
-    // ─────────────────────────────────────────
-    //  Weep Settings
-    // ─────────────────────────────────────────
     [Header("Weep Settings")]
     public float weepDuration = 20f;
 
-    // ─────────────────────────────────────────
-    //  Private — components
-    // ─────────────────────────────────────────
     private NavMeshAgent navMeshAgent;
     private WhiteLadyDetection detection;
     private WhiteLadyWander wander;
     private Flashlight flashlight;
 
-    // ─────────────────────────────────────────
-    //  Private — timers
-    // ─────────────────────────────────────────
     private float specialStateTimer;
     private float teleportIdleTimer;
     private float weepTimer;
 
-    // ─────────────────────────────────────────
-    //  SOUND EFFECTS
-    // ─────────────────────────────────────────
     [Header("SFX Settings")]
     public AudioSource audioSource;
     public AudioClip teleportSfx;
     public AudioClip chasingSfx;
     public AudioClip weepingSfx;
-
-    [Tooltip("Plays once when she loses the player and stops chasing.")]
     public AudioClip chasingStoppedSfx;
 
-    // ─────────────────────────────────────────
-    //  Lifecycle
-    // ─────────────────────────────────────────
+    [Header("Ambient Noise Settings")]
+    public AudioSource ambientAudioSource; // For random entity noises
+    [Tooltip("Add multiple clips for variety. The entity will pick one at random.")]
+    public AudioClip[] ambientNoises;
+    [Tooltip("Minimum time in seconds between random noises.")]
+    public float minNoiseInterval = 4f;
+    [Tooltip("Maximum time in seconds between random noises.")]
+    public float maxNoiseInterval = 10f;
+    [Tooltip("Volume for ambient noises.")]
+    [Range(0f, 1f)] public float ambientVolume = 0.8f;
+
+    private float noiseTimer;
+
+    // --- TRACKING VARIABLES ---
+    private bool isCurrentlyIgnoringHiddenPlayer = false;
+    private bool isWaitingToStopChaseMusic = false; // Added fake chase audio tracker
+
     void Awake()
     {
         navMeshAgent = GetComponent<NavMeshAgent>();
         detection = GetComponent<WhiteLadyDetection>();
         wander = GetComponent<WhiteLadyWander>();
-
-        if (weepLocation == null) Debug.LogWarning("[WhiteLady] Weep location not assigned.");
-
         TryFindPlayer();
+
+        if (audioSource != null)
+        {
+            audioSource.spatialBlend = 1f;
+        }
+        if (ambientAudioSource != null)
+        {
+            ambientAudioSource.spatialBlend = 1f;
+        }
     }
 
     void Start()
     {
-        // Ensure the interaction hitbox is off when spawning
         if (submitHitbox != null) submitHitbox.SetActive(false);
+        isCurrentlyIgnoringHiddenPlayer = false;
+        isWaitingToStopChaseMusic = false;
+
+        ResetNoiseTimer();
 
         ChangeState(State.Wandering);
     }
 
     void Update()
     {
+        // Constantly handle ambient noises across all states
+        HandleAmbientNoises();
+
         if (playerRef == null)
         {
             TryFindPlayer();
             if (playerRef == null) return;
         }
 
+        UpdateAnxietyAura();
+
+        // ─── TABLE MECHANIC LOGIC ────────────────────────────────────────────────
+        bool isHiding = detection.IsPlayerHiding();
+
+        if (isHiding)
+        {
+            if (!isCurrentlyIgnoringHiddenPlayer)
+            {
+                if (detection.distanceToPlayer <= detection.detectRange)
+                {
+                    if (currentState == State.Wandering || currentState == State.Investigating)
+                    {
+                        Debug.Log("Player hid too close! White Lady is attacking!");
+                        isWaitingToStopChaseMusic = false; // Cancel fake chase if she sees you
+                        ChangeState(State.Chasing);
+                    }
+                }
+                else
+                {
+                    isCurrentlyIgnoringHiddenPlayer = true;
+
+                    if (currentState == State.Chasing)
+                    {
+                        isWaitingToStopChaseMusic = true; // Trigger the fake chase audio hold
+                        ChangeState(State.Investigating);
+                    }
+                }
+            }
+        }
+        else
+        {
+            isCurrentlyIgnoringHiddenPlayer = false;
+        }
+        // ─────────────────────────────────────────────────────────────────────────
+
         switch (currentState)
         {
             case State.Wandering: UpdateWandering(); break;
             case State.Chasing: UpdateChasing(); break;
+            case State.Investigating: UpdateInvestigating(); break;
             case State.Teleporting: UpdateTeleporting(); break;
             case State.Weeping: UpdateWeeping(); break;
         }
     }
 
-    private void TryFindPlayer()
+    private void HandleAmbientNoises()
     {
-        playerRef = FindAnyObjectByType<PlayerReferences>();
-
-        if (playerRef != null)
+        if (ambientNoises != null && ambientNoises.Length > 0)
         {
-            flashlight = playerRef.flashlightScript;
-            if (flashlight == null)
-                Debug.LogWarning("[WhiteLady] Flashlight not found on PlayerReferences.");
+            noiseTimer -= Time.deltaTime;
+
+            if (noiseTimer <= 0f)
+            {
+                PlayRandomAmbientNoise();
+                ResetNoiseTimer();
+            }
         }
     }
 
-    // ─────────────────────────────────────────
-    //  State — Update Ticks
-    // ─────────────────────────────────────────
+    private void PlayRandomAmbientNoise()
+    {
+        if (ambientAudioSource != null && !ambientAudioSource.isPlaying)
+        {
+            AudioClip randomClip = ambientNoises[Random.Range(0, ambientNoises.Length)];
+            ambientAudioSource.clip = randomClip;
+            ambientAudioSource.volume = ambientVolume;
+            ambientAudioSource.Play();
+        }
+    }
+
+    private void ResetNoiseTimer()
+    {
+        noiseTimer = Random.Range(minNoiseInterval, maxNoiseInterval);
+    }
+
+    private void TryFindPlayer()
+    {
+        playerRef = FindAnyObjectByType<PlayerReferences>();
+        if (playerRef != null)
+        {
+            flashlight = playerRef.flashlightScript;
+            playerStats = playerRef.GetComponent<PlayerStats>();
+            anxietyHandler = playerRef.GetComponent<AnxietyHandler>();
+        }
+    }
+
+    private void UpdateAnxietyAura()
+    {
+        if (playerStats == null || currentState == State.Teleporting) return;
+
+        float distanceToPlayer = Vector3.Distance(transform.position, playerRef.transform.position);
+
+        if (distanceToPlayer <= anxietyAuraRadius)
+        {
+            float targetAnxiety = anxietyDistanceCurve.Evaluate(distanceToPlayer);
+
+            if (targetAnxiety > highestAnxietyApplied)
+            {
+                float amountToAdd = targetAnxiety - highestAnxietyApplied;
+                playerStats.AddStat(StatType.ANX, amountToAdd);
+                highestAnxietyApplied = targetAnxiety;
+
+                if (anxietyHandler != null)
+                    anxietyHandler.ResetSafeTimer();
+            }
+        }
+        else
+        {
+            highestAnxietyApplied = 0f;
+        }
+    }
 
     private float visibleTimer = 0f;
     public float detectionDelay = 0.3f;
@@ -157,16 +247,14 @@ public class WhiteLady : MonoBehaviour
             return;
         }
 
-        // Radius, Hiding, Sneaking, and X-Ray (Line of Sight) Check
         bool playerVisible = detection.distanceToPlayer <= detection.detectRange
-                          && !detection.IsPlayerHiding()
-                          && !detection.IsPlayerSneakingSuccessfully()
-                          && detection.HasLineOfSight();
+                 && !isCurrentlyIgnoringHiddenPlayer
+                 && !detection.IsPlayerSneakingSuccessfully()
+                 && detection.HasLineOfSight();
 
         if (playerVisible)
         {
             visibleTimer += Time.deltaTime;
-
             if (visibleTimer >= detectionDelay)
                 ChangeState(State.Chasing);
         }
@@ -181,24 +269,23 @@ public class WhiteLady : MonoBehaviour
         if (navMeshAgent.enabled)
             navMeshAgent.destination = playerRef.transform.position;
 
-        if (detection.IsPlayerHiding())
-        {
-            wander.InvestigateLocation(detection.GetLastKnownPosition());
-            ChangeState(State.Wandering);
-            return;
-        }
-
         if (detection.distanceToPlayer > detection.loseRange)
         {
-            wander.InvestigateLocation(detection.GetLastKnownPosition());
-            ChangeState(State.Wandering);
+            ChangeState(State.Investigating);
+        }
+    }
+
+    void UpdateInvestigating()
+    {
+        if (wander != null && wander.HasFinishedLocalSearch)
+        {
+            ChangeState(State.Teleporting);
         }
     }
 
     void UpdateTeleporting()
     {
         teleportIdleTimer += Time.deltaTime;
-
         if (teleportIdleTimer >= teleportIdleDuration)
             ChangeState(State.Wandering);
     }
@@ -206,11 +293,9 @@ public class WhiteLady : MonoBehaviour
     void UpdateWeeping()
     {
         weepTimer += Time.deltaTime;
-
         if (weepLocation != null)
         {
             transform.position = weepLocation.position;
-
             transform.rotation = weepLocation.rotation;
         }
 
@@ -218,42 +303,47 @@ public class WhiteLady : MonoBehaviour
             ChangeState(State.Wandering);
     }
 
-    // ─────────────────────────────────────────
-    //  State — Transitions
-    // ─────────────────────────────────────────
-
     void ChangeState(State next)
     {
         if (next == currentState) return;
 
         bool wasChasing = (currentState == State.Chasing);
+        bool wasFakeChasing = (currentState == State.Investigating && isWaitingToStopChaseMusic);
+
         currentState = next;
 
-        if (audioSource != null)
+        // Keep the chase music going if we are tricking the player, OR if we re-spotted them during the fake chase
+        bool keepChaseMusic = (wasChasing && next == State.Investigating && isWaitingToStopChaseMusic)
+             || (wasFakeChasing && next == State.Chasing);
+
+        if (!keepChaseMusic && audioSource != null)
         {
             audioSource.Stop();
             audioSource.clip = null;
             audioSource.loop = false;
         }
 
-        // Toggle the interaction hitbox based on Weeping state
-        if (submitHitbox != null)
-        {
-            submitHitbox.SetActive(currentState == State.Weeping);
-        }
+        if (submitHitbox != null) submitHitbox.SetActive(currentState == State.Weeping);
 
         switch (next)
         {
             case State.Wandering: OnEnterWandering(); break;
             case State.Chasing: OnEnterChasing(); break;
+            case State.Investigating: OnEnterInvestigating(); break;
             case State.Teleporting: OnEnterTeleporting(); break;
             case State.Weeping: OnEnterWeeping(); break;
         }
 
-        // Play the "Chase Stopped" stinger if transitioning away from Chasing
-        if (wasChasing && audioSource != null && chasingStoppedSfx != null)
+        // Play the "lost player" SFX if we finally stopped the chase music
+        if (!keepChaseMusic && (wasChasing || wasFakeChasing) && audioSource != null && chasingStoppedSfx != null)
         {
             audioSource.PlayOneShot(chasingStoppedSfx);
+        }
+
+        // Clear the fake chase flag if we are moving out of the Investigating state
+        if (next != State.Investigating)
+        {
+            isWaitingToStopChaseMusic = false;
         }
     }
 
@@ -261,6 +351,7 @@ public class WhiteLady : MonoBehaviour
     {
         SetNav(enabled: true);
         wander.enabled = true;
+        wander.currentState = WhiteLadyWander.WanderState.Normal;
     }
 
     void OnEnterChasing()
@@ -268,18 +359,51 @@ public class WhiteLady : MonoBehaviour
         SetNav(enabled: true);
         wander.enabled = false;
 
-        audioSource.clip = chasingSfx;
-        audioSource.loop = true;
-        audioSource.Play();
+        // Added check to prevent stuttering if she re-targets during a fake chase
+        if (chasingSfx != null && audioSource.clip != chasingSfx)
+        {
+            audioSource.clip = chasingSfx;
+            audioSource.loop = true;
+            audioSource.Play();
+        }
+    }
+
+    void OnEnterInvestigating()
+    {
+        SetNav(enabled: true);
+        wander.enabled = true;
+        wander.InvestigateLocation(detection.GetLastKnownPosition());
     }
 
     void OnEnterTeleporting()
     {
+        highestAnxietyApplied = 0f;
         teleportIdleTimer = 0f;
         wander.enabled = false;
         SetNav(enabled: true);
-        navMeshAgent.Warp(FindTeleportPoint());
-        flashlight?.Flicker();
+
+        if (navMeshAgent.isOnNavMesh)
+        {
+            navMeshAgent.Warp(FindTeleportPoint());
+            navMeshAgent.ResetPath();
+        }
+
+        // ─── SMART FLICKER ROUTING ──────────────────────────────────────────────────
+        if (ClosetHidingSystem.ActiveCloset != null && ClosetHidingSystem.ActiveCloset.InsideCloset)
+        {
+            // Player is in a closet -> Flicker the closet light
+            ClosetHideInteract closetInteract = ClosetHidingSystem.ActiveCloset.GetComponent<ClosetHideInteract>();
+            if (closetInteract != null)
+            {
+                closetInteract.TriggerClosetLightFlicker(1.5f);
+            }
+        }
+        else
+        {
+            // Player is NOT in a closet -> Flicker their personal flashlight
+            flashlight?.Flicker();
+        }
+        // ────────────────────────────────────────────────────────────────────────────
 
         if (teleportSfx != null) audioSource.PlayOneShot(teleportSfx);
     }
@@ -290,19 +414,15 @@ public class WhiteLady : MonoBehaviour
         wander.enabled = false;
         SetNav(enabled: false);
 
-        if (weepLocation != null)
+        if (weepLocation != null) transform.position = weepLocation.position;
+
+        if (weepingSfx != null)
         {
-            transform.position = weepLocation.position;
+            audioSource.clip = weepingSfx;
+            audioSource.loop = true;
+            audioSource.Play();
         }
-
-        audioSource.clip = weepingSfx;
-        audioSource.loop = true;
-        audioSource.Play();
     }
-
-    // ─────────────────────────────────────────
-    //  Private Helpers
-    // ─────────────────────────────────────────
 
     Vector3 FindTeleportPoint()
     {
@@ -320,7 +440,6 @@ public class WhiteLady : MonoBehaviour
                 if (dist > bestDistance) { bestDistance = dist; best = hit.position; }
             }
         }
-
         return best;
     }
 
@@ -341,14 +460,7 @@ public class WhiteLady : MonoBehaviour
     void RollSpecialState()
     {
         float roll = Random.Range(0f, 100f);
-
-        if (roll < teleportChance)
-        {
-            ChangeState(State.Teleporting);
-        }
-        else if (roll < (teleportChance + weepChance))
-        {
-            ChangeState(State.Weeping);
-        }
+        if (roll < teleportChance) ChangeState(State.Teleporting);
+        else if (roll < (teleportChance + weepChance)) ChangeState(State.Weeping);
     }
 }

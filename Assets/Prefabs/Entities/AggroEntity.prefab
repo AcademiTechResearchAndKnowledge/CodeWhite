@@ -127,6 +127,13 @@ MonoBehaviour:
   currentState: 0
   wanderRadius: 10
   wanderTimer: 5
+  investigationOffset: 3
+  edgeBufferDistance: 2
+  maxPointRetries: 10
+  stagnationRadius: 15
+  maxStagnationTime: 30
+  maxBreadcrumbs: 3
+  breadcrumbAvoidanceRadius: 6
   localSearchDuration: 10
   relocateDistance: 30
 --- !u!114 &3611706386184231585
@@ -174,6 +181,51 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AggroJumpscareTrigger
   catchRadius: 2.5
+  anxietySpikePercentage: 25
+  anxietyAuraRadius: 15
+  anxietyDistanceCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 60.099625
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 4.9991126
+      value: 50.09963
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 10
+      value: 30
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 15
+      value: 10
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  canvasJumpscare: {fileID: 0}
 --- !u!114 &1910312625541969482
 MonoBehaviour:
   m_ObjectHideFlags: 0

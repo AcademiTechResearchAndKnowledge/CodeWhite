@@ -3,142 +3,122 @@ using UnityEngine.AI;
 
 /// <summary>
 /// White Lady exclusive wandering module.
-/// Handles all movement when she is NOT actively chasing the player:
-///   Normal      → random patrol
-///   Investigating → walk to last known player position
-///   LocalSearch → sweep the area after arriving
-///   Relocating  → retreat far away to give the player breathing room
+/// Handles standard patrolling AND active localized area sweeping around an anchor point.
+/// Controlled entirely by the WhiteLady.cs master brain.
 /// </summary>
 public class WhiteLadyWander : MonoBehaviour
 {
-    // ─────────────────────────────────────────
-    //  Sub-State
-    // ─────────────────────────────────────────
-    public enum WanderState { Normal, Investigating, LocalSearch, Relocating }
+    public enum WanderState { Normal, Investigating, LocalSearch }
 
-    [Header("Wander State (Read-Only)")]
+    [Header("Current Sub-State (Read-Only)")]
     public WanderState currentState = WanderState.Normal;
 
-    // ─────────────────────────────────────────
-    //  Normal Patrol Settings
-    // ─────────────────────────────────────────
     [Header("Normal Patrol Settings")]
     [SerializeField] private float patrolRadius = 10f;
     [SerializeField] private float patrolInterval = 5f;
 
-    // ─────────────────────────────────────────
-    //  Post-Chase Settings
-    // ─────────────────────────────────────────
-    [Header("After Losing Player")]
-    [Tooltip("How long she searches the area before giving up.")]
-    [SerializeField] private float localSearchDuration = 10f;
+    [Header("Local Search Settings (Post-Chase)")]
+    [Tooltip("How many seconds she spends wandering around your last known spot.")]
+    public float localSearchDuration = 10f;
 
-    [Tooltip("How far she retreats after giving up the search.")]
-    [SerializeField] private float retreatDistance = 30f;
+    [Tooltip("How wide she paces around the closet area while searching.")]
+    [SerializeField] private float searchRadius = 8f;
 
-    // ─────────────────────────────────────────
-    //  Private
-    // ─────────────────────────────────────────
     private NavMeshAgent navMeshAgent;
-    private float        patrolTimer;
-    private float        searchTimer;
+    private float patrolTimer;
+    private float searchTimer;
 
-    // ─────────────────────────────────────────
-    //  Lifecycle
-    // ─────────────────────────────────────────
+    private Vector3 anchorPoint;
+    public bool HasFinishedLocalSearch { get; private set; } = false;
+
     void Awake()
     {
         navMeshAgent = GetComponent<NavMeshAgent>();
     }
 
-    // Reset sub-state whenever the White Lady disables this module (e.g. starts chasing)
     void OnDisable()
     {
         currentState = WanderState.Normal;
+        HasFinishedLocalSearch = false;
     }
 
     void Update()
     {
+        if (navMeshAgent == null || !navMeshAgent.enabled) return;
+
         switch (currentState)
         {
             case WanderState.Normal:
-                TickPatrol(patrolRadius);
+                TickPatrol(transform.position, patrolRadius);
                 break;
 
             case WanderState.Investigating:
                 if (HasReachedDestination())
                 {
-                    // Arrived at last known position — begin area search
                     currentState = WanderState.LocalSearch;
-                    searchTimer  = 0f;
-                    patrolTimer  = patrolInterval; // force immediate first patrol step
+                    searchTimer = 0f;
+                    patrolTimer = patrolInterval; // Force immediate first sweep step
+
+                    if (navMeshAgent.isOnNavMesh) navMeshAgent.ResetPath();
+
+                    Debug.Log("[WhiteLadyWander] Arrived at anchor spot. Commencing local sweep.");
                 }
                 break;
 
             case WanderState.LocalSearch:
                 searchTimer += Time.deltaTime;
 
+                // 1. FIXED: The timer expired, BUT we require her to finish walking to her current point first!
                 if (searchTimer >= localSearchDuration)
-                    Retreat();
+                {
+                    // This guarantees she never vanishes mid-step again
+                    if (HasReachedDestination())
+                    {
+                        HasFinishedLocalSearch = true;
+                    }
+                }
+                // 2. Otherwise, keep picking new patrol points around the closet anchor
                 else
-                    TickPatrol(patrolRadius);
-                break;
-
-            case WanderState.Relocating:
-                if (HasReachedDestination())
-                    currentState = WanderState.Normal;
+                {
+                    TickPatrol(anchorPoint, searchRadius);
+                }
                 break;
         }
     }
 
-    // ─────────────────────────────────────────
-    //  Public API — called by WhiteLady.cs
-    // ─────────────────────────────────────────
-
-    /// <summary>
-    /// Sends her to investigate a position (player's last known location).
-    /// Automatically switches her into Investigating sub-state.
-    /// </summary>
     public void InvestigateLocation(Vector3 target)
     {
         if (navMeshAgent == null || !navMeshAgent.enabled) return;
 
         currentState = WanderState.Investigating;
-        navMeshAgent.SetDestination(target);
+        HasFinishedLocalSearch = false;
+        searchTimer = 0f;
+
+        anchorPoint = target;
+        navMeshAgent.SetDestination(anchorPoint);
     }
 
-    // ─────────────────────────────────────────
-    //  Private Helpers
-    // ─────────────────────────────────────────
-
-    void TickPatrol(float radius)
+    void TickPatrol(Vector3 centerOrigin, float radius)
     {
         patrolTimer += Time.deltaTime;
         if (patrolTimer >= patrolInterval)
         {
             patrolTimer = 0f;
-            Vector3 nextPos = SampleRandomNavPoint(transform.position, radius);
+            Vector3 nextPos = SampleRandomNavPoint(centerOrigin, radius);
             navMeshAgent.SetDestination(nextPos);
         }
     }
 
-    void Retreat()
-    {
-        currentState = WanderState.Relocating;
-
-        Vector3 randomDir = Random.insideUnitSphere.normalized * retreatDistance
-                          + transform.position;
-
-        if (NavMesh.SamplePosition(randomDir, out NavMeshHit hit, retreatDistance * 0.5f, NavMesh.AllAreas))
-            navMeshAgent.SetDestination(hit.position);
-        else
-            currentState = WanderState.Normal; // Failsafe: map too small, just resume patrol
-    }
-
     bool HasReachedDestination()
     {
-        return !navMeshAgent.pathPending
-            && navMeshAgent.remainingDistance <= navMeshAgent.stoppingDistance;
+        if (navMeshAgent.pathPending) return false;
+
+        if (navMeshAgent.pathStatus == NavMeshPathStatus.PathPartial)
+        {
+            return navMeshAgent.velocity.sqrMagnitude < 0.05f;
+        }
+
+        return navMeshAgent.remainingDistance <= (navMeshAgent.stoppingDistance + 1.5f);
     }
 
     static Vector3 SampleRandomNavPoint(Vector3 origin, float radius)
@@ -148,6 +128,6 @@ public class WhiteLadyWander : MonoBehaviour
         if (NavMesh.SamplePosition(randomDir, out NavMeshHit hit, radius, NavMesh.AllAreas))
             return hit.position;
 
-        return origin; // Fallback: stay in place this tick
+        return origin;
     }
 }

@@ -17,11 +17,14 @@ public class PlayerLook : MonoBehaviour
     {
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+
+        // Load the saved sensitivity as soon as the player spawns
+        UpdateSensitivity();
     }
 
     private void Update()
     {
-        if (!canLook)
+        if (!canLook || PauseMenu.GameIsPaused)
             return;
 
         if (ignoreFrames > 0)
@@ -41,8 +44,8 @@ public class PlayerLook : MonoBehaviour
 
     void HandleMouseLook()
     {
-        float mouseX = lookInput.x * mouseSensitivity * Time.deltaTime;
-        float mouseY = lookInput.y * mouseSensitivity * Time.deltaTime;
+        float mouseX = lookInput.x * mouseSensitivity;
+        float mouseY = lookInput.y * mouseSensitivity;
 
         xRotation -= mouseY;
         xRotation = Mathf.Clamp(xRotation, -90f, 90f);
@@ -55,5 +58,11 @@ public class PlayerLook : MonoBehaviour
     {
         xRotation = angle;
         cameraPivot.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
+    }
+
+    // New method to fetch the latest sensitivity from player preferences
+    public void UpdateSensitivity()
+    {
+        mouseSensitivity = PlayerPrefs.GetFloat("MouseSensitivity", 100f);
     }
 }

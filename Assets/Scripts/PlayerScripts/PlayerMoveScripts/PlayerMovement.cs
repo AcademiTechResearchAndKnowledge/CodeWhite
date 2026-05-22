@@ -29,6 +29,9 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float crouchSpeedMultiplier = 0.5f;
     [SerializeField] private float crouchTransitionSpeed = 10f;
 
+    [Tooltip("Exact local position of the camera when fully crouched.")]
+    [SerializeField] private Vector3 crouchCameraPos = new Vector3(0, -0.2f, 0);
+
     [Header("Environment Detection")]
     public Transform groundCheck;
     public float groundDistance = 0.45f;
@@ -143,7 +146,7 @@ public class PlayerMovement : MonoBehaviour
             body.localPosition = standBodyPos + new Vector3(0, -currentDrop, 0);
 
         if (cameraHolder != null)
-            cameraHolder.localPosition = standCameraPos + new Vector3(0, -currentDrop, 0);
+            cameraHolder.localPosition = Vector3.Lerp(standCameraPos, crouchCameraPos, currentCrouchWeight);
     }
 
     bool CanStand()

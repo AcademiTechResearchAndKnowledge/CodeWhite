@@ -70004,17 +70004,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: b19ab5a2e3da0184497ea3ab74502fef, type: 3}
   m_PrefabInstance: {fileID: 161976363}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &665222498 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 5640965147540785246, guid: f70b2793a1e3bae4e97cb334af19507d, type: 3}
-  m_PrefabInstance: {fileID: 781436124}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c0118e1696733604281a8f2f17553f18, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerReferences
 --- !u!43 &666072281
 Mesh:
   m_ObjectHideFlags: 0
@@ -86876,18 +86865,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4411646609755205160, guid: f70b2793a1e3bae4e97cb334af19507d, type: 3}
-      propertyPath: hitLayers.m_Bits
-      value: 2039
-      objectReference: {fileID: 0}
-    - target: {fileID: 7587743193427179702, guid: f70b2793a1e3bae4e97cb334af19507d, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7587743193427179702, guid: f70b2793a1e3bae4e97cb334af19507d, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 7629738588920685599, guid: f70b2793a1e3bae4e97cb334af19507d, type: 3}
       propertyPath: m_Name
       value: Player
@@ -93379,6 +93356,7 @@ MonoBehaviour:
   slots: []
   hotbarUI: {fileID: 1281803835}
   selectedSlot: 0
+  audioSource: {fileID: 0}
 --- !u!4 &872892319
 Transform:
   m_ObjectHideFlags: 0
@@ -131511,6 +131489,7 @@ MonoBehaviour:
   objectiveSize: 2
   slots: []
   objectiveUI: {fileID: 1751362456}
+  audioSource: {fileID: 0}
   selectedSlot: -1
 --- !u!4 &1108878470
 Transform:
@@ -157519,6 +157498,9 @@ MonoBehaviour:
   - {fileID: 1859276391}
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   selectedColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  itemNameText: {fileID: 0}
+  fadeDuration: 0.5
+  displayDuration: 2
 --- !u!114 &1281803836
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -158492,7 +158474,7 @@ MonoBehaviour:
   m_OverrideTileSize: 0
   m_TileSize: 256
   m_OverrideVoxelSize: 0
-  m_VoxelSize: 0.096666664
+  m_VoxelSize: 0.06666667
   m_MinRegionArea: 2
   m_NavMeshData: {fileID: 23800000, guid: 0c660db00a7b97b40bb9b9605c9f9a8e, type: 2}
   m_BuildHeightMesh: 0
@@ -188367,7 +188349,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RandomPortalSpawner
   portalPrefab: {fileID: 5588175437650982449, guid: 382ee694ce2f65341919b2b76bb093ef, type: 3}
   spawnOnlyOnce: 1
-  nextSceneName: 
+  portalOrientation: 0
+  levelCounter: 0
+  excludedScenes: []
+  bossScenes: []
   spawnAreas:
   - {fileID: 1174673875}
   portalspawnMask:
@@ -224687,21 +224672,9 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 453859888704035866, guid: d0730ed0b07c4014bb1b8ed2ddff4f6b, type: 3}
-      propertyPath: playerRef
-      value: 
-      objectReference: {fileID: 665222498}
-    - target: {fileID: 453859888704035866, guid: d0730ed0b07c4014bb1b8ed2ddff4f6b, type: 3}
-      propertyPath: weepChance
-      value: 20
-      objectReference: {fileID: 0}
-    - target: {fileID: 453859888704035866, guid: d0730ed0b07c4014bb1b8ed2ddff4f6b, type: 3}
-      propertyPath: weepLocation
-      value: 
-      objectReference: {fileID: 31435342}
-    - target: {fileID: 453859888704035866, guid: d0730ed0b07c4014bb1b8ed2ddff4f6b, type: 3}
-      propertyPath: teleportChance
-      value: 67
+    - target: {fileID: 2793818226136808801, guid: d0730ed0b07c4014bb1b8ed2ddff4f6b, type: 3}
+      propertyPath: m_Enabled
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6508504866725617351, guid: d0730ed0b07c4014bb1b8ed2ddff4f6b, type: 3}
       propertyPath: m_Name
@@ -227466,6 +227439,9 @@ MonoBehaviour:
   - {fileID: 1069976655}
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   selectedColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  itemNameText: {fileID: 0}
+  fadeDuration: 0.5
+  displayDuration: 2
 --- !u!224 &1751362457
 RectTransform:
   m_ObjectHideFlags: 0
@@ -240831,6 +240807,8 @@ PrefabInstance:
     - {fileID: 5944142244984782821, guid: 0a230117173939e42bb653667baf6d7b, type: 3}
     - {fileID: 4956663394824939060, guid: 0a230117173939e42bb653667baf6d7b, type: 3}
     - {fileID: 9049597081826470664, guid: 0a230117173939e42bb653667baf6d7b, type: 3}
+    - {fileID: 6238508163884624240, guid: 0a230117173939e42bb653667baf6d7b, type: 3}
+    - {fileID: 2906287213468183046, guid: 0a230117173939e42bb653667baf6d7b, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -240905,6 +240883,8 @@ PrefabInstance:
     - {fileID: 5944142244984782821, guid: 0a230117173939e42bb653667baf6d7b, type: 3}
     - {fileID: 4956663394824939060, guid: 0a230117173939e42bb653667baf6d7b, type: 3}
     - {fileID: 9049597081826470664, guid: 0a230117173939e42bb653667baf6d7b, type: 3}
+    - {fileID: 6238508163884624240, guid: 0a230117173939e42bb653667baf6d7b, type: 3}
+    - {fileID: 2906287213468183046, guid: 0a230117173939e42bb653667baf6d7b, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []

@@ -255,6 +255,8 @@ GameObject:
   - component: {fileID: 3326810911531359156}
   - component: {fileID: 2793818226136808801}
   - component: {fileID: 2642292806310504054}
+  - component: {fileID: 9030680213463595197}
+  - component: {fileID: 4725844612474646293}
   m_Layer: 11
   m_Name: WhiteLady
   m_TagString: Untagged
@@ -289,7 +291,7 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.23
-  m_Speed: 2
+  m_Speed: 1.5
   m_Acceleration: 20
   avoidancePriority: 50
   m_AngularSpeed: 120
@@ -314,7 +316,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WhiteLadyDetection
   detectRange: 6
-  loseRange: 10
+  loseRange: 15
   hideAllowedRange: 12
   crouchSafeDistance: 3
   investigateStopDistance: 5
@@ -325,6 +327,7 @@ MonoBehaviour:
   playerCenterHeight: 1
   distanceToPlayer: 0
   canHideFromEnemy: 0
+  isLookingPlayer: 0
 --- !u!114 &8524075316939704075
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -338,10 +341,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WhiteLadyWander
   currentState: 0
-  patrolRadius: 10
+  patrolRadius: 7
   patrolInterval: 5
-  localSearchDuration: 10
-  retreatDistance: 50
+  localSearchDuration: 20
+  searchRadius: 5
 --- !u!114 &453859888704035866
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -358,8 +361,51 @@ MonoBehaviour:
   playerRef: {fileID: 0}
   weepLocation: {fileID: 0}
   submitHitbox: {fileID: 141484224165313357}
+  anxietyAuraRadius: 15
+  anxietyDistanceCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 50
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 5
+      value: 25
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 10
+      value: 10
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 15
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   specialStateInterval: 5
-  teleportChance: 75
+  teleportChance: 80
   weepChance: 20
   teleportSearchRadius: 10
   teleportSampleCount: 20
@@ -370,6 +416,11 @@ MonoBehaviour:
   chasingSfx: {fileID: 8300000, guid: 311ca31f363a7324d967ead28bde37b6, type: 3}
   weepingSfx: {fileID: 8300000, guid: 33ca0b41e64a7c248a3c2513bb39a0fc, type: 3}
   chasingStoppedSfx: {fileID: 8300000, guid: cb45a497a8ab5884983dc4f840b53f6a, type: 3}
+  ambientAudioSource: {fileID: 4725844612474646293}
+  ambientNoises: []
+  minNoiseInterval: 4
+  maxNoiseInterval: 10
+  ambientVolume: 0.8
   detectionDelay: 0.3
 --- !u!82 &3326810911531359156
 AudioSource:
@@ -380,7 +431,7 @@ AudioSource:
   m_GameObject: {fileID: 6508504866725617351}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: 1737952326518219370, guid: c18ef9370e654aa4697400b1c81519c6, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
@@ -516,3 +567,115 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &9030680213463595197
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6508504866725617351}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9d6a7cb3365ac948ba72e4e8db6820c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WhiteLadyJumpscareTrigger
+  catchRadius: 2.5
+  anxietySpikePercentage: 70
+  canvasJumpscare: {fileID: 0}
+--- !u!82 &4725844612474646293
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6508504866725617351}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 3023762586689866044, guid: c18ef9370e654aa4697400b1c81519c6, type: 2}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 0
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 20
+  Pan2D: 0
+  rolloffMode: 1
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4

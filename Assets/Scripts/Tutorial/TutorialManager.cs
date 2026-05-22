@@ -7,7 +7,7 @@ public class TutorialManager : MonoBehaviour
 {
     public enum TutorialState
     {
-        Intro, // <-- ADDED: Prevents input during the black screen cinematic
+        Intro,
         Walk,
         Flashlight,
         Crouch,
@@ -61,7 +61,7 @@ public class TutorialManager : MonoBehaviour
             // Bypass intro directly to walk state
             currentState = TutorialState.Walk;
             if (activeUICoroutine != null) StopCoroutine(activeUICoroutine);
-            activeUICoroutine = StartCoroutine(ShowMessage("WASD to walk"));
+            activeUICoroutine = StartCoroutine(ShowMessage("[WASD] to walk"));
         }
     }
 
@@ -78,14 +78,14 @@ public class TutorialManager : MonoBehaviour
                                     Keyboard.current.sKey.wasPressedThisFrame ||
                                     Keyboard.current.dKey.wasPressedThisFrame))
                 {
-                    AdvanceTutorial(TutorialState.Flashlight, "Right click to turn on flashlight");
+                    AdvanceTutorial(TutorialState.Flashlight, "[Right Click] to turn on flashlight");
                 }
                 break;
 
             case TutorialState.Flashlight:
                 if (hasMouse && Mouse.current.rightButton.wasPressedThisFrame)
                 {
-                    AdvanceTutorial(TutorialState.Crouch, "Press Left Ctrl to crouch");
+                    AdvanceTutorial(TutorialState.Crouch, "Press [Left Ctrl] to crouch");
                 }
                 break;
 
@@ -93,7 +93,7 @@ public class TutorialManager : MonoBehaviour
                 if (hasKeyboard && Keyboard.current.leftCtrlKey.wasPressedThisFrame)
                 {
                     if (itemOutline != null) itemOutline.enabled = true;
-                    AdvanceTutorial(TutorialState.Pickup, "Press F to pick-up the item");
+                    AdvanceTutorial(TutorialState.Pickup, "Press [F] to pick-up the item");
                 }
                 break;
 
@@ -124,7 +124,7 @@ public class TutorialManager : MonoBehaviour
         if (currentState == TutorialState.Pickup)
         {
             if (itemOutline != null) itemOutline.enabled = false;
-            AdvanceTutorial(TutorialState.UseItem, "Use scroll wheel or numbers to select the item and press E to use");
+            AdvanceTutorial(TutorialState.UseItem, "Use [Scroll Wheel] or [Numbers] to select the item and press [E] to use");
         }
     }
 
@@ -133,7 +133,7 @@ public class TutorialManager : MonoBehaviour
         if (currentState == TutorialState.UseItem)
         {
             if (doorOutline != null) doorOutline.enabled = true;
-            AdvanceTutorial(TutorialState.Door, "Go to the door and press F to interact");
+            AdvanceTutorial(TutorialState.Door, "Go to the door and press [F] to interact");
         }
     }
 
@@ -142,7 +142,7 @@ public class TutorialManager : MonoBehaviour
         if (currentState == TutorialState.Door)
         {
             if (doorOutline != null) doorOutline.enabled = false;
-            AdvanceTutorial(TutorialState.Sprint, "Press Shift to sprint");
+            AdvanceTutorial(TutorialState.Sprint, "Press [Shift] to sprint");
         }
     }
 
@@ -224,7 +224,7 @@ public class TutorialManager : MonoBehaviour
         currentState = TutorialState.Walk;
 
         if (activeUICoroutine != null) StopCoroutine(activeUICoroutine);
-        activeUICoroutine = StartCoroutine(ShowMessage("WASD to walk"));
+        activeUICoroutine = StartCoroutine(ShowMessage("[WASD] to walk"));
     }
 
     private IEnumerator ShowMessage(string message)

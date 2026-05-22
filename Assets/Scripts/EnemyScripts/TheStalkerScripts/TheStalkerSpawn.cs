@@ -8,7 +8,7 @@ public class IdleOrClosetEnemySpawner : MonoBehaviour
 
     [Header("Player")]
     [SerializeField] private PlayerReferences playerRefs;
-    [SerializeField] private ClosetHidingSystem closetSystem;
+    // We removed the closetSystem field here! It now finds it automatically.
 
     [Header("Spawn Timing")]
     [SerializeField] private float idleSpawnDelay = 10f;
@@ -51,7 +51,8 @@ public class IdleOrClosetEnemySpawner : MonoBehaviour
 
     private void CheckIdleTimer()
     {
-        if (closetSystem != null && closetSystem.InsideCloset)
+        // Dynamically check if ANY closet is active
+        if (ClosetHidingSystem.ActiveCloset != null && ClosetHidingSystem.ActiveCloset.InsideCloset)
         {
             idleTimer = 0f;
             return;
@@ -76,7 +77,8 @@ public class IdleOrClosetEnemySpawner : MonoBehaviour
 
     private void CheckClosetTimer()
     {
-        if (closetSystem != null && closetSystem.InsideCloset)
+        // Dynamically check if ANY closet is active
+        if (ClosetHidingSystem.ActiveCloset != null && ClosetHidingSystem.ActiveCloset.InsideCloset)
         {
             closetTimer += Time.deltaTime;
 
@@ -100,11 +102,9 @@ public class IdleOrClosetEnemySpawner : MonoBehaviour
         }
 
         BoxCollider chosenArea = GetBestSpawnArea();
-
         if (chosenArea == null) return;
 
         Vector3 spawnPos = GetRandomPointInBox(chosenArea);
-
         activeStalker = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
 
         StalkerFollowScript stalkerScript = activeStalker.GetComponent<StalkerFollowScript>();
@@ -113,7 +113,7 @@ public class IdleOrClosetEnemySpawner : MonoBehaviour
         {
             if (isClosetSpawn)
             {
-                stalkerScript.InitializeForCloset(playerRefs, closetSystem);
+                stalkerScript.InitializeForCloset(playerRefs);
             }
             else
             {
@@ -136,14 +136,10 @@ public class IdleOrClosetEnemySpawner : MonoBehaviour
         List<BoxCollider> validAreas = new List<BoxCollider>();
         foreach (var area in spawnAreas)
         {
-            if (area != null)
-            {
-                validAreas.Add(area);
-            }
+            if (area != null) validAreas.Add(area);
         }
 
-        if (validAreas.Count == 0)
-            return null;
+        if (validAreas.Count == 0) return null;
 
         validAreas.Sort((a, b) =>
         {

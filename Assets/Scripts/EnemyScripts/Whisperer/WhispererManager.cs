@@ -7,6 +7,12 @@ public class WhispererManager : MonoBehaviour
     public delegate void OnWhisperFlicker();
     public static event OnWhisperFlicker onWhisperFlicker;
 
+    public delegate void OnWhispererSpawned();
+    public static event OnWhispererSpawned onWhispererSpawned;
+
+    // A public lock state that lights can check
+    public static bool IsWhispererActive { get; private set; } = false;
+
     [Header("Player Reference")]
     [SerializeField] private PlayerReferences playerRefs;
 
@@ -19,8 +25,13 @@ public class WhispererManager : MonoBehaviour
 
     [Header("Trigger Chances Settings")]
     [SerializeField]
-    private int initialChanceToSpawn = 100;
+    [Tooltip("Minimum base percentage chance to trigger a stage.")]
+    private int minBaseChance = 5;
     [SerializeField]
+    [Tooltip("Maximum base percentage chance to trigger a stage.")]
+    private int maxBaseChance = 20;
+    [SerializeField]
+    [Tooltip("How much the chance increases every time a light fails to trigger a stage.")]
     private int chanceIncrementPerFail = 10;
 
     [Header("Timer Settings")]
@@ -54,11 +65,24 @@ public class WhispererManager : MonoBehaviour
     private void Awake()
     {
         audioSource = GetComponent<AudioSource>();
-        chanceToSpawn = initialChanceToSpawn;
+
+        // Initialize the first random chance
+        resetState();
 
         if (playerRefs == null)
         {
             playerRefs = FindAnyObjectByType<PlayerReferences>();
+        }
+    }
+
+    private void Update()
+    {
+        // If the whisperer was spawned, but the GameObject is now null (destroyed)
+        if (whispererSpawned && spawnedEntity == null)
+        {
+            whispererSpawned = false;
+            IsWhispererActive = false; // Unlock the lights!
+            Debug.Log("Whisperer has despawned. Lights are unlocked.");
         }
     }
 
@@ -67,28 +91,34 @@ public class WhispererManager : MonoBehaviour
         if (whispererSpawned)
             return;
 
-        if (Random.Range(0, 100) < chanceToSpawn)
+        // Roll 1 to 100 for true percentage math
+        if (Random.Range(1, 101) <= chanceToSpawn)
         {
             switch (Stage)
             {
                 case 1:
                     audioSource.clip = Whisper;
                     audioSource.Play();
+                    Stage++; // Safely increment inside the case
                     break;
                 case 2:
                     onWhisperFlicker?.Invoke();
+                    Stage++; // Safely increment inside the case
                     break;
                 case 3:
                     whispererSpawned = true;
+                    IsWhispererActive = true; // Lock the lights!
                     Spawn();
+                    onWhispererSpawned?.Invoke();
+
+                    // Reset the loop for the next time!
                     resetState();
                     break;
             }
-
-            Stage++;
         }
         else
         {
+            // Failed the roll. Increase the odds for the next light they turn on.
             chanceToSpawn += chanceIncrementPerFail;
         }
     }
@@ -100,7 +130,10 @@ public class WhispererManager : MonoBehaviour
 
     void StopFlashTimer()
     {
-        StopCoroutine(spawnTimerRoutine);
+        if (spawnTimerRoutine != null)
+        {
+            StopCoroutine(spawnTimerRoutine);
+        }
     }
 
     IEnumerator SpawnTimerRoutine()
@@ -183,6 +216,8 @@ public class WhispererManager : MonoBehaviour
     public void Despawn()
     {
         whispererSpawned = false;
+        IsWhispererActive = false; // Unlock the lights!
+
         if (spawnedEntity != null)
         {
             Destroy(spawnedEntity);
@@ -192,6 +227,7 @@ public class WhispererManager : MonoBehaviour
     void resetState()
     {
         Stage = 1;
-        chanceToSpawn = initialChanceToSpawn;
+        // Generate a completely random starting percentage between the min and max
+        chanceToSpawn = Random.Range(minBaseChance, maxBaseChance + 1);
     }
 }

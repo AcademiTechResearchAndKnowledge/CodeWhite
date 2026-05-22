@@ -1,59 +1,56 @@
+using System.Collections;
 using UnityEngine;
+using UnityEngine.AI;
 
-[RequireComponent(typeof(EntityDespawner))] // This ensures the new script is always attached!
 public class AggroJumpscareTrigger : MonoBehaviour
 {
     [Header("Catch Settings")]
     [Tooltip("How close the entity needs to be to catch the player.")]
     public float catchRadius = 2.5f;
 
-    // „Ÿ„Ÿ„Ÿ NEW: Anxiety Spike Settings „Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ
-    [Header("Anxiety Penalty")]
-    [Tooltip("Percentage of Max Anxiety to add when caught (e.g., 25 means 25% of the bar).")]
+    [Header("Anxiety Jumpscare Penalty")]
+    [Tooltip("Percentage of Max Anxiety to add when caught.")]
     [Range(0f, 100f)]
     public float anxietySpikePercentage = 25f;
 
-    private Transform playerTransform;
-    private PlayerStats playerStats; // Reference to apply the anxiety spike
-    private bool hasCaughtPlayer = false;
+    [Header("Anxiety Proximity (Spatial)")]
+    [Tooltip("The maximum distance the aura reaches.")]
+    public float anxietyAuraRadius = 15f;
+    [Tooltip("Graph: X-Axis is Distance, Y-Axis is Total Anxiety applied.")]
+    public AnimationCurve anxietyDistanceCurve = new AnimationCurve(
+        new Keyframe(0f, 50f),
+        new Keyframe(5f, 25f),
+        new Keyframe(10f, 10f),
+        new Keyframe(15f, 0f)
+    );
 
+    [Header("Canvas Jumpscare Setup")]
+    [SerializeField] private JumpscareMechanic canvasJumpscare;
+
+    private Transform playerTransform;
+    private PlayerStats playerStats;
+    private AnxietyHandler anxietyHandler;
+    private bool hasCaughtPlayer = false;
     private AggroEntityDetector entityDetector;
-    private EntityDespawner despawner; // Reference to our new script
 
     private void Start()
     {
         entityDetector = GetComponent<AggroEntityDetector>();
-        despawner = GetComponent<EntityDespawner>(); // Grab the script
 
         if (entityDetector == null)
-        {
-            Debug.LogError("AggroJumpscareTrigger: Cannot find AggroEntityDetector script on this entity!");
-        }
+            Debug.LogError("AggroJumpscareTrigger: Cannot find AggroEntityDetector script!");
 
-        // 1. Find PlayerFollow for the distance check
+        if (canvasJumpscare == null)
+            canvasJumpscare = FindAnyObjectByType<JumpscareMechanic>();
+
         GameObject playerObj = GameObject.FindGameObjectWithTag("PlayerFollow");
-        if (playerObj != null)
-        {
-            playerTransform = playerObj.transform;
-        }
-        else
-        {
-            Debug.LogError("AggroJumpscareTrigger: No object with tag 'PlayerFollow' found in the scene.");
-        }
+        if (playerObj != null) playerTransform = playerObj.transform;
 
-        // 2. Find the actual Player for the stats (Anxiety)
         GameObject actualPlayer = GameObject.FindGameObjectWithTag("Player");
         if (actualPlayer != null)
         {
             playerStats = actualPlayer.GetComponent<PlayerStats>();
-            if (playerStats == null)
-            {
-                Debug.LogError("AggroJumpscareTrigger: No PlayerStats found on the Player object!");
-            }
-        }
-        else
-        {
-            Debug.LogError("AggroJumpscareTrigger: No object with tag 'Player' found in the scene for stats.");
+            anxietyHandler = actualPlayer.GetComponent<AnxietyHandler>();
         }
     }
 
@@ -63,38 +60,78 @@ public class AggroJumpscareTrigger : MonoBehaviour
 
         float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
 
+        // „Ÿ„Ÿ„Ÿ NEW: Simplified Spatial Distance Anxiety „Ÿ„Ÿ„Ÿ
+        if (anxietyHandler != null)
+        {
+            if (distanceToPlayer <= anxietyAuraRadius)
+            {
+                // Constantly tell the AnxietyHandler what the absolute minimum anxiety should be
+                float targetAnxiety = anxietyDistanceCurve.Evaluate(distanceToPlayer);
+                anxietyHandler.externalProximityFloor = targetAnxiety;
+            }
+            else
+            {
+                // If out of range, clear the floor
+                anxietyHandler.externalProximityFloor = 0f;
+            }
+        }
+        // „Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ
+
         if (distanceToPlayer <= catchRadius && entityDetector.isLookingPlayer)
         {
-            TriggerJumpscare();
+            StartCoroutine(JumpscareRoutine());
         }
     }
 
-    private void TriggerJumpscare()
+    private IEnumerator JumpscareRoutine()
     {
         hasCaughtPlayer = true;
+        if (entityDetector != null) entityDetector.enabled = false;
 
-        // 1. Calculate and apply the Anxiety Spike
+        NavMeshAgent agent = GetComponent<NavMeshAgent>();
+        if (agent != null && agent.isOnNavMesh)
+        {
+            agent.isStopped = true;
+            agent.velocity = Vector3.zero;
+        }
+
+        SpriteDirectionalController dirController = GetComponentInChildren<SpriteDirectionalController>();
+        if (dirController != null) dirController.enabled = false;
+
+        Vector3 lookPos = playerTransform.position - transform.position;
+        lookPos.y = 0f;
+        if (lookPos != Vector3.zero) transform.rotation = Quaternion.LookRotation(lookPos);
+
+        float waitTime = 2.0f;
+        if (canvasJumpscare != null)
+        {
+            canvasJumpscare.TriggerJumpscare();
+            waitTime = canvasJumpscare.animationDuration - 0.5f;
+        }
+
+        yield return new WaitForSeconds(waitTime);
+
+        SpriteRenderer entitySprite = GetComponentInChildren<SpriteRenderer>();
+        if (entitySprite != null) entitySprite.enabled = false;
+
         if (playerStats != null)
         {
             float anxietyToAdd = (anxietySpikePercentage / 100f) * playerStats.MaxAnxiety;
             playerStats.AddStat(StatType.ANX, anxietyToAdd);
-            Debug.Log($"[Anxiety System] Player caught! Added {anxietySpikePercentage}% ({anxietyToAdd} raw points) to Anxiety.");
+            if (anxietyHandler != null) anxietyHandler.ResetSafeTimer();
         }
 
-        // 2. Jumpscare Effects
-        Debug.Log("[Jumpscare System] Jumpscare sequence initiated.");
+        Destroy(gameObject);
+    }
 
-        // 3. Entity Disappears using the despawner script
-        Debug.Log("[Entity Action] Entity is now disappearing.");
-
-        if (despawner != null)
+    private void OnDestroy()
+    {
+        // „Ÿ„Ÿ„Ÿ THE FIX: Clean up the floor when destroyed „Ÿ„Ÿ„Ÿ
+        // If the entity dies (like after a jumpscare), it must remove its floor, 
+        // otherwise the player stays anxious forever!
+        if (anxietyHandler != null)
         {
-            despawner.DespawnWithParticles();
-        }
-        else
-        {
-            // Fallback just in case the component is missing
-            Destroy(gameObject);
+            anxietyHandler.externalProximityFloor = 0f;
         }
     }
 }
