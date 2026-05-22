@@ -1,7 +1,6 @@
 using UnityEngine;
 using TMPro;
 
-// FOR LAPTOP'S PARENT OBJECT THAT HANDLES UI AND LOGIC
 public class LaptopManager : MonoBehaviour, IZoomInteractable
 {
     public static LaptopManager Instance;
@@ -18,6 +17,7 @@ public class LaptopManager : MonoBehaviour, IZoomInteractable
 
     private bool laptopOpen = false;
     private bool answersUnlocked = false;
+    private bool screenWasOn = false;
     private string pendingHint = "";
 
     public bool IsInteracting { get; set; }
@@ -44,12 +44,12 @@ public class LaptopManager : MonoBehaviour, IZoomInteractable
         }
     }
 
-
     public void StartInteraction()
     {
         IsInteracting = true;
-
         laptopOpen = true;
+
+        screenWasOn = laptopCanvas != null && laptopCanvas.activeSelf;
 
         if (laptopCanvas != null)
             laptopCanvas.SetActive(true);
@@ -57,16 +57,19 @@ public class LaptopManager : MonoBehaviour, IZoomInteractable
         RefreshUI();
     }
 
-
-    public void StopInteraction()
+    public void StopInteraction(bool escapedOut = false)
     {
         IsInteracting = false;
-
         laptopOpen = false;
 
-        if (laptopCanvas != null)
-            laptopCanvas.SetActive(false);
+        if (!escapedOut && !screenWasOn)
+        {
+            if (laptopCanvas != null)
+                laptopCanvas.SetActive(false);
+        }
     }
+
+    void IZoomInteractable.StopInteraction() => StopInteraction(false);
 
     void RefreshUI()
     {
@@ -121,6 +124,8 @@ public class LaptopManager : MonoBehaviour, IZoomInteractable
             SwitchPuzzleManager.Instance.RegisterWrongAnswer();
             ButtonController.Instance.UnlockButtons();
         }
+
+        
     }
 
     void SetAnswerButtonsInteractable(bool state)
@@ -150,8 +155,24 @@ public class LaptopManager : MonoBehaviour, IZoomInteractable
             feedbackText.text = pendingHint;
     }
 
+    public void TurnScreenOn()
+    {
+        screenWasOn = true;
+
+        if (laptopCanvas != null)
+            laptopCanvas.SetActive(true);
+    }
+
+    public void TurnScreenOff()
+    {
+        screenWasOn = false; 
+        if (laptopCanvas != null)
+            laptopCanvas.SetActive(false);
+    }
+
     public void ShowObjectiveComplete()
     {
+        screenWasOn = true;
         laptopOpen = true;
 
         if (laptopCanvas != null)

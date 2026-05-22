@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 using UnityEngine.InputSystem;
 using System.Collections;
@@ -9,6 +10,7 @@ public class DialogueManager : MonoBehaviour
     public GameObject dialoguePanel;
     public TextMeshProUGUI dialogueText;
     public TextMeshProUGUI nameText;
+    public Image expressionImage;
 
     private DialogueData.DialogueLine[] currentLines;
     private int index;
@@ -36,22 +38,16 @@ public class DialogueManager : MonoBehaviour
         if (Keyboard.current.spaceKey.wasPressedThisFrame)
         {
             if (isTyping)
-            {
                 SkipTyping();
-            }
             else
-            {
                 NextLine();
-            }
         }
 
         if (useAutoAdvance && !isTyping)
         {
             autoAdvanceTimer -= Time.unscaledDeltaTime;
             if (autoAdvanceTimer <= 0f)
-            {
                 NextLine();
-            }
         }
     }
 
@@ -74,9 +70,7 @@ public class DialogueManager : MonoBehaviour
         autoAdvanceTime = data.autoCloseTime;
 
         if (useAutoAdvance)
-        {
             autoAdvanceTimer = autoAdvanceTime;
-        }
     }
 
     void ShowLine()
@@ -87,9 +81,7 @@ public class DialogueManager : MonoBehaviour
         var line = currentLines[index];
 
         if (string.IsNullOrEmpty(line.speakerName))
-        {
             nameText.gameObject.SetActive(false);
-        }
         else
         {
             nameText.gameObject.SetActive(true);
@@ -97,13 +89,24 @@ public class DialogueManager : MonoBehaviour
             nameText.color = line.nameColor;
         }
 
+        if (expressionImage != null)
+        {
+            if (line.expression != null)
+            {
+                expressionImage.sprite = line.expression;
+                expressionImage.gameObject.SetActive(true);
+            }
+            else
+            {
+                expressionImage.gameObject.SetActive(false);
+            }
+        }
+
         dialogueText.color = line.textColor;
         typingCoroutine = StartCoroutine(TypeText(line.text));
 
         if (useAutoAdvance)
-        {
             autoAdvanceTimer = autoAdvanceTime;
-        }
     }
 
     IEnumerator TypeText(string text)
@@ -133,23 +136,21 @@ public class DialogueManager : MonoBehaviour
     {
         index++;
         if (index >= currentLines.Length)
-        {
             EndDialogue();
-        }
         else
-        {
             ShowLine();
-        }
     }
 
     void EndDialogue()
     {
         dialoguePanel.SetActive(false);
+
         if (isPlayerFrozen && playerMovement != null)
         {
             playerMovement.enabled = true;
             isPlayerFrozen = false;
         }
+
         useAutoAdvance = false;
     }
 }

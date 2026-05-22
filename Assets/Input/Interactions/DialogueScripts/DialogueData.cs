@@ -15,6 +15,8 @@ public class DialogueData : ScriptableObject
 
         public Color textColor = Color.white;
         public Color nameColor = Color.white;
+
+        public Sprite expression;
     }
 
     public DialogueLine[] lines;

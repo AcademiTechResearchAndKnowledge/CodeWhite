@@ -3838,6 +3838,9 @@ MonoBehaviour:
   - {fileID: 87960673}
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   selectedColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  itemNameText: {fileID: 0}
+  fadeDuration: 0.5
+  displayDuration: 2
 --- !u!114 &292037606
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4555,7 +4558,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 423380129}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
   m_Name: 
@@ -4578,13 +4581,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 31422a0bdec158948bdf55875ed1a623, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LaptopAnswerButton
-  buttonText: F
-  objectName: Answer
-  actionName: Select
-  onInteraction:
-    m_PersistentCalls:
-      m_Calls: []
   answerIndex: 1
+  zoomScript: {fileID: 0}
 --- !u!64 &423380133
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -5308,6 +5306,7 @@ MonoBehaviour:
   slots: []
   hotbarUI: {fileID: 292037605}
   selectedSlot: 0
+  audioSource: {fileID: 0}
 --- !u!4 &663311757
 Transform:
   m_ObjectHideFlags: 0
@@ -6732,7 +6731,19 @@ MonoBehaviour:
   actionName: Interact
   onInteraction:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 887010081}
+        m_TargetAssemblyTypeName: LaptopInteractable, Assembly-CSharp
+        m_MethodName: Interact
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!64 &887010082
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -7374,7 +7385,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 959113758}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
   m_Name: 
@@ -7397,13 +7408,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 31422a0bdec158948bdf55875ed1a623, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LaptopAnswerButton
-  buttonText: F
-  objectName: Answer
-  actionName: Select
-  onInteraction:
-    m_PersistentCalls:
-      m_Calls: []
   answerIndex: 0
+  zoomScript: {fileID: 0}
 --- !u!64 &959113762
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -7941,6 +7947,9 @@ MonoBehaviour:
   - {fileID: 81581776}
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   selectedColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  itemNameText: {fileID: 0}
+  fadeDuration: 0.5
+  displayDuration: 2
 --- !u!224 &1059328985
 RectTransform:
   m_ObjectHideFlags: 0
@@ -9148,12 +9157,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RandomPortalSpawner
   portalPrefab: {fileID: 5588175437650982449, guid: 382ee694ce2f65341919b2b76bb093ef, type: 3}
   spawnOnlyOnce: 1
-  nextSceneName: 
+  portalOrientation: 0
+  levelCounter: 0
+  excludedScenes: []
+  bossScenes: []
   spawnAreas:
   - {fileID: 2025656650}
   portalspawnMask:
     serializedVersion: 2
     m_Bits: 128
+  ceilingMask:
+    serializedVersion: 2
+    m_Bits: 0
   attempts: 25
   raycastHeight: 50
   groundOffset: 1.1
@@ -9467,6 +9482,7 @@ MonoBehaviour:
   jumpscareAudio: {fileID: 1308218971}
   triggerParameterName: PlayJumpscare
   animationDuration: 1
+  destroyAfterPlaying: 1
 --- !u!4 &1308218973
 Transform:
   m_ObjectHideFlags: 0
@@ -9584,7 +9600,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1351849543}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
   m_Name: 
@@ -9607,13 +9623,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 31422a0bdec158948bdf55875ed1a623, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LaptopAnswerButton
-  buttonText: F
-  objectName: Answer
-  actionName: Select
-  onInteraction:
-    m_PersistentCalls:
-      m_Calls: []
   answerIndex: 2
+  zoomScript: {fileID: 0}
 --- !u!64 &1351849547
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -10452,6 +10463,7 @@ GameObject:
   - component: {fileID: 1508869107}
   - component: {fileID: 1508869109}
   - component: {fileID: 1508869108}
+  - component: {fileID: 1508869110}
   m_Layer: 0
   m_Name: PersistentUI
   m_TagString: Untagged
@@ -10508,6 +10520,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5dd717e1a3d4fc44b866ad1a5dc014d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PersistentUI
+--- !u!225 &1508869110
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1508869106}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &1513675538
 GameObject:
   m_ObjectHideFlags: 0
@@ -14329,6 +14353,7 @@ MonoBehaviour:
   objectiveSize: 2
   slots: []
   objectiveUI: {fileID: 1059328984}
+  audioSource: {fileID: 0}
   selectedSlot: -1
 --- !u!4 &1920913352
 Transform:

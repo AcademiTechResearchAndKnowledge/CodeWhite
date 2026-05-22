@@ -19,6 +19,12 @@ public class LaptopAnswerButton : MonoBehaviour
             {
                 if (hit.transform == transform)
                 {
+                    if(answerIndex == 3)
+                    {
+                        LaptopManager.Instance.TurnScreenOff();
+                        Debug.Log("LAPTOP CLOSED");
+                        zoomScript.ExitPuzzle();
+                    }
                     Debug.Log("Clicked answer: " + answerIndex);
                     LaptopManager.Instance.OnAnswerSelected(answerIndex);
                 }
