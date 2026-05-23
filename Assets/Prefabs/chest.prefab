@@ -45,15 +45,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: caa0bad9ba8540a469efc817a196eac6, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -7.411
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: caa0bad9ba8540a469efc817a196eac6, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 0.49999994
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: caa0bad9ba8540a469efc817a196eac6, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: -12.023
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: caa0bad9ba8540a469efc817a196eac6, type: 3}
       propertyPath: m_LocalRotation.w
@@ -61,7 +61,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: caa0bad9ba8540a469efc817a196eac6, type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: caa0bad9ba8540a469efc817a196eac6, type: 3}
       propertyPath: m_LocalRotation.y
@@ -69,7 +69,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: caa0bad9ba8540a469efc817a196eac6, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: caa0bad9ba8540a469efc817a196eac6, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -220,6 +220,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -776392107655550284, guid: caa0bad9ba8540a469efc817a196eac6, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8576163150168683809}
+    - targetCorrespondingSourceObject: {fileID: -776392107655550284, guid: caa0bad9ba8540a469efc817a196eac6, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3278822145351676395}
   m_SourcePrefab: {fileID: 100100000, guid: caa0bad9ba8540a469efc817a196eac6, type: 3}
 --- !u!1 &3984429949427070188 stripped
 GameObject:
@@ -369,7 +372,19 @@ MonoBehaviour:
   actionName: Open Chest
   onInteraction:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 3278822145351676395}
+        m_TargetAssemblyTypeName: PickupSFX, Assembly-CSharp
+        m_MethodName: Play
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   chestAnimator: {fileID: 6924840829491959206}
   animationStepDelay: 0.5
   itemSpawnPoint: {fileID: 6020684400912733117}
@@ -383,3 +398,17 @@ MonoBehaviour:
   lootSpawnDelay: 0.01
   chanceToSpawnNothing: 0.7
   spawnOnlyOnce: 1
+--- !u!114 &3278822145351676395
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5670967896655536905}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d3cc1164a1e47d4490fb8d550e19dbc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PickupSFX
+  pickupClip: {fileID: 8300000, guid: e5d41419e65843f45acbe2ecca32ad78, type: 3}
+  volume: 1
