@@ -15,7 +15,14 @@ public class RandomPortalSpawner : MonoBehaviour
     }
 
     [Header("Portal Orientation")]
-    [SerializeField] private PortalOrientation portalOrientation = PortalOrientation.Vertical;
+    private PortalOrientation portalOrientation = PortalOrientation.Vertical;
+
+    [Header("Portal Sequence Settings")]
+    [SerializeField] private float duration = 6f;
+    [SerializeField] private float liftHeight = 2f;
+    [SerializeField] private float lookHeight = 10f;
+    [SerializeField] private float fadeStart = 0.6f;
+    [SerializeField] private float fadeSpeed = 1f;
 
     [Header("Level Progress (PERSISTENT)")]
     [SerializeField] private int levelCounter = 0;
@@ -30,11 +37,14 @@ public class RandomPortalSpawner : MonoBehaviour
     [SerializeField] private BoxCollider[] spawnAreas;
     [SerializeField] private LayerMask portalspawnMask;
     [SerializeField] private LayerMask ceilingMask;
+    [SerializeField] private LayerMask wallMask;
 
     [Header("Spawn Search")]
     [SerializeField] private int attempts = 25;
     [SerializeField] private float raycastHeight = 50f;
+    [SerializeField] private float wallRaycastDistance = 50f;
     [SerializeField] private float groundOffset = 0.05f;
+    [SerializeField] private float wallOffset = 0.05f;
 
     private bool spawned;
     private static RandomPortalSpawner instance;
@@ -64,8 +74,48 @@ public class RandomPortalSpawner : MonoBehaviour
         spawnAreas = FindObjectsByType<BoxCollider>(FindObjectsSortMode.None);
     }
 
-    public void SpawnPortalRandom()
+    // Called externally (e.g. doorsGen) to spawn the portal at a specific world position
+    public void SpawnPortalAt(Vector3 position, PortalOrientation orientation)
     {
+        Debug.Log($"[RandomPortalSpawner] SpawnPortalAt called at {position}");
+        if (portalPrefab == null) { Debug.LogWarning("[RandomPortalSpawner] portalPrefab is null."); return; }
+
+        portalOrientation = orientation;
+        levelCounter++;
+
+        List<string> validScenes = GetValidScenes();
+        if (validScenes.Count == 0) return;
+
+        GameObject portalInstance = Instantiate(portalPrefab, position, Quaternion.Euler(90f, 0f, 0f));
+
+        PortalNextStage portal = portalInstance.GetComponentInChildren<PortalNextStage>();
+
+        if (portal != null)
+        {
+            portal.SetOrientation(PortalNextStage.PortalOrientation.Horizontal);
+            portal.SetSequenceSettings(duration, liftHeight, lookHeight, fadeStart, fadeSpeed);
+            portal.SetLevel(levelCounter);
+            portal.SetExcludedScenes(excludedScenes);
+
+            Transform portalMesh = portalInstance.transform.Find("PortalMesh");
+            if (portalMesh != null)
+                portal.SetPortalMesh(portalMesh);
+
+            bool isBoss = (levelCounter % 10 == 0);
+
+            if (isBoss)
+                portal.SetForcedScene(GetBossScene(levelCounter));
+            else
+                portal.SetForcedScene(validScenes[Random.Range(0, validScenes.Count)]);
+        }
+
+        spawned = true;
+    }
+
+    public void SpawnPortalRandom(PortalOrientation orientation)
+    {
+        portalOrientation = orientation;
+
         if (portalPrefab == null || (spawned && spawnOnlyOnce)) return;
         if (spawnAreas == null || spawnAreas.Length == 0) return;
 
@@ -91,11 +141,31 @@ public class RandomPortalSpawner : MonoBehaviour
 
                 if (portalOrientation == PortalOrientation.Horizontal)
                 {
+                    // Find a nearby wall to place the horizontal portal on
+                    Vector3[] wallDirs = { Vector3.forward, Vector3.back, Vector3.left, Vector3.right };
+                    Vector3 wallOrigin = hit.point + Vector3.up * 1f;
+
+                    bool foundWall = false;
                     spawnPos = hit.point + Vector3.up * groundOffset;
                     rotation = Quaternion.Euler(90f, 0f, 0f);
+
+                    foreach (Vector3 dir in wallDirs)
+                    {
+                        if (Physics.Raycast(wallOrigin, dir, out RaycastHit wallHit, wallRaycastDistance, wallMask))
+                        {
+                            spawnPos = wallHit.point - dir * wallOffset;
+                            rotation = Quaternion.LookRotation(-wallHit.normal);
+                            foundWall = true;
+                            break;
+                        }
+                    }
+
+                    if (!foundWall)
+                        spawnPos = hit.point + Vector3.up * groundOffset;
                 }
                 else
                 {
+                    // Vertical portal: snap to ceiling
                     Vector3 ceilingOrigin = hit.point + Vector3.down * 0.5f;
 
                     if (Physics.Raycast(ceilingOrigin, Vector3.up, out RaycastHit ceilingHit, raycastHeight * 2f, ceilingMask))
@@ -112,6 +182,19 @@ public class RandomPortalSpawner : MonoBehaviour
 
                 if (portal != null)
                 {
+                    // Pass orientation so the portal knows which pull direction to use
+                    portal.SetOrientation(portalOrientation == PortalOrientation.Horizontal
+                        ? PortalNextStage.PortalOrientation.Horizontal
+                        : PortalNextStage.PortalOrientation.Vertical);
+
+                    // Find and pass the PortalMesh transform
+                    Transform portalMesh = portalInstance.transform.Find("PortalMesh");
+                    if (portalMesh != null)
+                        portal.SetPortalMesh(portalMesh);
+
+                    // Pass all sequence variables
+                    portal.SetSequenceSettings(duration, liftHeight, lookHeight, fadeStart, fadeSpeed);
+
                     portal.SetLevel(levelCounter);
                     portal.SetExcludedScenes(excludedScenes);
 

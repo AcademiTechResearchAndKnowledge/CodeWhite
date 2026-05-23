@@ -23,6 +23,8 @@ public class doorsGen : MonoBehaviour
     private List<Vector3> usedPositions = new List<Vector3>();
     private float floorTop;
 
+    private GameObject rainbowDoor;
+
     void Start()
     {
         if (playerTransform == null)
@@ -67,8 +69,25 @@ public class doorsGen : MonoBehaviour
 
             usedPositions.Add(pos);
 
-            if (prefabToSpawn == blackDoorPrefab)
+            if (prefabToSpawn == rainbowDoorPrefab)
+            {
+                rainbowDoor = door;
+
+                RainbowDoorInteractable rd = door.GetComponent<RainbowDoorInteractable>();
+                if (rd != null)
+                {
+                    rd.onPuzzleComplete = OnRainbowDoorOpened;
+                    Debug.Log("[doorsGen] onPuzzleComplete assigned to RainbowDoorInteractable.");
+                }
+                else
+                {
+                    Debug.LogWarning("[doorsGen] RainbowDoorInteractable component not found on rainbow door prefab.");
+                }
+            }
+            else if (prefabToSpawn == blackDoorPrefab)
+            {
                 blackDoors.Add(door);
+            }
         }
 
         for (int i = 0; i < blackDoors.Count; i += 2)
@@ -76,6 +95,28 @@ public class doorsGen : MonoBehaviour
             if (i + 1 >= blackDoors.Count) break;
             SetupPortalPair(blackDoors[i], blackDoors[i + 1]);
         }
+    }
+
+    // Called by RainbowDoor when the key is used and the puzzle is complete
+    private void OnRainbowDoorOpened()
+    {
+        Debug.Log("[doorsGen] OnRainbowDoorOpened fired.");
+
+        if (rainbowDoor == null)
+        {
+            Debug.LogWarning("[doorsGen] rainbowDoor is null.");
+            return;
+        }
+
+        RandomPortalSpawner spawner = FindFirstObjectByType<RandomPortalSpawner>();
+        if (spawner == null)
+        {
+            Debug.LogWarning("[doorsGen] RandomPortalSpawner not found in scene.");
+            return;
+        }
+
+        Debug.Log($"[doorsGen] Spawning portal at {rainbowDoor.transform.position}");
+        spawner.SpawnPortalAt(rainbowDoor.transform.position, RandomPortalSpawner.PortalOrientation.Horizontal);
     }
 
     void SetupPortalPair(GameObject doorA, GameObject doorB)

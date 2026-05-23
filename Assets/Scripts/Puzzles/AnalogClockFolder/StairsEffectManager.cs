@@ -22,7 +22,7 @@ public class StairsEffectManager : MonoBehaviour
         {
             if (clock.allPuzzleDone == true)
             {
-                RPS.SpawnPortalRandom();
+                RPS.SpawnPortalRandom(RandomPortalSpawner.PortalOrientation.Vertical);
             }
         }
     }

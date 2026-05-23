@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 
 public class RainbowDoorInteractable : Interactable
 {
@@ -10,10 +11,13 @@ public class RainbowDoorInteractable : Interactable
     private bool isOpened = false;
     private bool entitySpawned = false;
 
-    private GameObject spawnedEntity; 
+    private GameObject spawnedEntity;
 
     private Transform player;
     private bool playerFound = false;
+
+    // Set by doorsGen at runtime when the rainbow door is spawned
+    [HideInInspector] public Action onPuzzleComplete;
 
     void Awake()
     {
@@ -46,13 +50,16 @@ public class RainbowDoorInteractable : Interactable
             Debug.Log("Rainbow door opened!");
             isOpened = true;
 
-   
             if (spawnedEntity != null)
             {
                 Destroy(spawnedEntity);
                 spawnedEntity = null;
                 Debug.Log("Entity destroyed because door was opened.");
             }
+
+            // Puzzle complete — spawn the next stage portal inside the door
+            Debug.Log("[RainbowDoorInteractable] Invoking onPuzzleComplete. Is null: " + (onPuzzleComplete == null));
+            onPuzzleComplete?.Invoke();
         }
         else
         {

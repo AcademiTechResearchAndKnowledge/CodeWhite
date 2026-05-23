@@ -78,7 +78,7 @@ public class NokiaPuzzle : MonoBehaviour
     void Success()
     {
         isSolved = true;
-        RPS.SpawnPortalRandom();
+        RPS.SpawnPortalRandom(RandomPortalSpawner.PortalOrientation.Vertical);
         Debug.Log("Correct number!");
 
  

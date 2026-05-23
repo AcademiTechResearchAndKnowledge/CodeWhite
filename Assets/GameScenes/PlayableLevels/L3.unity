@@ -698,6 +698,7 @@ GameObject:
   - component: {fileID: 270360142}
   - component: {fileID: 270360141}
   - component: {fileID: 270360140}
+  - component: {fileID: 270360143}
   m_Layer: 0
   m_Name: PersistentUI
   m_TagString: Untagged
@@ -756,6 +757,18 @@ Transform:
   - {fileID: 559108388}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!225 &270360143
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 270360139}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &366008083
 GameObject:
   m_ObjectHideFlags: 0
@@ -840,7 +853,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 72
+  m_fontSize: 18
   m_fontSizeBase: 24
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -1455,6 +1468,7 @@ MonoBehaviour:
   canvasGroup: {fileID: 555977285}
   fadeDuration: 1
   playerStats: {fileID: 413428620}
+  mainMenuSceneName: MainMenu
 --- !u!225 &555977285
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -3162,7 +3176,7 @@ Transform:
   m_GameObject: {fileID: 1421723162}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -7.7159996, y: 42.35, z: 6.736}
+  m_LocalPosition: {x: -7.7159996, y: 42.35, z: 8.85}
   m_LocalScale: {x: 0.31445467, y: 1, z: 0.22927237}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3970,7 +3984,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RandomPortalSpawner
   portalPrefab: {fileID: 5588175437650982449, guid: 382ee694ce2f65341919b2b76bb093ef, type: 3}
   spawnOnlyOnce: 1
-  portalOrientation: 0
+  duration: 6
+  liftHeight: 2
+  lookHeight: 10
+  fadeStart: 0.6
+  fadeSpeed: 1
   levelCounter: 0
   excludedScenes:
   - TwilightRealm
@@ -3985,9 +4003,14 @@ MonoBehaviour:
   ceilingMask:
     serializedVersion: 2
     m_Bits: 512
+  wallMask:
+    serializedVersion: 2
+    m_Bits: 4096
   attempts: 25
   raycastHeight: 50
+  wallRaycastDistance: 50
   groundOffset: 1.1
+  wallOffset: 0.05
 --- !u!4 &1600637135
 Transform:
   m_ObjectHideFlags: 0
@@ -6705,7 +6728,7 @@ GameObject:
   - component: {fileID: 7014880626086635631}
   - component: {fileID: 854180658710509525}
   - component: {fileID: 7014880626086635632}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Cylinder.020
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -6999,7 +7022,7 @@ GameObject:
   - component: {fileID: 7429667947433001805}
   - component: {fileID: 2498307769520921874}
   - component: {fileID: 7429667947433001806}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Cube.097
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -8666,7 +8689,7 @@ Transform:
   m_GameObject: {fileID: 6572809328894410237}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071067}
-  m_LocalPosition: {x: -0.07532215, y: 3.5893319, z: 3.2533574}
+  m_LocalPosition: {x: -0.07532215, y: 3.361, z: 3.2533574}
   m_LocalScale: {x: 100, y: 100, z: 100}
   m_ConstrainProportionsScale: 0
   m_Children: []

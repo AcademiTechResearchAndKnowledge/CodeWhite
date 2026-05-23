@@ -6,7 +6,7 @@ public class TRIGGERTESTETETST : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (!other.CompareTag("Player")) return;
-        RPS.SpawnPortalRandom();
+        RPS.SpawnPortalRandom(RandomPortalSpawner.PortalOrientation.Vertical);
         
     }
 }

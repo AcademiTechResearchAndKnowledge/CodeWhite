@@ -7,16 +7,25 @@ using UnityEngine.UI;
 public class PortalNextStage : MonoBehaviour
 {
     public string playerTag = "Player";
-    public float duration = 6f;
-    public float liftHeight = 2f;
-    public float lookHeight = 10f;
+
+    
+    private float duration = 6f;
+    private float liftHeight = 2f;
+    private float lookHeight = 10f;
+    private float fadeStart = 0.6f;
+    private float fadeSpeed = 1f;
+
+    public enum PortalOrientation
+    {
+        Vertical,
+        Horizontal
+    }
+
+    private PortalOrientation orientation = PortalOrientation.Vertical;
+    private Transform portalMesh;
 
     [Header("Scene Exclusions")]
     [SerializeField] private string[] excludedScenes;
-
-    [Header("Fade")]
-    [SerializeField] private float fadeStart = 0.6f;
-    [SerializeField] private float fadeSpeed = 1f;
 
     private int levelCounter;
     private string chosenScene;
@@ -44,6 +53,28 @@ public class PortalNextStage : MonoBehaviour
     public void SetForcedScene(string scene)
     {
         chosenScene = scene;
+    }
+
+    public void SetOrientation(PortalOrientation value)
+    {
+        orientation = value;
+    }
+
+    public void SetPortalMesh(Transform mesh)
+    {
+        portalMesh = mesh;
+    }
+
+    /// <summary>
+    /// Called by RandomPortalSpawner to pass all tunable sequence variables.
+    /// </summary>
+    public void SetSequenceSettings(float dur, float lift, float look, float fadeSt, float fadeSp)
+    {
+        duration  = dur;
+        liftHeight = lift;
+        lookHeight = look;
+        fadeStart  = fadeSt;
+        fadeSpeed  = fadeSp;
     }
 
     private void Awake()
@@ -118,7 +149,7 @@ public class PortalNextStage : MonoBehaviour
         if (playerLook != null)
             playerLook.canLook = false;
 
-        if (lookUpCam != null)
+        if (orientation == PortalOrientation.Vertical && lookUpCam != null)
         {
             lookUpCam.gameObject.SetActive(true);
             lookUpCam.Priority = 100;
@@ -126,7 +157,17 @@ public class PortalNextStage : MonoBehaviour
         }
 
         if (mainCam != null)
-            mainCam.Priority = 0;
+        {
+            if (orientation == PortalOrientation.Horizontal)
+            {
+                // Keep main cam active, point it at the portal mesh
+                mainCam.LookAt = portalMesh != null ? portalMesh : lookTarget;
+            }
+            else
+            {
+                mainCam.Priority = 0;
+            }
+        }
 
         Vector3 startPos = player.position;
         Vector3 targetPos = transform.position;
@@ -138,12 +179,29 @@ public class PortalNextStage : MonoBehaviour
             time += Time.deltaTime;
             float t = Mathf.SmoothStep(0f, 1f, time / duration);
 
-            Vector3 pos = Vector3.Lerp(startPos, targetPos, t);
-            pos.y = startPos.y + Mathf.Lerp(0f, liftHeight, t);
+            Vector3 pos;
+
+            if (orientation == PortalOrientation.Horizontal)
+            {
+                // Pull horizontally toward the portal center; no vertical lift
+                pos = Vector3.Lerp(startPos, targetPos, t);
+            }
+            else
+            {
+                // Original vertical lift behavior
+                pos = Vector3.Lerp(startPos, targetPos, t);
+                pos.y = startPos.y + Mathf.Lerp(0f, liftHeight, t);
+            }
+
             player.position = pos;
 
             if (lookTarget != null)
-                lookTarget.position = player.position + Vector3.up * lookHeight;
+            {
+                if (orientation == PortalOrientation.Horizontal)
+                    lookTarget.position = targetPos; // aim at the portal itself
+                else
+                    lookTarget.position = player.position + Vector3.up * lookHeight;
+            }
 
             UpdateFade(t);
 
@@ -207,7 +265,10 @@ public class PortalNextStage : MonoBehaviour
         }
 
         if (mainCam != null)
+        {
             mainCam.Priority = 100;
+            mainCam.LookAt = null;
+        }
     }
 
     private void LoadScene()
