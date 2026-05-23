@@ -222,7 +222,7 @@ PrefabInstance:
       addedObject: {fileID: 8576163150168683809}
     - targetCorrespondingSourceObject: {fileID: -776392107655550284, guid: caa0bad9ba8540a469efc817a196eac6, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 3278822145351676395}
+      addedObject: {fileID: 1134897041292892018}
   m_SourcePrefab: {fileID: 100100000, guid: caa0bad9ba8540a469efc817a196eac6, type: 3}
 --- !u!1 &3984429949427070188 stripped
 GameObject:
@@ -372,24 +372,12 @@ MonoBehaviour:
   actionName: Open Chest
   onInteraction:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 3278822145351676395}
-        m_TargetAssemblyTypeName: PickupSFX, Assembly-CSharp
-        m_MethodName: Play
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
   chestAnimator: {fileID: 6924840829491959206}
   animationStepDelay: 0.5
   itemSpawnPoint: {fileID: 6020684400912733117}
   entityPrefab: {fileID: 1703955676773548085, guid: 842e749b9e3322644bac3fcc69df3913, type: 3}
-  chanceToSpawnEntity: 0.05
+  chanceToSpawnEntity: 0.1
   possibleItems:
   - {fileID: 5382990296369616802, guid: 1b92938f4af76a24ea3bb970e28dbf1b, type: 3}
   - {fileID: 1216001009907763359, guid: bd7ff953ee8c4844ea3d7095657a8eeb, type: 3}
@@ -398,17 +386,105 @@ MonoBehaviour:
   lootSpawnDelay: 0.01
   chanceToSpawnNothing: 0.7
   spawnOnlyOnce: 1
---- !u!114 &3278822145351676395
-MonoBehaviour:
+  audioSource: {fileID: 1134897041292892018}
+  chestOpenSound: {fileID: 8300000, guid: 1c35b46329889e44cab26347be9f56a7, type: 3}
+  openSoundDelay: 0
+  chestCloseSound: {fileID: 8300000, guid: 1c35b46329889e44cab26347be9f56a7, type: 3}
+  closeSoundDelay: 0
+--- !u!82 &1134897041292892018
+AudioSource:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5670967896655536905}
   m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5d3cc1164a1e47d4490fb8d550e19dbc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PickupSFX
-  pickupClip: {fileID: 8300000, guid: e5d41419e65843f45acbe2ecca32ad78, type: 3}
-  volume: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4

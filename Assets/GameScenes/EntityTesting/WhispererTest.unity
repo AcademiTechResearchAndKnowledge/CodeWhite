@@ -374,7 +374,7 @@ MonoBehaviour:
   m_OverrideTileSize: 0
   m_TileSize: 256
   m_OverrideVoxelSize: 0
-  m_VoxelSize: 0.096666664
+  m_VoxelSize: 0.06666667
   m_MinRegionArea: 2
   m_NavMeshData: {fileID: 23800000, guid: c1ec90626e938f543a3ab78f3fee7923, type: 2}
   m_BuildHeightMesh: 0
@@ -1063,7 +1063,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 1
-  m_Volume: 0.7
+  m_Volume: 0.3
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -1163,7 +1163,8 @@ MonoBehaviour:
   Stage: 1
   Entity: {fileID: 4949122076645541926, guid: ac5d19d9277efe34c8a6351499a9c3d1, type: 3}
   Whisper: {fileID: 8300000, guid: 3495feb2d43f31d4aa0d576863a41a02, type: 3}
-  initialChanceToSpawn: 50
+  minBaseChance: 5
+  maxBaseChance: 20
   chanceIncrementPerFail: 10
   flashlightLifetime: 10
   Spawners:
