@@ -12,6 +12,8 @@ public class RadioPuzzleHandler : MonoBehaviour
     [SerializeField] public objectZoom objZoom;
     public RandomPortalSpawner RPS;
 
+    
+
     public float minTargetFrequency = 88.0f;
     public float maxTargetFrequency = 108.0f;
     public float minOminousFrequency = 88.0f;
@@ -203,7 +205,7 @@ public class RadioPuzzleHandler : MonoBehaviour
         puzzleCompleted = true;
         puzzleActive = false;
 
-        RPS.SpawnPortalRandom();
+        RPS.SpawnPortalRandom(RandomPortalSpawner.PortalOrientation.Vertical);
 
         Debug.Log("[PUZZLE COMPLETED]");
 

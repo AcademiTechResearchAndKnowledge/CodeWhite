@@ -253,7 +253,7 @@ public class ObjectiveInventoryManager : MonoBehaviour
             RandomPortalSpawner spawner = FindFirstObjectByType<RandomPortalSpawner>();
             if (spawner != null)
             {
-                spawner.SpawnPortalRandom();
+                spawner.SpawnPortalRandom(RandomPortalSpawner.PortalOrientation.Vertical);
                 Debug.Log("Portal spawned from objective inventory!");
             }
         }

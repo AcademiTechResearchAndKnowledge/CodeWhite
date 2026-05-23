@@ -111,7 +111,7 @@ public class LightCircleSpawner : MonoBehaviour
 
         if (RPS != null)
         {
-            RPS.SpawnPortalRandom();
+            RPS.SpawnPortalRandom(RandomPortalSpawner.PortalOrientation.Vertical);
         }
         else
         {

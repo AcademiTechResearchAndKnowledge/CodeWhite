@@ -4,7 +4,7 @@ using System.Collections;
 public class DoorController : Interactable
 {
     public Animator doorAnimator;
-    public PortalDoor portal; // ✅ NEW
+    public PortalDoor portal; 
 
     public float openTime = 1f;
     public float closeTime = 1f;

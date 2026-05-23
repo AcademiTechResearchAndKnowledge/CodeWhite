@@ -13,7 +13,7 @@ public class Item1 : MonoBehaviour
     {
         // spawn portal
         if (portalSpawner != null)
-            portalSpawner.SpawnPortalRandom();
+            portalSpawner.SpawnPortalRandom(RandomPortalSpawner.PortalOrientation.Vertical);
         else
             Debug.LogWarning("[KeyItemPickup] portalSpawner not assigned."); //for debugging
 
