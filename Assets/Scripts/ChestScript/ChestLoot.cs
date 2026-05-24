@@ -29,10 +29,31 @@ public class ChestLoot : Interactable
     [Header("Loot Options")]
     public bool spawnOnlyOnce = true;
 
+    // --- ADDED: Audio Settings ---
+    [Header("Audio Settings")]
+    public AudioSource audioSource;
+    public AudioClip chestOpenSound;
+    [Tooltip("Delay in seconds before the open sound plays.")]
+    public float openSoundDelay = 0f;
+
+    public AudioClip chestCloseSound;
+    [Tooltip("Delay in seconds before the close sound plays.")]
+    public float closeSoundDelay = 0f;
+    // -----------------------------
+
     private bool isOpen = false;
     private bool isBusy = false;
     private bool hasSpawned = false;
     private GameObject currentSpawnedItem;
+
+    // --- ADDED: Grab AudioSource on Start ---
+    void Start()
+    {
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+        }
+    }
 
     public override void Interact()
     {
@@ -61,6 +82,9 @@ public class ChestLoot : Interactable
     {
         isBusy = true;
 
+        // --- ADDED: Play Open Sound ---
+        PlaySound(chestOpenSound, openSoundDelay);
+
         chestAnimator.SetInteger("C", 1);
 
         if (!spawnOnlyOnce || !hasSpawned)
@@ -81,6 +105,9 @@ public class ChestLoot : Interactable
     IEnumerator CloseChestRoutine()
     {
         isBusy = true;
+
+        // --- ADDED: Play Close Sound ---
+        PlaySound(chestCloseSound, closeSoundDelay);
 
         chestAnimator.SetInteger("C", 3);
 
@@ -144,6 +171,31 @@ public class ChestLoot : Interactable
         if (itemCollider != null && chestCollider != null)
         {
             Physics.IgnoreCollision(itemCollider, chestCollider, true);
+        }
+    }
+
+    // --- ADDED: Helper Methods for Audio ---
+    private void PlaySound(AudioClip clip, float delay = 0f)
+    {
+        if (audioSource != null && clip != null)
+        {
+            if (delay > 0f)
+            {
+                StartCoroutine(PlaySoundCO(clip, delay));
+            }
+            else
+            {
+                audioSource.PlayOneShot(clip);
+            }
+        }
+    }
+
+    private IEnumerator PlaySoundCO(AudioClip clip, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (audioSource != null && clip != null)
+        {
+            audioSource.PlayOneShot(clip);
         }
     }
 }

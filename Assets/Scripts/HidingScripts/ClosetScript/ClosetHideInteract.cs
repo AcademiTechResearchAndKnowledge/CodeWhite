@@ -27,6 +27,14 @@ public class ClosetHideInteract : MonoBehaviour
     [SerializeField] private AudioClip turnOnSound;
     [SerializeField] private AudioClip turnOffSound;
 
+    [SerializeField] private AudioClip closetOpenSound;
+    [Tooltip("Delay in seconds before the open sound plays.")]
+    [SerializeField] private float openSoundDelay = 0f;
+
+    [SerializeField] private AudioClip closetCloseSound;
+    [Tooltip("Delay in seconds before the close sound plays.")]
+    [SerializeField] private float closeSoundDelay = 0f;
+
     // --- Old AI References ---
     private EntityDetector entity;
     private EntityAi entityAi;
@@ -59,7 +67,7 @@ public class ClosetHideInteract : MonoBehaviour
         // Ensure the inside closet light is off when the game starts
         if (internalClosetLight != null) internalClosetLight.enabled = false;
 
-        // --- ADDED: Auto-grab AudioSource if not assigned ---
+        // Auto-grab AudioSource if not assigned
         if (audioSource == null)
         {
             audioSource = GetComponent<AudioSource>();
@@ -118,7 +126,7 @@ public class ClosetHideInteract : MonoBehaviour
                 {
                     internalClosetLight.enabled = !internalClosetLight.enabled;
 
-                    // --- ADDED: Play toggle sounds ---
+                    // Play toggle sounds
                     if (internalClosetLight.enabled)
                     {
                         PlaySound(turnOnSound);
@@ -135,7 +143,7 @@ public class ClosetHideInteract : MonoBehaviour
             {
                 if (internalClosetLight != null)
                 {
-                    // --- ADDED: Only play the off sound if it was actually on when we exited ---
+                    // Only play the off sound if it was actually on when we exited
                     if (internalClosetLight.enabled)
                     {
                         PlaySound(turnOffSound);
@@ -149,6 +157,9 @@ public class ClosetHideInteract : MonoBehaviour
 
                 HUDInteractController hud = GetHUD();
                 if (hud != null) hud.DisableInteractionText();
+
+                // Play close sound when exiting manually with inspector delay
+                PlaySound(closetCloseSound, closeSoundDelay);
 
                 StartCoroutine(InputDelay());
                 StartCoroutine(ExitClosetRoutine());
@@ -207,6 +218,9 @@ public class ClosetHideInteract : MonoBehaviour
 
         if (internalClosetLight != null) internalClosetLight.enabled = false;
 
+        // Play open sound when entering the closet with inspector delay
+        PlaySound(closetOpenSound, openSoundDelay);
+
         StartCoroutine(InputDelay());
         StartCoroutine(currentCloset.GoInsideCloset_CO());
     }
@@ -240,7 +254,7 @@ public class ClosetHideInteract : MonoBehaviour
     {
         if (internalClosetLight != null)
         {
-            // --- ADDED: Play the off sound if the stalker kicks us out while the light is on ---
+            // Play the off sound if the stalker kicks us out while the light is on
             if (internalClosetLight.enabled)
             {
                 PlaySound(turnOffSound);
@@ -255,11 +269,14 @@ public class ClosetHideInteract : MonoBehaviour
         HUDInteractController hud = GetHUD();
         if (hud != null) hud.DisableInteractionText();
 
+        // Play close sound when forced out by an enemy with inspector delay
+        PlaySound(closetCloseSound, closeSoundDelay);
+
         StartCoroutine(InputDelay());
         StartCoroutine(ExitClosetRoutine());
     }
 
-    // „Ÿ„Ÿ„Ÿ NEW: FLICKER LOGIC „Ÿ„Ÿ„Ÿ
+    // „Ÿ„Ÿ„Ÿ FLICKER LOGIC „Ÿ„Ÿ„Ÿ
     public void TriggerClosetLightFlicker(float duration = 1.5f)
     {
         // Only flicker if we are actually hiding inside THIS closet
@@ -291,9 +308,26 @@ public class ClosetHideInteract : MonoBehaviour
         isFlickering = false;
     }
 
-    // --- ADDED: Helper method to safely play audio ---
-    private void PlaySound(AudioClip clip)
+    // --- Helper method to safely play audio with optional delay ---
+    private void PlaySound(AudioClip clip, float delay = 0f)
     {
+        if (audioSource != null && clip != null)
+        {
+            if (delay > 0f)
+            {
+                StartCoroutine(PlaySoundCO(clip, delay));
+            }
+            else
+            {
+                audioSource.PlayOneShot(clip);
+            }
+        }
+    }
+
+    // --- Coroutine to handle the actual timing ---
+    private IEnumerator PlaySoundCO(AudioClip clip, float delay)
+    {
+        yield return new WaitForSeconds(delay);
         if (audioSource != null && clip != null)
         {
             audioSource.PlayOneShot(clip);

@@ -38,6 +38,18 @@ public class DrawerLoot : Interactable
     [Header("Loot Options")]
     public bool spawnOnlyOnce = true;
 
+    // --- ADDED: Audio Settings ---
+    [Header("Audio Settings")]
+    public AudioSource audioSource;
+    public AudioClip drawerOpenSound;
+    [Tooltip("Delay in seconds before the open sound plays.")]
+    public float openSoundDelay = 0f;
+
+    public AudioClip drawerCloseSound;
+    [Tooltip("Delay in seconds before the close sound plays.")]
+    public float closeSoundDelay = 0f;
+    // -----------------------------
+
     private bool isOpen = false;
     private bool hasSpawned = false;
     private GameObject currentSpawnedItem;
@@ -45,6 +57,15 @@ public class DrawerLoot : Interactable
 
     private float lastInteractTime = 0f;
     private float interactCooldown = 0.25f;
+
+    // --- ADDED: Grab AudioSource on Start ---
+    void Start()
+    {
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+        }
+    }
 
     public override void Interact()
     {
@@ -78,6 +99,9 @@ public class DrawerLoot : Interactable
     IEnumerator OpenDrawerRoutine()
     {
         isOpen = true;
+
+        // --- ADDED: Play Open Sound ---
+        PlaySound(drawerOpenSound, openSoundDelay);
 
         if (drawerType == DrawerType.TopDrawer)
         {
@@ -118,6 +142,9 @@ public class DrawerLoot : Interactable
     IEnumerator CloseDrawerRoutine()
     {
         isOpen = false;
+
+        // --- ADDED: Play Close Sound ---
+        PlaySound(drawerCloseSound, closeSoundDelay);
 
         if (drawerType == DrawerType.TopDrawer)
         {
@@ -173,6 +200,31 @@ public class DrawerLoot : Interactable
         if (itemCollider != null && drawerCollider != null)
         {
             Physics.IgnoreCollision(itemCollider, drawerCollider, true);
+        }
+    }
+
+    // --- ADDED: Helper Methods for Audio ---
+    private void PlaySound(AudioClip clip, float delay = 0f)
+    {
+        if (audioSource != null && clip != null)
+        {
+            if (delay > 0f)
+            {
+                StartCoroutine(PlaySoundCO(clip, delay));
+            }
+            else
+            {
+                audioSource.PlayOneShot(clip);
+            }
+        }
+    }
+
+    private IEnumerator PlaySoundCO(AudioClip clip, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (audioSource != null && clip != null)
+        {
+            audioSource.PlayOneShot(clip);
         }
     }
 }

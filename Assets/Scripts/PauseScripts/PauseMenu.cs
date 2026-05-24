@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.InputSystem;
+using UnityEngine.EventSystems; // CRITICAL: Added this to talk to the UI Event System
 
 public class PauseMenu : MonoBehaviour
 {
@@ -13,7 +14,6 @@ public class PauseMenu : MonoBehaviour
     {
         if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
         {
-            // If settings are open, back out to the pause menu first
             if (settingsMenuUI.activeSelf)
             {
                 CloseSettings();
@@ -35,12 +35,13 @@ public class PauseMenu : MonoBehaviour
         Time.timeScale = 1f;
         GameIsPaused = false;
 
-        // Resume all audio in the scene
         AudioListener.pause = false;
 
-        // Lock cursor back to the game
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+
+        // Clear selection just to be safe when unpausing
+        EventSystem.current.SetSelectedGameObject(null);
     }
 
     void Pause()
@@ -49,61 +50,58 @@ public class PauseMenu : MonoBehaviour
         Time.timeScale = 0f;
         GameIsPaused = true;
 
-        // Freeze all audio in the scene (including the anxiety SFX)
         AudioListener.pause = true;
 
-        // Unlock cursor ONCE for the UI menus
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
-    }
 
-    public void LoadMenu()
-    {
-        Time.timeScale = 1f;
-        GameIsPaused = false;
-
-        // CRITICAL: Unpause the audio before loading the new scene!
-        // Otherwise, the main menu will be completely silent.
-        AudioListener.pause = false;
-
-        // --- DESTROY ALL PERSISTENT OBJECTS BEFORE LOADING MENU ---
-
-        // 1. Destroy the Player
-        PersistAcrossScenes player = FindFirstObjectByType<PersistAcrossScenes>();
-        if (player != null) Destroy(player.gameObject);
-
-        // 2. Destroy the UI
-        PersistentUI ui = FindFirstObjectByType<PersistentUI>();
-        if (ui != null) Destroy(ui.gameObject);
-
-        // 3. Destroy the Run Manager
-        RunManager runManager = FindFirstObjectByType<RunManager>();
-        if (runManager != null) Destroy(runManager.gameObject);
-
-        // 4. Destroy the Inventories
-        InventoryManager inv = FindFirstObjectByType<InventoryManager>();
-        if (inv != null) Destroy(inv.gameObject);
-
-        ObjectiveInventoryManager objInv = FindFirstObjectByType<ObjectiveInventoryManager>();
-        if (objInv != null) Destroy(objInv.gameObject);
-
-        // 5. Destroy Portal Spawner
-        RandomPortalSpawner spawner = FindFirstObjectByType<RandomPortalSpawner>();
-        if (spawner != null) Destroy(spawner.gameObject);
-
-        // Now it is completely safe to load the Main Menu!
-        SceneManager.LoadScene("MainMenu");
+        // Clear any leftover selections from the last time we paused
+        EventSystem.current.SetSelectedGameObject(null);
     }
 
     public void OpenSettings()
     {
         pauseMenuUI.SetActive(false);
         settingsMenuUI.SetActive(true);
+
+        // Clear selection so the Settings menu buttons start fresh
+        EventSystem.current.SetSelectedGameObject(null);
     }
 
     public void CloseSettings()
     {
         settingsMenuUI.SetActive(false);
         pauseMenuUI.SetActive(true);
+
+        // THIS FIXES THE BUG: Clear the stuck "Settings" button selection
+        EventSystem.current.SetSelectedGameObject(null);
+    }
+
+    public void LoadMenu()
+    {
+        Time.timeScale = 1f;
+        GameIsPaused = false;
+        AudioListener.pause = false;
+
+        // --- DESTROY ALL PERSISTENT OBJECTS BEFORE LOADING MENU ---
+        PersistAcrossScenes player = FindFirstObjectByType<PersistAcrossScenes>();
+        if (player != null) Destroy(player.gameObject);
+
+        PersistentUI ui = FindFirstObjectByType<PersistentUI>();
+        if (ui != null) Destroy(ui.gameObject);
+
+        RunManager runManager = FindFirstObjectByType<RunManager>();
+        if (runManager != null) Destroy(runManager.gameObject);
+
+        InventoryManager inv = FindFirstObjectByType<InventoryManager>();
+        if (inv != null) Destroy(inv.gameObject);
+
+        ObjectiveInventoryManager objInv = FindFirstObjectByType<ObjectiveInventoryManager>();
+        if (objInv != null) Destroy(objInv.gameObject);
+
+        RandomPortalSpawner spawner = FindFirstObjectByType<RandomPortalSpawner>();
+        if (spawner != null) Destroy(spawner.gameObject);
+
+        SceneManager.LoadScene("MainMenu");
     }
 }

@@ -24,6 +24,8 @@ public class DialogueManager : MonoBehaviour
     private Coroutine typingCoroutine;
     private bool isTyping = false;
 
+    private bool currentDialogueIsUnskippable = false;
+
     private void Awake()
     {
         Instance = this;
@@ -35,12 +37,27 @@ public class DialogueManager : MonoBehaviour
     {
         if (!dialoguePanel.activeSelf) return;
 
-        if (Keyboard.current.spaceKey.wasPressedThisFrame)
+        if (!currentDialogueIsUnskippable)
         {
-            if (isTyping)
-                SkipTyping();
-            else
-                NextLine();
+            bool advanceInputPressed = false;
+
+            if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
+            {
+                advanceInputPressed = true;
+            }
+
+            if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+            {
+                advanceInputPressed = true;
+            }
+
+            if (advanceInputPressed)
+            {
+                if (isTyping)
+                    SkipTyping();
+                else
+                    NextLine();
+            }
         }
 
         if (useAutoAdvance && !isTyping)
@@ -51,9 +68,11 @@ public class DialogueManager : MonoBehaviour
         }
     }
 
-    public void StartDialogue(DialogueData data)
+    public void StartDialogue(DialogueData data, bool unskippable = false)
     {
         if (data == null) return;
+
+        currentDialogueIsUnskippable = unskippable;
 
         currentLines = data.lines;
         index = 0;
