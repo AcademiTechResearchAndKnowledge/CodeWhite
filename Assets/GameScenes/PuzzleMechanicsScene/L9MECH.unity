@@ -1525,6 +1525,7 @@ MonoBehaviour:
   slots: []
   hotbarUI: {fileID: 1891151582}
   selectedSlot: 0
+  audioSource: {fileID: 0}
 --- !u!4 &792052692
 Transform:
   m_ObjectHideFlags: 0
@@ -1967,6 +1968,9 @@ MonoBehaviour:
   - {fileID: 453915321}
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   selectedColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  itemNameText: {fileID: 0}
+  fadeDuration: 0.5
+  displayDuration: 2
 --- !u!114 &847368414
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3030,14 +3034,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::doorsGen
   blackDoorPrefab: {fileID: 2762673213856624915, guid: c3b82095e27f2ba4a899c31bc0d4f634, type: 3}
   rainbowDoorPrefab: {fileID: 592178165118192660, guid: 801d33a3cde4dd941a0f93691d3f1613, type: 3}
-  whiteDoorPrefab: {fileID: 851475451404808334, guid: 611ca86a698385140858a4da7d8ed8dd, type: 3}
+  whiteDoorPrefab: {fileID: 3643043254026217392, guid: 3139dc48c173ce141b90345385fa542c, type: 3}
   keyPrefab: {fileID: 8953766323266865651, guid: 8ed6a6d6e27c66844a2419614d12763d, type: 3}
   doorsParent: {fileID: 549800291}
   keysParent: {fileID: 1220327526}
   floor: {fileID: 1706250036}
   totalDoors: 20
   spawnAreaSize: 20
-  minDistanceBetweenDoors: 5
+  minDistanceBetweenDoors: 10
   portalMaterialBase: {fileID: 2100000, guid: 8ec6768061bcfd549abe0dae5296f340, type: 2}
   idlePortalMaterial: {fileID: 2100000, guid: 4e1f739d03392d140a2e291ba088a94f, type: 2}
   playerTransform: {fileID: 0}
@@ -3204,59 +3208,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1338971740}
   m_CullTransparentMesh: 1
---- !u!1 &1421723162
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1421723164}
-  - component: {fileID: 1421723163}
-  m_Layer: 7
-  m_Name: PortalSpawnLocation_1
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!65 &1421723163
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1421723162}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 5.987289, y: 0.16887093, z: 7.7780795}
-  m_Center: {x: -0.922518, y: -0.41556454, z: -2.1389592}
---- !u!4 &1421723164
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1421723162}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -8.36, y: 0.81, z: 10.52}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1600637135}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1428119645
 GameObject:
   m_ObjectHideFlags: 0
@@ -3397,6 +3348,7 @@ MonoBehaviour:
   objectiveSize: 2
   slots: []
   objectiveUI: {fileID: 847368413}
+  audioSource: {fileID: 0}
   selectedSlot: -1
 --- !u!4 &1570098575
 Transform:
@@ -3444,15 +3396,30 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RandomPortalSpawner
   portalPrefab: {fileID: 5588175437650982449, guid: 382ee694ce2f65341919b2b76bb093ef, type: 3}
   spawnOnlyOnce: 1
-  nextSceneName: 
+  duration: 6
+  liftHeight: 2
+  lookHeight: 10
+  fadeStart: 0.6
+  fadeSpeed: 1
+  levelCounter: 0
+  excludedScenes: []
+  bossScenes: []
   spawnAreas:
-  - {fileID: 1421723163}
+  - {fileID: 0}
   portalspawnMask:
     serializedVersion: 2
     m_Bits: 128
+  ceilingMask:
+    serializedVersion: 2
+    m_Bits: 512
+  wallMask:
+    serializedVersion: 2
+    m_Bits: 4096
   attempts: 25
   raycastHeight: 50
-  groundOffset: 1.1
+  wallRaycastDistance: 50
+  groundOffset: 5
+  wallOffset: 0.05
 --- !u!4 &1600637135
 Transform:
   m_ObjectHideFlags: 0
@@ -3465,8 +3432,7 @@ Transform:
   m_LocalPosition: {x: 9.6, y: 0, z: -16.48}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1421723164}
+  m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1680904393
@@ -3480,6 +3446,7 @@ GameObject:
   - component: {fileID: 1680904396}
   - component: {fileID: 1680904395}
   - component: {fileID: 1680904394}
+  - component: {fileID: 1680904397}
   m_Layer: 0
   m_Name: PersistentUI
   m_TagString: Untagged
@@ -3536,6 +3503,18 @@ Transform:
   - {fileID: 1133494084}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!225 &1680904397
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1680904393}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &1706250032
 GameObject:
   m_ObjectHideFlags: 0
@@ -3677,7 +3656,7 @@ MonoBehaviour:
   m_OverrideTileSize: 0
   m_TileSize: 256
   m_OverrideVoxelSize: 0
-  m_VoxelSize: 0.096666664
+  m_VoxelSize: 0.06666667
   m_MinRegionArea: 2
   m_NavMeshData: {fileID: 23800000, guid: 62dca81b487f34d4c8ed3d126c5ec0ca, type: 2}
   m_BuildHeightMesh: 0
@@ -3995,6 +3974,9 @@ MonoBehaviour:
   - {fileID: 796444549}
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   selectedColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  itemNameText: {fileID: 0}
+  fadeDuration: 0.5
+  displayDuration: 2
 --- !u!114 &1891151583
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4387,6 +4369,59 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2076878287}
   m_CullTransparentMesh: 1
+--- !u!4 &4620770256765324178
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7466681750362974226}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 4.9879518, y: -20.55, z: -14.067975}
+  m_LocalScale: {x: 0.31445467, y: 1, z: 0.22927237}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &5275675354848126605
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7466681750362974226}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 5.987289, y: 0.16887093, z: 7.7780795}
+  m_Center: {x: -0.922518, y: -0.41556454, z: -2.1389592}
+--- !u!1 &7466681750362974226
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4620770256765324178}
+  - component: {fileID: 5275675354848126605}
+  m_Layer: 7
+  m_Name: PortalSpawnLocation_1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -4403,3 +4438,4 @@ SceneRoots:
   - {fileID: 1680904396}
   - {fileID: 1428119646}
   - {fileID: 947428109}
+  - {fileID: 4620770256765324178}

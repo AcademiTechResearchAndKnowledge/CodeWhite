@@ -1,9 +1,14 @@
 using UnityEngine;
 using System;
+using System.Collections;
 
 public class RainbowDoorInteractable : Interactable
 {
     [SerializeField] private GameObject entity_1;
+
+    [Header("Animator")]
+    public Animator doorAnimator;
+    public float openTime = 1f;
 
     private Transform entity_1_spawn;
     private bool spawnFound = false;
@@ -16,12 +21,14 @@ public class RainbowDoorInteractable : Interactable
     private Transform player;
     private bool playerFound = false;
 
-    // Set by doorsGen at runtime when the rainbow door is spawned
+    private RandomPortalSpawner portalSpawner;
+
     [HideInInspector] public Action onPuzzleComplete;
 
     void Awake()
     {
         CacheSpawnPoint();
+        CachePortalSpawner();
     }
 
     void Start()
@@ -47,7 +54,7 @@ public class RainbowDoorInteractable : Interactable
 
         if (DoorPuzzleHandler.instance != null && DoorPuzzleHandler.instance.hasKey)
         {
-            Debug.Log("Rainbow door opened!");
+            Debug.Log("Rainbow door opened with key — destroying door.");
             isOpened = true;
 
             if (spawnedEntity != null)
@@ -57,15 +64,54 @@ public class RainbowDoorInteractable : Interactable
                 Debug.Log("Entity destroyed because door was opened.");
             }
 
-            // Puzzle complete — spawn the next stage portal inside the door
-            Debug.Log("[RainbowDoorInteractable] Invoking onPuzzleComplete. Is null: " + (onPuzzleComplete == null));
-            onPuzzleComplete?.Invoke();
+            StartCoroutine(OpenDoorRoutine());
         }
         else
         {
             Debug.Log("The rainbow door is locked. You need a key.");
             TriggerEntity();
         }
+    }
+
+    private IEnumerator OpenDoorRoutine()
+    {
+        if (doorAnimator != null)
+        {
+            doorAnimator.Play("Door - Open");
+            yield return new WaitForSeconds(openTime);
+        }
+        else
+        {
+            yield return null;
+            Debug.LogWarning("[RainbowDoorInteractable] No Animator assigned — destroying immediately.");
+        }
+
+        Debug.Log("[RainbowDoorInteractable] Invoking onPuzzleComplete. Is null: " + (onPuzzleComplete == null));
+        onPuzzleComplete?.Invoke();
+
+        if (portalSpawner != null)
+        {
+            Debug.Log("[RainbowDoorInteractable] Calling SpawnPortalRandom.");
+            portalSpawner.SpawnPortalRandom(RandomPortalSpawner.PortalOrientation.Vertical);
+        }
+        else
+        {
+            Debug.LogWarning("[RainbowDoorInteractable] RandomPortalSpawner not found — skipping portal spawn.");
+        }
+
+        GameObject toDestroy = transform.parent != null ? transform.parent.gameObject : gameObject;
+        Debug.Log($"[RainbowDoorInteractable] Destroying: {toDestroy.name}");
+        Destroy(toDestroy);
+    }
+
+    private void CachePortalSpawner()
+    {
+        portalSpawner = FindFirstObjectByType<RandomPortalSpawner>();
+
+        if (portalSpawner != null)
+            Debug.Log("[RainbowDoorInteractable] RandomPortalSpawner found and cached.");
+        else
+            Debug.LogWarning("[RainbowDoorInteractable] RandomPortalSpawner not found in scene.");
     }
 
     void TriggerEntity()

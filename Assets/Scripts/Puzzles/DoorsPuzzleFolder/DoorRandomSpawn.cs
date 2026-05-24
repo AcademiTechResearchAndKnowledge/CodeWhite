@@ -25,6 +25,8 @@ public class doorsGen : MonoBehaviour
 
     private GameObject rainbowDoor;
 
+    public 
+
     void Start()
     {
         if (playerTransform == null)
@@ -77,6 +79,10 @@ public class doorsGen : MonoBehaviour
                 if (rd != null)
                 {
                     rd.onPuzzleComplete = OnRainbowDoorOpened;
+
+                    if (rd.doorAnimator == null)
+                        rd.doorAnimator = door.GetComponentInChildren<Animator>();
+
                     Debug.Log("[doorsGen] onPuzzleComplete assigned to RainbowDoorInteractable.");
                 }
                 else
@@ -97,7 +103,6 @@ public class doorsGen : MonoBehaviour
         }
     }
 
-    // Called by RainbowDoor when the key is used and the puzzle is complete
     private void OnRainbowDoorOpened()
     {
         Debug.Log("[doorsGen] OnRainbowDoorOpened fired.");
@@ -115,8 +120,33 @@ public class doorsGen : MonoBehaviour
             return;
         }
 
-        Debug.Log($"[doorsGen] Spawning portal at {rainbowDoor.transform.position}");
-        spawner.SpawnPortalAt(rainbowDoor.transform.position, RandomPortalSpawner.PortalOrientation.Horizontal);
+        Vector3 spawnPos = GetDoorCenter(rainbowDoor);
+
+        Debug.Log($"[doorsGen] Spawning portal at door center {spawnPos}");
+        spawner.SpawnPortalAt(spawnPos, RandomPortalSpawner.PortalOrientation.Vertical);
+    }
+
+    private Vector3 GetDoorCenter(GameObject door)
+    {
+        Renderer[] renderers = door.GetComponentsInChildren<Renderer>();
+        if (renderers.Length > 0)
+        {
+            Bounds bounds = renderers[0].bounds;
+            foreach (Renderer r in renderers)
+                bounds.Encapsulate(r.bounds);
+            return bounds.center;
+        }
+
+        Collider[] colliders = door.GetComponentsInChildren<Collider>();
+        if (colliders.Length > 0)
+        {
+            Bounds bounds = colliders[0].bounds;
+            foreach (Collider c in colliders)
+                bounds.Encapsulate(c.bounds);
+            return bounds.center;
+        }
+
+        return door.transform.position;
     }
 
     void SetupPortalPair(GameObject doorA, GameObject doorB)

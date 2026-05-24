@@ -74,7 +74,6 @@ public class RandomPortalSpawner : MonoBehaviour
         spawnAreas = FindObjectsByType<BoxCollider>(FindObjectsSortMode.None);
     }
 
-    // Called externally (e.g. doorsGen) to spawn the portal at a specific world position
     public void SpawnPortalAt(Vector3 position, PortalOrientation orientation)
     {
         Debug.Log($"[RandomPortalSpawner] SpawnPortalAt called at {position}");
@@ -114,19 +113,46 @@ public class RandomPortalSpawner : MonoBehaviour
 
     public void SpawnPortalRandom(PortalOrientation orientation)
     {
+        SpawnPortalRandom(orientation, Quaternion.Euler(90f, 0f, 0f));
+    }
+
+    public void SpawnPortalRandom(PortalOrientation orientation, Quaternion rotation)
+    {
         portalOrientation = orientation;
 
-        if (portalPrefab == null || (spawned && spawnOnlyOnce)) return;
-        if (spawnAreas == null || spawnAreas.Length == 0) return;
+        Debug.Log($"[RandomPortalSpawner] SpawnPortalRandom called. spawned={spawned}, spawnOnlyOnce={spawnOnlyOnce}, prefab={portalPrefab != null}, areas={spawnAreas?.Length ?? 0}");
+
+        if (portalPrefab == null)
+        {
+            Debug.LogWarning("[RandomPortalSpawner] BLOCKED: portalPrefab is null.");
+            return;
+        }
+
+        if (spawned && spawnOnlyOnce)
+        {
+            Debug.LogWarning("[RandomPortalSpawner] BLOCKED: spawnOnlyOnce=true and already spawned.");
+            return;
+        }
+
+        if (spawnAreas == null || spawnAreas.Length == 0)
+        {
+            Debug.LogWarning("[RandomPortalSpawner] BLOCKED: spawnAreas is null or empty.");
+            return;
+        }
 
         levelCounter++;
 
         List<string> validScenes = GetValidScenes();
 
+        Debug.Log($"[RandomPortalSpawner] validScenes count={validScenes.Count}");
+
         if (validScenes.Count == 0)
         {
+            Debug.LogWarning("[RandomPortalSpawner] BLOCKED: no valid scenes found.");
             return;
         }
+
+        bool hitFound = false;
 
         for (int i = 0; i < attempts; i++)
         {
@@ -136,25 +162,22 @@ public class RandomPortalSpawner : MonoBehaviour
 
             if (Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, raycastHeight * 2f, portalspawnMask))
             {
+                hitFound = true;
                 Vector3 spawnPos;
-                Quaternion rotation;
 
                 if (portalOrientation == PortalOrientation.Horizontal)
                 {
-                    // Find a nearby wall to place the horizontal portal on
                     Vector3[] wallDirs = { Vector3.forward, Vector3.back, Vector3.left, Vector3.right };
                     Vector3 wallOrigin = hit.point + Vector3.up * 1f;
 
                     bool foundWall = false;
                     spawnPos = hit.point + Vector3.up * groundOffset;
-                    rotation = Quaternion.Euler(90f, 0f, 0f);
 
                     foreach (Vector3 dir in wallDirs)
                     {
                         if (Physics.Raycast(wallOrigin, dir, out RaycastHit wallHit, wallRaycastDistance, wallMask))
                         {
                             spawnPos = wallHit.point - dir * wallOffset;
-                            rotation = Quaternion.LookRotation(-wallHit.normal);
                             foundWall = true;
                             break;
                         }
@@ -165,16 +188,15 @@ public class RandomPortalSpawner : MonoBehaviour
                 }
                 else
                 {
-                    // Vertical portal: snap to ceiling
                     Vector3 ceilingOrigin = hit.point + Vector3.down * 0.5f;
 
                     if (Physics.Raycast(ceilingOrigin, Vector3.up, out RaycastHit ceilingHit, raycastHeight * 2f, ceilingMask))
                         spawnPos = ceilingHit.point;
                     else
                         spawnPos = hit.point + Vector3.up * groundOffset;
-
-                    rotation = Quaternion.identity;
                 }
+
+                Debug.Log($"[RandomPortalSpawner] Spawning portal at {spawnPos} with rotation {rotation.eulerAngles}");
 
                 GameObject portalInstance = Instantiate(portalPrefab, spawnPos, rotation);
 
@@ -182,48 +204,42 @@ public class RandomPortalSpawner : MonoBehaviour
 
                 if (portal != null)
                 {
-                    // Pass orientation so the portal knows which pull direction to use
                     portal.SetOrientation(portalOrientation == PortalOrientation.Horizontal
                         ? PortalNextStage.PortalOrientation.Horizontal
                         : PortalNextStage.PortalOrientation.Vertical);
 
-                    // Find and pass the PortalMesh transform
                     Transform portalMesh = portalInstance.transform.Find("PortalMesh");
                     if (portalMesh != null)
                         portal.SetPortalMesh(portalMesh);
 
-                    // Pass all sequence variables
                     portal.SetSequenceSettings(duration, liftHeight, lookHeight, fadeStart, fadeSpeed);
-
                     portal.SetLevel(levelCounter);
                     portal.SetExcludedScenes(excludedScenes);
 
                     bool isBoss = (levelCounter % 10 == 0);
 
                     if (isBoss)
-                    {
-                        string bossScene = GetBossScene(levelCounter);
-                        portal.SetForcedScene(bossScene);
-                    }
+                        portal.SetForcedScene(GetBossScene(levelCounter));
                     else
-                    {
-                        string normalScene = validScenes[Random.Range(0, validScenes.Count)];
-                        portal.SetForcedScene(normalScene);
-                    }
+                        portal.SetForcedScene(validScenes[Random.Range(0, validScenes.Count)]);
+                }
+                else
+                {
+                    Debug.LogWarning("[RandomPortalSpawner] PortalNextStage component not found on spawned portal.");
                 }
 
                 spawned = true;
                 return;
             }
         }
-    }
 
+        if (!hitFound)
+            Debug.LogWarning($"[RandomPortalSpawner] BLOCKED: no raycast hit found after {attempts} attempts. Check portalspawnMask layer assignments.");
+    }
     private string GetBossScene(int level)
     {
         if (bossScenes == null || bossScenes.Length == 0)
-        {
             return "";
-        }
 
         int index = (level / 10) - 1;
 

@@ -318,7 +318,7 @@ GameObject:
   - component: {fileID: 7094857795018509388}
   - component: {fileID: 7454828376969529295}
   - component: {fileID: 1570136944215263171}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Cube.199
   m_TagString: Interactable
   m_Icon: {fileID: 0}
@@ -432,20 +432,10 @@ MonoBehaviour:
   actionName: Interact
   onInteraction:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 7454828376969529295}
-        m_TargetAssemblyTypeName: RainbowDoorInteractable, Assembly-CSharp
-        m_MethodName: Interact
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
   entity_1: {fileID: 6382491877930326060, guid: cda5d9269d64dcb48b4116453099c1b7, type: 3}
+  doorAnimator: {fileID: 2869097926735900087}
+  openTime: 1
 --- !u!64 &1570136944215263171
 MeshCollider:
   m_ObjectHideFlags: 0

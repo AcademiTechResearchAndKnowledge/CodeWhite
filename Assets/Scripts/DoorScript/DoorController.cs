@@ -11,7 +11,7 @@ public class DoorController : Interactable
 
     public float autoCloseDelay = 3f;
 
-    // REMOVED: private bool isBusy = false;
+
     private bool locked;
 
     private enum DoorState
