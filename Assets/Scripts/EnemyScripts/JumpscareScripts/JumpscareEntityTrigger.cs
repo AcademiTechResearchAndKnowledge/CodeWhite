@@ -2,33 +2,30 @@ using UnityEngine;
 
 public class JumpscareEntityTrigger : MonoBehaviour
 {
-    private JumpscareMechanic jumpscareMechanic;
+    [Header("Canvas Jumpscare Setup")]
+    [Tooltip("Drag the specific Jumpscare Canvas PREFAB for this entity here.")]
+    [SerializeField] private JumpscareMechanic jumpscarePrefab;
+
     private bool hasTriggered = false;
 
-    void Start()
-    {
-        // Unity 6 standard: Automatically finds the script in your scene
-        jumpscareMechanic = FindFirstObjectByType<JumpscareMechanic>();
-
-        if (jumpscareMechanic == null)
-        {
-            Debug.LogError("No JumpscareMechanic found in the scene! The entity cannot trigger the canvas.");
-        }
-    }
-
-    // The player's raycast will call this method when looking at the entity
+    // The player's raycast (or gaze logic) calls this method
     public void TriggerScare()
     {
         if (hasTriggered) return;
         hasTriggered = true;
 
-        // 1. Activate the UI canvas jumpscare
-        if (jumpscareMechanic != null)
+        // 1. Spawn and trigger the specific UI jumpscare prefab
+        if (jumpscarePrefab != null)
         {
-            jumpscareMechanic.TriggerJumpscare();
+            JumpscareMechanic spawnedJumpscare = Instantiate(jumpscarePrefab);
+            spawnedJumpscare.TriggerJumpscare();
+        }
+        else
+        {
+            Debug.LogWarning("No Jumpscare Prefab assigned to " + gameObject.name);
         }
 
-        // 2. Destroy the 3D entity so it vanishes from the drawer
+        // 2. Destroy the 3D entity so it vanishes from the world
         Destroy(gameObject);
     }
 }
