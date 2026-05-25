@@ -1143,7 +1143,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RandomPortalSpawner
   portalPrefab: {fileID: 5588175437650982449, guid: 382ee694ce2f65341919b2b76bb093ef, type: 3}
   spawnOnlyOnce: 1
-  portalOrientation: 0
+  duration: 6
+  liftHeight: 2
+  lookHeight: 10
+  fadeStart: 0.6
+  fadeSpeed: 1
   levelCounter: 0
   excludedScenes: []
   bossScenes: []
@@ -1155,9 +1159,14 @@ MonoBehaviour:
   ceilingMask:
     serializedVersion: 2
     m_Bits: 512
+  wallMask:
+    serializedVersion: 2
+    m_Bits: 0
   attempts: 25
   raycastHeight: 50
+  wallRaycastDistance: 50
   groundOffset: 1.1
+  wallOffset: 0.05
 --- !u!43 &570480282
 Mesh:
   m_ObjectHideFlags: 0
@@ -3174,7 +3183,7 @@ Transform:
   m_GameObject: {fileID: 987547882}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.85, y: 0.81, z: -4.95}
+  m_LocalPosition: {x: 0.85, y: 0.81, z: 12.27}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

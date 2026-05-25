@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 using UnityEngine.InputSystem;
 using System.Collections;
+using System;
 
 public class DialogueManager : MonoBehaviour
 {
@@ -15,7 +16,9 @@ public class DialogueManager : MonoBehaviour
     private DialogueData.DialogueLine[] currentLines;
     private int index;
     private bool isPlayerFrozen = false;
-    private PlayerMovement playerMovement;
+
+    // CHANGED: Now using PlayerReferences instead of PlayerMovement
+    private PlayerReferences player;
 
     private bool useAutoAdvance = false;
     private float autoAdvanceTime = 5f;
@@ -25,12 +28,14 @@ public class DialogueManager : MonoBehaviour
     private bool isTyping = false;
 
     private bool currentDialogueIsUnskippable = false;
+    private Action onDialogueComplete;
 
     private void Awake()
     {
         Instance = this;
         dialoguePanel.SetActive(false);
-        playerMovement = Object.FindFirstObjectByType<PlayerMovement>();
+
+        player = FindFirstObjectByType<PlayerReferences>();
     }
 
     void Update()
@@ -68,20 +73,23 @@ public class DialogueManager : MonoBehaviour
         }
     }
 
-    public void StartDialogue(DialogueData data, bool unskippable = false)
+    public void StartDialogue(DialogueData data, bool unskippable = false, Action onComplete = null)
     {
         if (data == null) return;
 
         currentDialogueIsUnskippable = unskippable;
+        onDialogueComplete = onComplete;
 
         currentLines = data.lines;
         index = 0;
         dialoguePanel.SetActive(true);
         ShowLine();
 
-        if (data.freezePlayer && playerMovement != null)
+        // CHANGED: Freeze player movement AND looking if PlayerReferences is found
+        if (data.freezePlayer && player != null)
         {
-            playerMovement.enabled = false;
+            if (player.movementScript != null) player.movementScript.enabled = false;
+            if (player.playerLook != null) player.playerLook.canLook = false;
             isPlayerFrozen = true;
         }
 
@@ -164,12 +172,18 @@ public class DialogueManager : MonoBehaviour
     {
         dialoguePanel.SetActive(false);
 
-        if (isPlayerFrozen && playerMovement != null)
+        // CHANGED: Unfreeze player movement AND looking
+        if (isPlayerFrozen && player != null)
         {
-            playerMovement.enabled = true;
+            if (player.movementScript != null) player.movementScript.enabled = true;
+            if (player.playerLook != null) player.playerLook.canLook = true;
             isPlayerFrozen = false;
         }
 
         useAutoAdvance = false;
+
+        Action tempAction = onDialogueComplete;
+        onDialogueComplete = null;
+        tempAction?.Invoke();
     }
 }
