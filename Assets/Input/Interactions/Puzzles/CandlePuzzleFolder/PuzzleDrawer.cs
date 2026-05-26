@@ -16,6 +16,16 @@ public class PuzzleDrawer : Interactable
     public Transform itemSpawnPoint;
     public float lootSpawnDelay = 0.2f;
 
+    [Header("Audio Settings")]
+    public AudioSource audioSource;
+    public AudioClip drawerOpenSound;
+    [Tooltip("Delay in seconds before the open sound plays.")]
+    public float openSoundDelay = 0f;
+
+    public AudioClip drawerCloseSound;
+    [Tooltip("Delay in seconds before the close sound plays.")]
+    public float closeSoundDelay = 0f;
+
     private bool isOpen = false;
     private bool hasBeenSearched = false;
 
@@ -28,6 +38,11 @@ public class PuzzleDrawer : Interactable
         if (LighterPuzzleManager.instance != null)
         {
             LighterPuzzleManager.instance.RegisterDrawer(this);
+        }
+
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
         }
     }
 
@@ -59,6 +74,8 @@ public class PuzzleDrawer : Interactable
     IEnumerator OpenDrawerRoutine()
     {
         isOpen = true;
+
+        PlaySound(drawerOpenSound, openSoundDelay);
 
         if (drawerType == DrawerType.TopDrawer)
         {
@@ -94,6 +111,8 @@ public class PuzzleDrawer : Interactable
     IEnumerator CloseDrawerRoutine()
     {
         isOpen = false;
+
+        PlaySound(drawerCloseSound, closeSoundDelay);
 
         if (drawerType == DrawerType.TopDrawer)
         {
@@ -142,5 +161,29 @@ public class PuzzleDrawer : Interactable
     public void ResetSearchState()
     {
         hasBeenSearched = false;
+    }
+
+    private void PlaySound(AudioClip clip, float delay = 0f)
+    {
+        if (audioSource != null && clip != null)
+        {
+            if (delay > 0f)
+            {
+                StartCoroutine(PlaySoundCO(clip, delay));
+            }
+            else
+            {
+                audioSource.PlayOneShot(clip);
+            }
+        }
+    }
+
+    private IEnumerator PlaySoundCO(AudioClip clip, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (audioSource != null && clip != null)
+        {
+            audioSource.PlayOneShot(clip);
+        }
     }
 }
