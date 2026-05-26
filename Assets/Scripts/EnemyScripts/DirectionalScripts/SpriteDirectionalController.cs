@@ -31,6 +31,15 @@ public class SpriteDirectionalController : MonoBehaviour
 
     private void Update()
     {
+        if (playerReference == null)
+        {
+            playerReference = Object.FindFirstObjectByType<PlayerReferences>();
+            if (playerReference == null)
+            {
+                animator.SetBool("isWalking", false);
+                return;
+            }
+        }
         // --- 1. DETERMINE DIRECTION TO PLAYER ---
         Vector3 directionToPlayer = playerReference.transform.position - body.position;
         directionToPlayer.y = 0f;

@@ -8,16 +8,19 @@ using System;
 public class DialogueManager : MonoBehaviour
 {
     public static DialogueManager Instance;
+
     public GameObject dialoguePanel;
     public TextMeshProUGUI dialogueText;
     public TextMeshProUGUI nameText;
     public Image expressionImage;
 
+    [Header("DEATHSCREEN")]
+    public TextMeshProUGUI tipsText;
+
     private DialogueData.DialogueLine[] currentLines;
     private int index;
     private bool isPlayerFrozen = false;
 
-    // CHANGED: Now using PlayerReferences instead of PlayerMovement
     private PlayerReferences player;
 
     private bool useAutoAdvance = false;
@@ -33,28 +36,65 @@ public class DialogueManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
-        dialoguePanel.SetActive(false);
+        AutoBindReferences();
+
+        if (dialoguePanel != null)
+            dialoguePanel.SetActive(false);
 
         player = FindFirstObjectByType<PlayerReferences>();
     }
 
+    void AutoBindReferences()
+    {
+        if (dialoguePanel == null)
+        {
+            var obj = GameObject.Find("DIalogue_Panel");
+            if (obj != null) dialoguePanel = obj;
+        }
+
+        if (dialogueText == null)
+            dialogueText = FindByName<TextMeshProUGUI>("Dialogue_Text");
+
+        if (nameText == null)
+            nameText = FindByName<TextMeshProUGUI>("Name_Text");
+
+        if (expressionImage == null)
+            expressionImage = FindByName<Image>("ExpressionImage");
+
+        if (tipsText == null)
+            tipsText = FindByName<TextMeshProUGUI>("TipsText");
+    }
+
+    T FindByName<T>(string objectName) where T : Component
+    {
+        var all = FindObjectsByType<T>(FindObjectsSortMode.None);
+
+        foreach (var item in all)
+        {
+            if (item.gameObject.name == objectName)
+                return item;
+        }
+
+        return null;
+    }
+
     void Update()
     {
-        if (!dialoguePanel.activeSelf) return;
+        if (dialoguePanel == null)
+            return;
+
+        if (!dialoguePanel.activeSelf)
+            return;
 
         if (!currentDialogueIsUnskippable)
         {
             bool advanceInputPressed = false;
 
             if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
-            {
                 advanceInputPressed = true;
-            }
 
             if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
-            {
                 advanceInputPressed = true;
-            }
 
             if (advanceInputPressed)
             {
@@ -68,6 +108,7 @@ public class DialogueManager : MonoBehaviour
         if (useAutoAdvance && !isTyping)
         {
             autoAdvanceTimer -= Time.unscaledDeltaTime;
+
             if (autoAdvanceTimer <= 0f)
                 NextLine();
         }
@@ -82,10 +123,10 @@ public class DialogueManager : MonoBehaviour
 
         currentLines = data.lines;
         index = 0;
+
         dialoguePanel.SetActive(true);
         ShowLine();
 
-        // CHANGED: Freeze player movement AND looking if PlayerReferences is found
         if (data.freezePlayer && player != null)
         {
             if (player.movementScript != null) player.movementScript.enabled = false;
@@ -162,6 +203,7 @@ public class DialogueManager : MonoBehaviour
     void NextLine()
     {
         index++;
+
         if (index >= currentLines.Length)
             EndDialogue();
         else
@@ -172,7 +214,6 @@ public class DialogueManager : MonoBehaviour
     {
         dialoguePanel.SetActive(false);
 
-        // CHANGED: Unfreeze player movement AND looking
         if (isPlayerFrozen && player != null)
         {
             if (player.movementScript != null) player.movementScript.enabled = true;
@@ -185,5 +226,55 @@ public class DialogueManager : MonoBehaviour
         Action tempAction = onDialogueComplete;
         onDialogueComplete = null;
         tempAction?.Invoke();
+    }
+
+    public void ShowTip(string tipID)
+    {
+        if (TipsDatabase.Instance == null)
+        {
+            Debug.LogWarning("TipsDatabase not found in scene.");
+            return;
+        }
+
+        TipData tip = TipsDatabase.Instance.GetTip(tipID);
+
+        if (tip != null && tipsText != null)
+        {
+            tipsText.text = tip.tipText;
+        }
+    }
+
+    public void ShowRandomTip()
+    {
+        if (TipsDatabase.Instance == null)
+        {
+            Debug.LogWarning("TipsDatabase not found in scene.");
+            return;
+        }
+
+        TipData tip = TipsDatabase.Instance.GetRandomTip();
+
+        if (tip != null && tipsText != null)
+        {
+            tipsText.text = tip.tipText;
+        }
+    }
+    public void SetTipText(TipData tip)
+    {
+        if (tipsText == null)
+            tipsText = FindByName<TextMeshProUGUI>("TipsText");
+
+        if (tipsText == null || tip == null)
+            return;
+
+        if (!tipsText.gameObject.activeSelf)
+            tipsText.gameObject.SetActive(true);
+
+        tipsText.text = tip.tipText;
+        tipsText.color = tip.textColor;
+    }
+    private void OnEnable()
+    {
+        AutoBindReferences();
     }
 }
