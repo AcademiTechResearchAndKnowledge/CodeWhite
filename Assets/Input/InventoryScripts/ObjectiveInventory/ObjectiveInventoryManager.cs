@@ -307,4 +307,15 @@ public class ObjectiveInventoryManager : MonoBehaviour
         RefreshUI();
         return remainingToRemove <= 0;
     }
+
+    public void ClearInventory()
+    {
+        for (int i = 0; i < slots.Count; i++)
+        {
+            slots[i].Clear();
+        }
+
+        DeselectAll();
+        RefreshUI();
+    }
 }

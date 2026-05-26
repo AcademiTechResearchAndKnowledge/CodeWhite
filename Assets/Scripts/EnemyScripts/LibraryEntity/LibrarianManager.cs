@@ -26,7 +26,7 @@ public class LibrarianManager : MonoBehaviour
     public AudioClip noBookSFX;
 
     [Header("UI Settings")]
-    [Tooltip("No need to assign this in the inspector anymore! The script will find it dynamically.")]
+    [Tooltip("Drag the TextMeshPro UI object from this scene's Hierarchy into this slot.")]
     public TextMeshProUGUI hintText;
     public float hintDisplayTime = 3f;
 
@@ -37,25 +37,6 @@ public class LibrarianManager : MonoBehaviour
 
     private void Start()
     {
-        // NEW FIX: Look for a GameObject named exactly "PlayerHintText" anywhere in the scene
-        GameObject foundTextObject = GameObject.Find("PlayerHintText");
-
-        if (foundTextObject != null)
-        {
-            hintText = foundTextObject.GetComponent<TextMeshProUGUI>();
-            Debug.Log("LibrarianManager: Successfully found and connected to the Player's Hint Text!");
-        }
-        else
-        {
-            // BACKUP PLAN: If the name doesn't match, try to find the Player by Tag and search their children
-            GameObject player = GameObject.FindGameObjectWithTag("Player");
-            if (player != null)
-            {
-                hintText = player.GetComponentInChildren<TextMeshProUGUI>();
-                Debug.Log("LibrarianManager: Found Player tag, grabbing first TextMeshPro component found in children.");
-            }
-        }
-
         // Clean up the text at the start of the level
         if (hintText != null)
         {
@@ -63,7 +44,7 @@ public class LibrarianManager : MonoBehaviour
         }
         else
         {
-            Debug.LogError("LibrarianManager: CRITICAL! Could not find the Player's Hint Text UI in this scene. Check your GameObject names!");
+            Debug.LogWarning("LibrarianManager: No Hint Text assigned in the Inspector!");
         }
     }
 
@@ -91,10 +72,6 @@ public class LibrarianManager : MonoBehaviour
 
             case LibraryBookType.Unsigned:
                 ModifyAnxiety(5f);
-                if (currentAnxiety >= anxietyThreshold)
-                {
-                    Debug.Log("[Librarian Action] The Librarian begins to taunt!");
-                }
                 break;
 
             case LibraryBookType.Forged:

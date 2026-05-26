@@ -240,4 +240,15 @@ public class InventoryManager : MonoBehaviour
         selectedSlot = -1;
         RefreshUI();
     }
+
+    public void ClearInventory()
+    {
+        for (int i = 0; i < slots.Count; i++)
+        {
+            slots[i].Clear();
+        }
+
+        DeselectAll();
+        RefreshUI();
+    }
 }

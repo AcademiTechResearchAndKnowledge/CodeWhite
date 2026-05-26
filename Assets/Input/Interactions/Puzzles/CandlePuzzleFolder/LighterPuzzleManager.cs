@@ -1,6 +1,8 @@
 using UnityEngine;
+using System.Collections; // NEW: Required for timers
 using System.Collections.Generic;
 using UnityEngine.Events;
+using TMPro; // NEW: Required for TextMeshPro
 
 public class LighterPuzzleManager : MonoBehaviour
 {
@@ -22,6 +24,12 @@ public class LighterPuzzleManager : MonoBehaviour
     public AudioClip noLighterSFX;
     public AudioClip puzzleFinishedSFX;
 
+    // NEW: UI Settings
+    [Header("UI Settings")]
+    [Tooltip("Drag the TextMeshPro UI object from this scene's Hierarchy into this slot.")]
+    public TextMeshProUGUI hintText;
+    public float hintDisplayTime = 3f;
+
     [Header("Events")]
     public UnityEvent onPuzzleComplete;
 
@@ -32,12 +40,20 @@ public class LighterPuzzleManager : MonoBehaviour
     private List<PuzzleDrawer> unsearchedDrawers = new List<PuzzleDrawer>();
 
     private GameObject currentActiveEntity;
-
     private Stack<CandleInteract> litCandlesStack = new Stack<CandleInteract>();
 
     void Awake()
     {
         instance = this;
+    }
+
+    // NEW: Clear the text when the scene starts
+    void Start()
+    {
+        if (hintText != null)
+        {
+            hintText.text = "";
+        }
     }
 
     public void RegisterDrawer(PuzzleDrawer drawer)
@@ -88,10 +104,8 @@ public class LighterPuzzleManager : MonoBehaviour
         {
             Debug.Log("Cannot light candle: Player does not have a lighter!");
 
-            if (audioSource != null && noLighterSFX != null)
-            {
-                audioSource.PlayOneShot(noLighterSFX);
-            }
+            // Trigger the error text and sound
+            PlayNoLighterError("You need a lighter to do this!");
 
             return;
         }
@@ -171,5 +185,31 @@ public class LighterPuzzleManager : MonoBehaviour
         }
 
         onPuzzleComplete?.Invoke();
+    }
+
+    // NEW: Method to play the sound and show the hint text
+    public void PlayNoLighterError(string message = "You need a lighter to light this!")
+    {
+        if (audioSource != null && noLighterSFX != null)
+        {
+            audioSource.PlayOneShot(noLighterSFX);
+        }
+
+        if (hintText != null)
+        {
+            hintText.text = message;
+            StopAllCoroutines();
+            StartCoroutine(ClearHintText());
+        }
+    }
+
+    // NEW: Timer to clear the text
+    private IEnumerator ClearHintText()
+    {
+        yield return new WaitForSeconds(hintDisplayTime);
+        if (hintText != null)
+        {
+            hintText.text = "";
+        }
     }
 }

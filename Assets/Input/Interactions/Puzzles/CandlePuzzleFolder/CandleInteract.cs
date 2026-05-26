@@ -44,10 +44,10 @@ public class CandleInteract : Interactable
         {
             Debug.Log("You need to have the lighter equipped in your hand to light this!");
 
-            // NEW FIX: Reach out to the Manager and play the fail sound before we stop!
-            if (LighterPuzzleManager.instance != null && LighterPuzzleManager.instance.audioSource != null && LighterPuzzleManager.instance.noLighterSFX != null)
+            // UPDATED FIX: Call the unified method to play the SFX and show the Hint Text!
+            if (LighterPuzzleManager.instance != null)
             {
-                LighterPuzzleManager.instance.audioSource.PlayOneShot(LighterPuzzleManager.instance.noLighterSFX);
+                LighterPuzzleManager.instance.PlayNoLighterError("You need a lighter to light this!");
             }
 
             return; // Stop the code here

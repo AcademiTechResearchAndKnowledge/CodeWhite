@@ -129,12 +129,15 @@ public class DeathMenu : MonoBehaviour
         if (playerStats != null)
             playerStats.ResetAnxiety();
 
+        if (InventoryManager.Instance != null)
+            InventoryManager.Instance.ClearInventory();
+
+        if (ObjectiveInventoryManager.Instance != null)
+            ObjectiveInventoryManager.Instance.ClearInventory();
+
         Time.timeScale = 1f;
-
         isDead = false;
-
         AudioReset();
-
         ResetUIState();
 
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
@@ -144,6 +147,12 @@ public class DeathMenu : MonoBehaviour
     {
         playerStats.ResetAnxiety();
         Time.timeScale = 1f;
+
+        if (InventoryManager.Instance != null)
+            InventoryManager.Instance.ClearInventory();
+
+        if (ObjectiveInventoryManager.Instance != null)
+            ObjectiveInventoryManager.Instance.ClearInventory();
 
         AudioReset();
 
