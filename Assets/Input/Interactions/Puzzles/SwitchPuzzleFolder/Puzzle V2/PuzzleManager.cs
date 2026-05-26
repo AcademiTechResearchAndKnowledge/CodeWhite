@@ -7,7 +7,7 @@ public class SwitchPuzzleManager : MonoBehaviour
 
     [HideInInspector] public int correctButtonIndex = -1;
     [HideInInspector] public int completedCount = 0;
-    [HideInInspector] public bool puzzleComplete = false;
+    public bool puzzleComplete = false;
 
     public int requiredCount = 5;
 

@@ -19,6 +19,7 @@ public class LaptopManager : MonoBehaviour, IZoomInteractable
     private bool answersUnlocked = false;
     private bool screenWasOn = false;
     private string pendingHint = "";
+    private static RandomPortalSpawner RPS;
 
     public bool IsInteracting { get; set; }
 
@@ -28,6 +29,14 @@ public class LaptopManager : MonoBehaviour, IZoomInteractable
 
         if (laptopCanvas != null)
             laptopCanvas.SetActive(false);
+
+        if (RPS == null)
+        {
+            RPS = FindFirstObjectByType<RandomPortalSpawner>();
+
+            if (RPS == null)
+                Debug.LogWarning("RandomPortalSpawner NOT FOUND in scene!");
+        }
 
         SetupAnswerLabels();
         SetAnswerButtonsInteractable(false);
@@ -125,7 +134,7 @@ public class LaptopManager : MonoBehaviour, IZoomInteractable
             ButtonController.Instance.UnlockButtons();
         }
 
-        
+
     }
 
     void SetAnswerButtonsInteractable(bool state)
@@ -165,7 +174,7 @@ public class LaptopManager : MonoBehaviour, IZoomInteractable
 
     public void TurnScreenOff()
     {
-        screenWasOn = false; 
+        screenWasOn = false;
         if (laptopCanvas != null)
             laptopCanvas.SetActive(false);
     }
@@ -183,7 +192,7 @@ public class LaptopManager : MonoBehaviour, IZoomInteractable
 
         if (progressText != null)
             progressText.text = "Done!";
-
+        RPS.SpawnPortalRandom(RandomPortalSpawner.PortalOrientation.Horizontal);
         SetAnswerButtonsInteractable(false);
     }
 }

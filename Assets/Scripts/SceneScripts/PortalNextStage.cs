@@ -8,7 +8,6 @@ public class PortalNextStage : MonoBehaviour
 {
     public string playerTag = "Player";
 
-    
     private float duration = 6f;
     private float liftHeight = 2f;
     private float lookHeight = 10f;
@@ -24,7 +23,6 @@ public class PortalNextStage : MonoBehaviour
     private PortalOrientation orientation = PortalOrientation.Vertical;
     private Transform portalMesh;
 
-    [Header("Scene Exclusions")]
     [SerializeField] private string[] excludedScenes;
 
     private int levelCounter;
@@ -65,39 +63,40 @@ public class PortalNextStage : MonoBehaviour
         portalMesh = mesh;
     }
 
-    /// <summary>
-    /// Called by RandomPortalSpawner to pass all tunable sequence variables.
-    /// </summary>
     public void SetSequenceSettings(float dur, float lift, float look, float fadeSt, float fadeSp)
     {
-        duration  = dur;
+        duration = dur;
         liftHeight = lift;
         lookHeight = look;
-        fadeStart  = fadeSt;
-        fadeSpeed  = fadeSp;
+        fadeStart = fadeSt;
+        fadeSpeed = fadeSp;
     }
 
     private void Awake()
     {
         playerLook = Object.FindFirstObjectByType<PlayerLook>();
 
-        CinemachineCamera[] cams =
-            Object.FindObjectsByType<CinemachineCamera>(FindObjectsSortMode.None);
+        CinemachineCamera[] cams = Object.FindObjectsByType<CinemachineCamera>(FindObjectsSortMode.None);
 
         foreach (var cam in cams)
         {
+            bool isLookUp = cam.name.ToLower().Contains("lookup");
+
+            if (isLookUp)
+            {
+                lookUpCam = cam;
+                cam.Priority = 0;
+                cam.gameObject.SetActive(false);
+                cam.LookAt = null;
+                continue;
+            }
+
             if (mainCam == null || cam.Priority > mainCam.Priority)
                 mainCam = cam;
-
-            if (cam.name.ToLower().Contains("lookup"))
-                lookUpCam = cam;
         }
 
         GameObject target = new GameObject("AutoLookTarget");
         lookTarget = target.transform;
-
-        if (lookUpCam != null)
-            lookUpCam.gameObject.SetActive(false);
     }
 
     private void Start()
@@ -132,13 +131,13 @@ public class PortalNextStage : MonoBehaviour
         if (!other.CompareTag(playerTag)) return;
 
         used = true;
-
         StartCoroutine(Sequence(other.transform));
     }
 
     private IEnumerator Sequence(Transform player)
     {
         Rigidbody rb = player.GetComponent<Rigidbody>();
+
         if (rb != null)
         {
             rb.linearVelocity = Vector3.zero;
@@ -149,23 +148,28 @@ public class PortalNextStage : MonoBehaviour
         if (playerLook != null)
             playerLook.canLook = false;
 
-        if (orientation == PortalOrientation.Vertical && lookUpCam != null)
+        if (lookUpCam != null)
         {
-            lookUpCam.gameObject.SetActive(true);
-            lookUpCam.Priority = 100;
-            lookUpCam.LookAt = lookTarget;
+            lookUpCam.Priority = 0;
+            lookUpCam.gameObject.SetActive(false);
+            lookUpCam.LookAt = null;
         }
 
-        if (mainCam != null)
+        if (orientation == PortalOrientation.Vertical)
         {
-            if (orientation == PortalOrientation.Horizontal)
+            if (lookUpCam != null)
             {
-                // Keep main cam active, point it at the portal mesh
-                mainCam.LookAt = portalMesh != null ? portalMesh : lookTarget;
+                lookUpCam.gameObject.SetActive(true);
+                lookUpCam.Priority = 100;
+                lookUpCam.LookAt = lookTarget;
             }
-            else
+        }
+        else
+        {
+            if (mainCam != null)
             {
-                mainCam.Priority = 0;
+                mainCam.LookAt = portalMesh != null ? portalMesh : lookTarget;
+                mainCam.Priority = 100;
             }
         }
 
@@ -183,12 +187,10 @@ public class PortalNextStage : MonoBehaviour
 
             if (orientation == PortalOrientation.Horizontal)
             {
-                // Pull horizontally toward the portal center; no vertical lift
                 pos = Vector3.Lerp(startPos, targetPos, t);
             }
             else
             {
-                // Original vertical lift behavior
                 pos = Vector3.Lerp(startPos, targetPos, t);
                 pos.y = startPos.y + Mathf.Lerp(0f, liftHeight, t);
             }
@@ -198,13 +200,12 @@ public class PortalNextStage : MonoBehaviour
             if (lookTarget != null)
             {
                 if (orientation == PortalOrientation.Horizontal)
-                    lookTarget.position = targetPos; // aim at the portal itself
+                    lookTarget.position = targetPos;
                 else
                     lookTarget.position = player.position + Vector3.up * lookHeight;
             }
 
             UpdateFade(t);
-
             yield return null;
         }
 
@@ -239,35 +240,28 @@ public class PortalNextStage : MonoBehaviour
 
     private void ResetCameras()
     {
-        CinemachineCamera[] cams =
-            Object.FindObjectsByType<CinemachineCamera>(FindObjectsSortMode.None);
+        CinemachineCamera[] cams = Object.FindObjectsByType<CinemachineCamera>(FindObjectsSortMode.None);
 
         foreach (var cam in cams)
         {
-            if (cam.name.ToLower().Contains("lookup"))
+            bool isLookUp = cam.name.ToLower().Contains("lookup");
+
+            if (isLookUp)
             {
                 cam.Priority = 0;
                 cam.LookAt = null;
                 cam.gameObject.SetActive(false);
+                continue;
             }
-            else
-            {
-                cam.Priority = 100;
-                cam.gameObject.SetActive(true);
-            }
-        }
 
-        if (lookUpCam != null)
-        {
-            lookUpCam.Priority = 0;
-            lookUpCam.LookAt = null;
-            lookUpCam.gameObject.SetActive(false);
+            cam.Priority = 100;
+            cam.gameObject.SetActive(true);
         }
 
         if (mainCam != null)
         {
-            mainCam.Priority = 100;
             mainCam.LookAt = null;
+            mainCam.Priority = 100;
         }
     }
 

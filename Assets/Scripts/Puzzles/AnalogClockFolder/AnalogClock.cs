@@ -21,9 +21,18 @@ public class AnalogClock : MonoBehaviour
     public static List<AnalogClock> allClocks = new List<AnalogClock>();
     public static bool puzzleDone = false;
     public bool allPuzzleDone = false;
+    private static RandomPortalSpawner RPS;
+
     void Awake()
     {
         allClocks.Add(this);
+        if (RPS == null)
+        {
+            RPS = FindFirstObjectByType<RandomPortalSpawner>();
+
+            if (RPS == null)
+                Debug.LogWarning("RandomPortalSpawner NOT FOUND in scene!");
+        }
     }
 
     void OnDestroy()
@@ -130,11 +139,11 @@ public class AnalogClock : MonoBehaviour
         {
             if (clock.hours != 5 || clock.minutes != 0)
                 return;
-                 
+
         }
         allPuzzleDone = true;
         puzzleDone = true;
-        Debug.Log("Puzzle Completed");
+        RPS.SpawnPortalRandom(RandomPortalSpawner.PortalOrientation.Horizontal);
     }
 
     public void SetPuzzleActive(bool state)

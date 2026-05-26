@@ -2855,7 +2855,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &23399954
 Transform:
   m_ObjectHideFlags: 0
@@ -3440,7 +3440,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &24572170
 Transform:
   m_ObjectHideFlags: 0
@@ -20019,7 +20019,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &189397818
 Transform:
   m_ObjectHideFlags: 0
@@ -24244,7 +24244,7 @@ Transform:
   m_GameObject: {fileID: 238337488}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 2.1, y: 5.7, z: 3.52}
+  m_LocalPosition: {x: -0.24, y: 0.65, z: -4.621}
   m_LocalScale: {x: 0.5018, y: 1, z: 0.43073}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -61472,7 +61472,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &617588346
 Transform:
   m_ObjectHideFlags: 0
@@ -91965,7 +91965,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &946512875
 Transform:
   m_ObjectHideFlags: 0
@@ -121028,7 +121028,7 @@ GameObject:
   - component: {fileID: 1238084887}
   - component: {fileID: 1238084886}
   - component: {fileID: 1238084885}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: bWall1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -136201,10 +136201,10 @@ MonoBehaviour:
     m_Bits: 128
   ceilingMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 512
   wallMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 8
   attempts: 25
   raycastHeight: 50
   wallRaycastDistance: 50

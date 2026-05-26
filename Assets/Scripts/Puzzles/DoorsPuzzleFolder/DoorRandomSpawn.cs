@@ -25,8 +25,6 @@ public class doorsGen : MonoBehaviour
 
     private GameObject rainbowDoor;
 
-    public 
-
     void Start()
     {
         if (playerTransform == null)
@@ -69,7 +67,7 @@ public class doorsGen : MonoBehaviour
 
             AdjustToFloor(door);
 
-            usedPositions.Add(pos);
+            usedPositions.Add(door.transform.position);
 
             if (prefabToSpawn == rainbowDoorPrefab)
             {
@@ -82,12 +80,6 @@ public class doorsGen : MonoBehaviour
 
                     if (rd.doorAnimator == null)
                         rd.doorAnimator = door.GetComponentInChildren<Animator>();
-
-                    Debug.Log("[doorsGen] onPuzzleComplete assigned to RainbowDoorInteractable.");
-                }
-                else
-                {
-                    Debug.LogWarning("[doorsGen] RainbowDoorInteractable component not found on rainbow door prefab.");
                 }
             }
             else if (prefabToSpawn == blackDoorPrefab)
@@ -105,24 +97,12 @@ public class doorsGen : MonoBehaviour
 
     private void OnRainbowDoorOpened()
     {
-        Debug.Log("[doorsGen] OnRainbowDoorOpened fired.");
-
-        if (rainbowDoor == null)
-        {
-            Debug.LogWarning("[doorsGen] rainbowDoor is null.");
-            return;
-        }
+        if (rainbowDoor == null) return;
 
         RandomPortalSpawner spawner = FindFirstObjectByType<RandomPortalSpawner>();
-        if (spawner == null)
-        {
-            Debug.LogWarning("[doorsGen] RandomPortalSpawner not found in scene.");
-            return;
-        }
+        if (spawner == null) return;
 
         Vector3 spawnPos = GetDoorCenter(rainbowDoor);
-
-        Debug.Log($"[doorsGen] Spawning portal at door center {spawnPos}");
         spawner.SpawnPortalAt(spawnPos, RandomPortalSpawner.PortalOrientation.Vertical);
     }
 
@@ -218,7 +198,7 @@ public class doorsGen : MonoBehaviour
     {
         int attempts = 0;
 
-        while (attempts < 100)
+        while (attempts < 200)
         {
             attempts++;
 
@@ -228,20 +208,24 @@ public class doorsGen : MonoBehaviour
                 Random.Range(-spawnAreaSize, spawnAreaSize)
             );
 
-            bool valid = true;
-
-            foreach (Vector3 used in usedPositions)
-            {
-                if (Vector3.Distance(pos, used) < minDistanceBetweenDoors)
-                {
-                    valid = false;
-                    break;
-                }
-            }
-
-            if (valid) return pos;
+            if (IsValid(pos))
+                return pos;
         }
 
         return Vector3.zero;
+    }
+
+    bool IsValid(Vector3 pos)
+    {
+        Vector2 p = new Vector2(pos.x, pos.z);
+
+        foreach (Vector3 used in usedPositions)
+        {
+            Vector2 u = new Vector2(used.x, used.z);
+            if (Vector2.Distance(p, u) < minDistanceBetweenDoors)
+                return false;
+        }
+
+        return true;
     }
 }
