@@ -16,6 +16,20 @@ public class StairsEffectManager : MonoBehaviour
     private StairsTriggerState currentState = StairsTriggerState.None;
     private bool canTrigger = true;
 
+
+    private PlayerStats playerStats;
+
+    private void Awake()
+    {
+        Instance = this;
+
+
+        playerStats = FindFirstObjectByType<PlayerStats>();
+
+        if (playerStats == null)
+            Debug.LogWarning("PlayerStats NOT FOUND in scene!");
+    }
+
     public void Update()
     {
         foreach (AnalogClock clock in allAnalaogClocks)
@@ -25,11 +39,6 @@ public class StairsEffectManager : MonoBehaviour
                 RPS.SpawnPortalRandom(RandomPortalSpawner.PortalOrientation.Vertical);
             }
         }
-    }
-
-    private void Awake()
-    {
-        Instance = this;
     }
 
     private bool TrySetState(StairsTriggerState newState)
@@ -51,7 +60,12 @@ public class StairsEffectManager : MonoBehaviour
         if (!TrySetState(StairsTriggerState.Oro))
             return;
 
-        Debug.Log("Anxiety reduced by 5%");
+
+        if (playerStats != null)
+        {
+            playerStats.SubtractStat(StatType.ANX, 5f);
+            Debug.Log("Anxiety reduced by 5% → Current: " + playerStats.Anxiety);
+        }
 
         if (currentEntity != null)
         {
@@ -92,14 +106,15 @@ public class StairsEffectManager : MonoBehaviour
         if (!TrySetState(StairsTriggerState.Mata))
             return;
 
+        if (playerStats != null)
+        {
+            playerStats.AddStat(StatType.ANX, 2f);
+            Debug.Log("Anxiety increased by 2% → Current: " + playerStats.Anxiety);
+        }
+
         if (currentEntity == null)
         {
             currentEntity = Instantiate(entityPrefab, spawnPosition, Quaternion.identity);
-            Debug.Log("Entity spawned, Anxiety increased by 2%");
-        }
-        else
-        {
-            Debug.Log("Anxiety increased by 2%");
         }
 
         canTrigger = true;
@@ -107,10 +122,21 @@ public class StairsEffectManager : MonoBehaviour
 
     public void OnEntityCaughtPlayer()
     {
-        Debug.Log("You have been caught, Axiety increased by 40%");
+        if (playerStats != null)
+        {
+            playerStats.AddStat(StatType.ANX, 40f);
+            Debug.Log("Caught! Anxiety increased → Current: " + playerStats.Anxiety);
+        }
 
         if (currentEntity != null)
         {
+            foreach (AnalogClock clock in AnalogClock.allClocks)
+            {
+                clock.hours = 3;
+                clock.minutes = 0;
+                clock.UpdateClockVisuals();
+            }
+
             Destroy(currentEntity);
             currentEntity = null;
         }
