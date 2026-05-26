@@ -8,7 +8,6 @@ public class IdleOrClosetEnemySpawner : MonoBehaviour
 
     [Header("Player")]
     [SerializeField] private PlayerReferences playerRefs;
-    // We removed the closetSystem field here! It now finds it automatically.
 
     [Header("Spawn Timing")]
     [SerializeField] private float idleSpawnDelay = 10f;
@@ -29,18 +28,15 @@ public class IdleOrClosetEnemySpawner : MonoBehaviour
 
     private void Start()
     {
-        playerRefs = FindAnyObjectByType<PlayerReferences>();
-
-        if (playerRefs == null)
-        {
-            Debug.LogError("IdleOrClosetEnemySpawner: Could not find PlayerReferences in the scene!");
-        }
+        FindPlayerReference();
     }
 
     private void Update()
     {
         if (activeStalker != null)
             return;
+
+        FindPlayerReference();
 
         if (playerRefs == null || playerRefs.rb == null)
             return;
@@ -49,9 +45,27 @@ public class IdleOrClosetEnemySpawner : MonoBehaviour
         CheckClosetTimer();
     }
 
+    private void FindPlayerReference()
+    {
+        if (playerRefs != null) return;
+
+        GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
+
+        if (playerObject == null)
+        {
+            return;
+        }
+
+        playerRefs = playerObject.GetComponent<PlayerReferences>();
+
+        if (playerRefs == null)
+        {
+            Debug.LogError("IdleOrClosetEnemySpawner: PlayerReferences is missing on the Player tagged object.");
+        }
+    }
+
     private void CheckIdleTimer()
     {
-        // Dynamically check if ANY closet is active
         if (ClosetHidingSystem.ActiveCloset != null && ClosetHidingSystem.ActiveCloset.InsideCloset)
         {
             idleTimer = 0f;
@@ -77,7 +91,6 @@ public class IdleOrClosetEnemySpawner : MonoBehaviour
 
     private void CheckClosetTimer()
     {
-        // Dynamically check if ANY closet is active
         if (ClosetHidingSystem.ActiveCloset != null && ClosetHidingSystem.ActiveCloset.InsideCloset)
         {
             closetTimer += Time.deltaTime;
@@ -100,6 +113,9 @@ public class IdleOrClosetEnemySpawner : MonoBehaviour
             Debug.LogWarning("Missing Prefab or Spawn Areas.");
             return;
         }
+
+        FindPlayerReference();
+        if (playerRefs == null) return;
 
         BoxCollider chosenArea = GetBestSpawnArea();
         if (chosenArea == null) return;
@@ -140,6 +156,9 @@ public class IdleOrClosetEnemySpawner : MonoBehaviour
         }
 
         if (validAreas.Count == 0) return null;
+
+        FindPlayerReference();
+        if (playerRefs == null) return validAreas[0];
 
         validAreas.Sort((a, b) =>
         {

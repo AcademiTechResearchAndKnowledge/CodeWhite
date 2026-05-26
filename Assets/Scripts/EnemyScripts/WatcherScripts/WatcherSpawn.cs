@@ -25,10 +25,7 @@ public class WatcherSpawn : MonoBehaviour
 
     private void Start()
     {
-        if (playerRef == null)
-        {
-            playerRef = Object.FindFirstObjectByType<PlayerReferences>();
-        }
+        FindPlayerReference();
     }
 
     private void Update()
@@ -49,6 +46,26 @@ public class WatcherSpawn : MonoBehaviour
         }
     }
 
+    private void FindPlayerReference()
+    {
+        if (playerRef != null) return;
+
+        GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
+
+        if (playerObject == null)
+        {
+            Debug.LogWarning("WatcherSpawn: No Player tagged object found yet.");
+            return;
+        }
+
+        playerRef = playerObject.GetComponent<PlayerReferences>();
+
+        if (playerRef == null)
+        {
+            Debug.LogError("WatcherSpawn: PlayerReferences is missing on the Player tagged object.");
+        }
+    }
+
     private void SpawnEnemy()
     {
         if (enemyPrefab == null)
@@ -62,6 +79,8 @@ public class WatcherSpawn : MonoBehaviour
             Debug.LogWarning("TimedEnemySpawner: No spawn areas assigned.");
             return;
         }
+
+        FindPlayerReference();
 
         if (playerRef == null)
         {
@@ -97,6 +116,7 @@ public class WatcherSpawn : MonoBehaviour
         if (validAreas.Count == 0)
             return null;
 
+        // Uses playerRef safely now
         validAreas.Sort((a, b) =>
         {
             float distA = Vector3.Distance(playerRef.transform.position, a.bounds.center);

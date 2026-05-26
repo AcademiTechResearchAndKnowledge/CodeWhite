@@ -10,15 +10,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: a4175a5dc4c29684592cdaff59c801a9, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.9829302
+      value: -8.8689995
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: a4175a5dc4c29684592cdaff59c801a9, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.50000006
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: a4175a5dc4c29684592cdaff59c801a9, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -11.31
+      value: 78.685
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: a4175a5dc4c29684592cdaff59c801a9, type: 3}
       propertyPath: m_LocalRotation.w
@@ -86,6 +86,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: a4175a5dc4c29684592cdaff59c801a9, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6106851471738813495}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: a4175a5dc4c29684592cdaff59c801a9, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2216945247142799872}
     - targetCorrespondingSourceObject: {fileID: -8391222552659086748, guid: a4175a5dc4c29684592cdaff59c801a9, type: 3}
       insertIndex: -1
       addedObject: {fileID: 912144358452901755}
@@ -131,6 +134,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90c84465f404a4e449ea5b868f6de2c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TableHideTrigger
+--- !u!114 &2216945247142799872
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 225731130348056246}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e3fdca004f2d45fe8abbed571a8abd5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshModifier
+  m_SerializedVersion: 0
+  m_OverrideArea: 1
+  m_Area: 1
+  m_OverrideGenerateLinks: 0
+  m_GenerateLinks: 0
+  m_IgnoreFromBuild: 0
+  m_ApplyToChildren: 1
+  m_AffectedAgents: ffffffff
 --- !u!1 &318910159674646915 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -8391222552659086748, guid: a4175a5dc4c29684592cdaff59c801a9, type: 3}

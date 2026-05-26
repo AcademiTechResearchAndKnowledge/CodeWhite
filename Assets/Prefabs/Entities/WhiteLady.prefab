@@ -407,18 +407,22 @@ MonoBehaviour:
   specialStateInterval: 5
   teleportChance: 80
   weepChance: 20
-  teleportSearchRadius: 10
-  teleportSampleCount: 20
+  teleportSearchRadius: 9
+  teleportSampleCount: 100
   teleportIdleDuration: 2
   weepDuration: 30
   audioSource: {fileID: 3326810911531359156}
-  teleportSfx: {fileID: 8300000, guid: b52a316559d7c654fae8a40fabf4bd6e, type: 3}
+  teleportSfx: {fileID: 8300000, guid: 086682b41e8ab4144a22d34d3ac2982f, type: 3}
   chasingSfx: {fileID: 8300000, guid: 311ca31f363a7324d967ead28bde37b6, type: 3}
   weepingSfx: {fileID: 8300000, guid: 3e8993b9d464f0c4caf18ef24b194fd6, type: 3}
   chasingStoppedSfx: {fileID: 8300000, guid: cb45a497a8ab5884983dc4f840b53f6a, type: 3}
   ambientAudioSource: {fileID: 4725844612474646293}
   ambientNoises:
-  - {fileID: 8300000, guid: 5ae82d2ea2a576242ac57bdcb7b02b5d, type: 3}
+  - {fileID: 8300000, guid: 37ef5a8911aff5e4eb7d0553a99a2ce1, type: 3}
+  - {fileID: 8300000, guid: d991a5be913e74c4a814c17dc85019f6, type: 3}
+  - {fileID: 8300000, guid: 6fab686bec6cdb2489c76116d2c11062, type: 3}
+  - {fileID: 8300000, guid: 50fdb1b6f03648c4d93f9b7533fe2ceb, type: 3}
+  - {fileID: 8300000, guid: 017b98a3740a7134aa50a0a307f3d189, type: 3}
   minNoiseInterval: 4
   maxNoiseInterval: 10
   ambientVolume: 0.8
@@ -537,7 +541,7 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 0.7771945, y: 2.5115716, z: 0.22580147}
   m_Center: {x: -0.014309168, y: 1.6578876, z: -0.020842552}

@@ -105,7 +105,7 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 0.7809038, y: 1.1256585, z: 0.22580147}
   m_Center: {x: -0.01245451, y: -0.37302482, z: -0.020842552}
@@ -124,7 +124,12 @@ MonoBehaviour:
   audioSource: {fileID: 7135104808749466423}
   ambientAudioSource: {fileID: 3380791597304358488}
   chasingSfx: {fileID: 8300000, guid: 311ca31f363a7324d967ead28bde37b6, type: 3}
-  ambientNoises: []
+  ambientNoises:
+  - {fileID: 8300000, guid: 017b98a3740a7134aa50a0a307f3d189, type: 3}
+  - {fileID: 8300000, guid: 50fdb1b6f03648c4d93f9b7533fe2ceb, type: 3}
+  - {fileID: 8300000, guid: 6fab686bec6cdb2489c76116d2c11062, type: 3}
+  - {fileID: 8300000, guid: d991a5be913e74c4a814c17dc85019f6, type: 3}
+  - {fileID: 8300000, guid: 37ef5a8911aff5e4eb7d0553a99a2ce1, type: 3}
   minNoiseInterval: 4
   maxNoiseInterval: 10
   ambientVolume: 0.8
@@ -185,7 +190,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  canvasJumpscare: {fileID: 0}
+  jumpscarePrefab: {fileID: 0}
 --- !u!82 &7135104808749466423
 AudioSource:
   m_ObjectHideFlags: 0

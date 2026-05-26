@@ -43,6 +43,13 @@ public class CandleInteract : Interactable
         if (selectedSlot == null || selectedSlot.IsEmpty() || selectedSlot.item != lighterData)
         {
             Debug.Log("You need to have the lighter equipped in your hand to light this!");
+
+            // NEW FIX: Reach out to the Manager and play the fail sound before we stop!
+            if (LighterPuzzleManager.instance != null && LighterPuzzleManager.instance.audioSource != null && LighterPuzzleManager.instance.noLighterSFX != null)
+            {
+                LighterPuzzleManager.instance.audioSource.PlayOneShot(LighterPuzzleManager.instance.noLighterSFX);
+            }
+
             return; // Stop the code here
         }
 

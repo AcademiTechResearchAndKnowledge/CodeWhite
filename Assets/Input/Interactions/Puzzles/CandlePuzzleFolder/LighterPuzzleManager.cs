@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.Events;
 
 public class LighterPuzzleManager : MonoBehaviour
 {
@@ -16,6 +17,14 @@ public class LighterPuzzleManager : MonoBehaviour
     public GameObject entity_1;
     public Transform entity_1_spawn;
 
+    [Header("Audio Settings")]
+    public AudioSource audioSource;
+    public AudioClip noLighterSFX;
+    public AudioClip puzzleFinishedSFX;
+
+    [Header("Events")]
+    public UnityEvent onPuzzleComplete;
+
     public enum LighterState { Hidden, Spawned, Held }
     public LighterState currentLighterState = LighterState.Hidden;
 
@@ -24,7 +33,6 @@ public class LighterPuzzleManager : MonoBehaviour
 
     private GameObject currentActiveEntity;
 
-    // NEW: A Stack to remember exactly which physical candles are currently lit
     private Stack<CandleInteract> litCandlesStack = new Stack<CandleInteract>();
 
     void Awake()
@@ -74,12 +82,21 @@ public class LighterPuzzleManager : MonoBehaviour
         currentLighterState = LighterState.Held;
     }
 
-    // UPDATED: Now accepts the specific candle that was just interacted with
     public void CandleLit(CandleInteract newlyLitCandle)
     {
-        candlesLit++;
+        if (currentLighterState != LighterState.Held)
+        {
+            Debug.Log("Cannot light candle: Player does not have a lighter!");
 
-        // Add this specific candle to the top of our tracking stack
+            if (audioSource != null && noLighterSFX != null)
+            {
+                audioSource.PlayOneShot(noLighterSFX);
+            }
+
+            return;
+        }
+
+        candlesLit++;
         litCandlesStack.Push(newlyLitCandle);
 
         Debug.Log("Candles lit: " + candlesLit);
@@ -103,21 +120,21 @@ public class LighterPuzzleManager : MonoBehaviour
 
     public void BlowOutCandle()
     {
+        Debug.Log("Entity caught the player!");
+
         if (candlesLit > 0)
         {
             candlesLit--;
-            Debug.Log("Entity caught the player! A candle was blown out. Candles lit: " + candlesLit);
+            Debug.Log("A candle was blown out. Candles lit: " + candlesLit);
 
-            // THE FIX: Grab the most recently lit candle off the stack and turn off its flame
             if (litCandlesStack.Count > 0)
             {
                 CandleInteract candleToBlowOut = litCandlesStack.Pop();
                 candleToBlowOut.Extinguish();
             }
-
-            currentLighterState = LighterState.Hidden;
-            ResetAllDrawers();
         }
+        currentLighterState = LighterState.Hidden;
+        ResetAllDrawers();
     }
 
     private void ResetAllDrawers()
@@ -134,5 +151,25 @@ public class LighterPuzzleManager : MonoBehaviour
     void PuzzleFinished()
     {
         Debug.Log("Puzzle Finished! All candles are lit!");
+
+        if (currentActiveEntity != null)
+        {
+            EntityDespawner despawner = currentActiveEntity.GetComponent<EntityDespawner>();
+            if (despawner != null)
+            {
+                despawner.DespawnWithParticles();
+            }
+            else
+            {
+                Destroy(currentActiveEntity);
+            }
+        }
+
+        if (audioSource != null && puzzleFinishedSFX != null)
+        {
+            audioSource.PlayOneShot(puzzleFinishedSFX);
+        }
+
+        onPuzzleComplete?.Invoke();
     }
 }

@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 2142293438222012064}
   - component: {fileID: 1656166891887392441}
   - component: {fileID: 2693523607650984433}
+  - component: {fileID: -2882222802266300834}
   m_Layer: 0
   m_Name: Flower
   m_TagString: Interactable
@@ -33,7 +34,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -4.68442, y: 0.776, z: -16.31681}
-  m_LocalScale: {x: 0.5, y: 0.5, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -193,6 +194,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: -2882222802266300834}
+        m_TargetAssemblyTypeName: PickupSFX, Assembly-CSharp
+        m_MethodName: Play
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   teleportPoints:
   - {fileID: 0}
   - {fileID: 0}
@@ -200,7 +213,7 @@ MonoBehaviour:
   teleportInterval: 20
   minSpawnDistance: 10
   audioSource: {fileID: 2693523607650984433}
-  teleportSound: {fileID: 8300000, guid: a87eb6b8eae6baf4db6ad923e0394863, type: 3}
+  teleportSound: {fileID: 8300000, guid: 086682b41e8ab4144a22d34d3ac2982f, type: 3}
 --- !u!82 &2693523607650984433
 AudioSource:
   m_ObjectHideFlags: 0
@@ -210,7 +223,7 @@ AudioSource:
   m_GameObject: {fileID: 4433324629492271209}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: 3023762586689866044, guid: c18ef9370e654aa4697400b1c81519c6, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 1
@@ -298,3 +311,17 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &-2882222802266300834
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4433324629492271209}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d3cc1164a1e47d4490fb8d550e19dbc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PickupSFX
+  pickupClip: {fileID: 8300000, guid: a87eb6b8eae6baf4db6ad923e0394863, type: 3}
+  volume: 0.5

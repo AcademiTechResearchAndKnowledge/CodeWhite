@@ -91,6 +91,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: c5002f04cab18ef4b9dc1209d950e63e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 9221995450032891101}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: c5002f04cab18ef4b9dc1209d950e63e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8450778538997913814}
   m_SourcePrefab: {fileID: 100100000, guid: c5002f04cab18ef4b9dc1209d950e63e, type: 3}
 --- !u!1 &5382990296369616802 stripped
 GameObject:
@@ -13127,6 +13130,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 8450778538997913814}
+        m_TargetAssemblyTypeName: PickupSFX, Assembly-CSharp
+        m_MethodName: Play
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &8301595435624030387
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13190,3 +13205,17 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 8044010701749377217, guid: c5002f04cab18ef4b9dc1209d950e63e, type: 3}
+--- !u!114 &8450778538997913814
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5382990296369616802}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d3cc1164a1e47d4490fb8d550e19dbc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PickupSFX
+  pickupClip: {fileID: 8300000, guid: a87eb6b8eae6baf4db6ad923e0394863, type: 3}
+  volume: 0.5
