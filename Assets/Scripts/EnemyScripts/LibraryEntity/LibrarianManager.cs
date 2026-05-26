@@ -1,7 +1,11 @@
 using UnityEngine;
+using TMPro;
+using System.Collections;
 
 public class LibrarianManager : MonoBehaviour
 {
+    public static LibrarianManager instance;
+
     [Header("Anxiety Settings")]
     [SerializeField] private float currentAnxiety = 0f;
     private const float maxAnxiety = 100f;
@@ -9,13 +13,59 @@ public class LibrarianManager : MonoBehaviour
 
     [Header("Entity Spawning")]
     public GameObject huntingEntityPrefab;
-
-    [Tooltip("Drag all your empty spawn point GameObjects into this list.")]
     public Transform[] entitySpawnPoints;
 
     [Header("Level Progress")]
     [SerializeField] private int signedBooksSubmitted = 0;
     private const int requiredSignedBooks = 10;
+
+    [Header("Audio Settings")]
+    public AudioSource audioSource;
+    public AudioClip correctBookSFX;
+    public AudioClip puzzleCompleteSFX;
+    public AudioClip noBookSFX;
+
+    [Header("UI Settings")]
+    [Tooltip("No need to assign this in the inspector anymore! The script will find it dynamically.")]
+    public TextMeshProUGUI hintText;
+    public float hintDisplayTime = 3f;
+
+    private void Awake()
+    {
+        instance = this;
+    }
+
+    private void Start()
+    {
+        // NEW FIX: Look for a GameObject named exactly "PlayerHintText" anywhere in the scene
+        GameObject foundTextObject = GameObject.Find("PlayerHintText");
+
+        if (foundTextObject != null)
+        {
+            hintText = foundTextObject.GetComponent<TextMeshProUGUI>();
+            Debug.Log("LibrarianManager: Successfully found and connected to the Player's Hint Text!");
+        }
+        else
+        {
+            // BACKUP PLAN: If the name doesn't match, try to find the Player by Tag and search their children
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null)
+            {
+                hintText = player.GetComponentInChildren<TextMeshProUGUI>();
+                Debug.Log("LibrarianManager: Found Player tag, grabbing first TextMeshPro component found in children.");
+            }
+        }
+
+        // Clean up the text at the start of the level
+        if (hintText != null)
+        {
+            hintText.text = "";
+        }
+        else
+        {
+            Debug.LogError("LibrarianManager: CRITICAL! Could not find the Player's Hint Text UI in this scene. Check your GameObject names!");
+        }
+    }
 
     public void SubmitBook(LibraryBookType submittedBookType)
     {
@@ -25,7 +75,13 @@ public class LibrarianManager : MonoBehaviour
                 ModifyAnxiety(-5f);
                 signedBooksSubmitted++;
 
-                Debug.Log($"Book Accepted: Librarian is satisfied. Anxiety reduced by 5%. ({signedBooksSubmitted}/{requiredSignedBooks} Signed Books)");
+                if (signedBooksSubmitted < requiredSignedBooks)
+                {
+                    if (audioSource != null && correctBookSFX != null)
+                    {
+                        audioSource.PlayOneShot(correctBookSFX);
+                    }
+                }
 
                 if (signedBooksSubmitted >= requiredSignedBooks)
                 {
@@ -35,16 +91,13 @@ public class LibrarianManager : MonoBehaviour
 
             case LibraryBookType.Unsigned:
                 ModifyAnxiety(5f);
-                Debug.Log("Book Rejected: Librarian is mad! No signature found. Anxiety increased by 5%.");
-
                 if (currentAnxiety >= anxietyThreshold)
                 {
-                    Debug.Log("[Librarian Action] The Librarian begins to taunt, scare, and pressure the player!");
+                    Debug.Log("[Librarian Action] The Librarian begins to taunt!");
                 }
                 break;
 
             case LibraryBookType.Forged:
-                Debug.Log("Book Rejected: FORGED SIGNATURE DETECTED. Librarian is enraged!");
                 SpawnHuntingEntity();
                 break;
         }
@@ -53,32 +106,47 @@ public class LibrarianManager : MonoBehaviour
     private void ModifyAnxiety(float amount)
     {
         currentAnxiety = Mathf.Clamp(currentAnxiety + amount, 0, maxAnxiety);
-        Debug.Log($"[Anxiety System] Current Anxiety is now: {currentAnxiety}%");
     }
 
     private void SpawnHuntingEntity()
     {
-        // Check if we have the prefab AND at least one spawn point in the array
         if (huntingEntityPrefab != null && entitySpawnPoints != null && entitySpawnPoints.Length > 0)
         {
-            // 1. Pick a random number between 0 and the total number of spawn points
             int randomIndex = Random.Range(0, entitySpawnPoints.Length);
-
-            // 2. Select the spawn point at that random index
             Transform selectedSpawnPoint = entitySpawnPoints[randomIndex];
-
-            // 3. Spawn the Corrector at the chosen location
             Instantiate(huntingEntityPrefab, selectedSpawnPoint.position, selectedSpawnPoint.rotation);
-            Debug.Log($"[Entity Action] The Corrector has spawned at point: {selectedSpawnPoint.name}!");
-        }
-        else
-        {
-            Debug.LogWarning("Cannot spawn entity! Please assign the Entity Prefab and at least one Spawn Point in the inspector.");
         }
     }
 
     private void SpawnPortal()
     {
-        Debug.Log("[Level Complete] 10 Signed Books submitted! The Portal is now spawning...");
+        if (audioSource != null && puzzleCompleteSFX != null)
+        {
+            audioSource.PlayOneShot(puzzleCompleteSFX);
+        }
+    }
+
+    public void PlayNoBookError(string message = "You don't have a book to submit!")
+    {
+        if (audioSource != null && noBookSFX != null)
+        {
+            audioSource.PlayOneShot(noBookSFX);
+        }
+
+        if (hintText != null)
+        {
+            hintText.text = message;
+            StopAllCoroutines();
+            StartCoroutine(ClearHintText());
+        }
+    }
+
+    private IEnumerator ClearHintText()
+    {
+        yield return new WaitForSeconds(hintDisplayTime);
+        if (hintText != null)
+        {
+            hintText.text = "";
+        }
     }
 }

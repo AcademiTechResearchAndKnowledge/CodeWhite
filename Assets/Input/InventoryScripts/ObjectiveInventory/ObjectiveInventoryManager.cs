@@ -213,14 +213,14 @@ public class ObjectiveInventoryManager : MonoBehaviour
     public void UseSelectedItem()
     {
         // ---------------------------------------------------------
-        // NEW: PREVENT USING/PLAYING SOUND IF THE BOOK IS ALREADY OPEN!
+        // FIXED: Now 'E' will close the canvas if it's already open!
         // ---------------------------------------------------------
         BookInspectionUI inspectUI = FindFirstObjectByType<BookInspectionUI>();
         if (inspectUI != null && inspectUI.IsOpen())
         {
-            Debug.Log("[Use] The book is already open! Blocking sound and re-use.");
-            // Optional: If you want 'E' to close the book, you could call inspectUI.Close() here instead.
-            return; // Stops the code so the sound doesn't play!
+            Debug.Log("[Use] The book is already open! Closing it now.");
+            inspectUI.CloseInspection(); // <-- Call the close method!
+            return;
         }
 
         ObjectiveInventorySlot slot = GetSelectedSlot();
