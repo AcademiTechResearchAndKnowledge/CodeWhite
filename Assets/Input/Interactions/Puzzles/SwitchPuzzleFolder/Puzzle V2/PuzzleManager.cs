@@ -1,19 +1,29 @@
 using UnityEngine;
 
-// FOR EMPTY OBJECT THAT MANAGES THE PUZZLE LOGIC
 public class SwitchPuzzleManager : MonoBehaviour
 {
     public static SwitchPuzzleManager Instance;
 
+    [Header("Puzzle Settings")]
     [HideInInspector] public int correctButtonIndex = -1;
     [HideInInspector] public int completedCount = 0;
     public bool puzzleComplete = false;
-
     public int requiredCount = 5;
+
+    [Header("Audio Settings")]
+    public AudioSource audioSource;
+    public AudioClip correctSFX;
+    public AudioClip wrongSFX;
 
     void Awake()
     {
         Instance = this;
+
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+        }
+
         RandomizeCorrectButton(-1);
     }
 
@@ -42,6 +52,11 @@ public class SwitchPuzzleManager : MonoBehaviour
 
     public void RegisterCorrectAnswer()
     {
+        if (audioSource != null && correctSFX != null)
+        {
+            audioSource.PlayOneShot(correctSFX);
+        }
+
         completedCount++;
 
         if (completedCount >= requiredCount)
@@ -60,6 +75,11 @@ public class SwitchPuzzleManager : MonoBehaviour
 
     public void RegisterWrongAnswer()
     {
+        if (audioSource != null && wrongSFX != null)
+        {
+            audioSource.PlayOneShot(wrongSFX);
+        }
+
         int previous = correctButtonIndex;
         RandomizeCorrectButton(previous);
     }

@@ -208,6 +208,8 @@ public class AggroEntityWondering : MonoBehaviour
     {
         currentState = WanderState.Relocating;
 
+        breadcrumbs.Clear();
+
         Vector3 newPos = GetValidWanderPosition(transform.position, relocateDistance, NavMesh.AllAreas);
 
         if (newPos != transform.position)

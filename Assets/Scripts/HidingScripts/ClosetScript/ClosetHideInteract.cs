@@ -21,7 +21,7 @@ public class ClosetHideInteract : MonoBehaviour
     [Tooltip("Assign the light component placed inside the closet here.")]
     public Light internalClosetLight;
 
-    // --- ADDED: Audio Settings ---
+    // --- Audio Settings ---
     [Header("Audio Settings")]
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip turnOnSound;
@@ -35,12 +35,17 @@ public class ClosetHideInteract : MonoBehaviour
     [Tooltip("Delay in seconds before the close sound plays.")]
     [SerializeField] private float closeSoundDelay = 0f;
 
-    // --- Old AI References ---
-    private EntityDetector entity;
-    private EntityAi entityAi;
-    private EntityWondering entityWondering;
+    // --- Aggro Entity References ---
+    private AggroEntityDetector aggroEntity;
+    private AggroEntityAI aggroEntityAi;
+    private AggroEntityWondering aggroEntityWondering;
 
-    // --- New AI Reference ---
+    // --- NEW: Despawning Entity References ---
+    private DespawningEntityDetector despawningEntity;
+    private AggroEntityAI despawningEntityAi;
+    private DespawningEntityWondering despawningEntityWondering;
+
+    // --- White Lady Reference ---
     private WhiteLady whiteLady;
 
     public float inputDelay = 2f;
@@ -53,8 +58,6 @@ public class ClosetHideInteract : MonoBehaviour
 
     private bool isTransitioningToHide = false;
     private bool exitUIShown = false;
-
-    // Added a flag to prevent toggling while it's currently flickering
     private bool isFlickering = false;
 
     public bool IsHiding => (currentCloset != null && currentCloset.InsideCloset) || isTransitioningToHide;
@@ -64,16 +67,13 @@ public class ClosetHideInteract : MonoBehaviour
         currentCloset = GetComponent<ClosetHidingSystem>();
         closetInteractable = GetComponent<Interactable>();
 
-        // Ensure the inside closet light is off when the game starts
         if (internalClosetLight != null) internalClosetLight.enabled = false;
 
-        // Auto-grab AudioSource if not assigned
         if (audioSource == null)
         {
             audioSource = GetComponent<AudioSource>();
         }
 
-        // Cache player references
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj != null)
         {
@@ -86,29 +86,45 @@ public class ClosetHideInteract : MonoBehaviour
 
     void FindEntityReferences()
     {
-        entity = Object.FindFirstObjectByType<EntityDetector>();
-        if (entity != null)
+        // Only search if we don't already have the reference cached
+        if (aggroEntity == null)
         {
-            entityAi = entity.GetComponent<EntityAi>();
-            entityWondering = entity.GetComponent<EntityWondering>();
+            aggroEntity = Object.FindFirstObjectByType<AggroEntityDetector>();
+            if (aggroEntity != null)
+            {
+                aggroEntityAi = aggroEntity.GetComponent<AggroEntityAI>();
+                aggroEntityWondering = aggroEntity.GetComponent<AggroEntityWondering>();
+            }
         }
 
-        whiteLady = Object.FindFirstObjectByType<WhiteLady>();
+        if (despawningEntity == null)
+        {
+            despawningEntity = Object.FindFirstObjectByType<DespawningEntityDetector>();
+            if (despawningEntity != null)
+            {
+                despawningEntityAi = despawningEntity.GetComponent<AggroEntityAI>();
+                despawningEntityWondering = despawningEntity.GetComponent<DespawningEntityWondering>();
+            }
+        }
+
+        if (whiteLady == null)
+        {
+            whiteLady = Object.FindFirstObjectByType<WhiteLady>();
+        }
     }
 
     void Update()
     {
         if (inputLocked) return;
 
-        if (entity == null && whiteLady == null)
+        // Re-check references if everything falls completely out of scope
+        if (aggroEntity == null || despawningEntity == null || whiteLady == null)
         {
             FindEntityReferences();
         }
 
-        // --- WHILE INSIDE THE CLOSET ---
         if (currentCloset != null && currentCloset.InsideCloset)
         {
-            // 1. Push the Exit prompt to the HUD once fully inside
             if (!exitUIShown)
             {
                 HUDInteractController hud = GetHUD();
@@ -119,35 +135,22 @@ public class ClosetHideInteract : MonoBehaviour
                 exitUIShown = true;
             }
 
-            // 2. Listen for Right-Click to toggle the internal closet light (only if not currently flickering)
             if (Mouse.current != null && Mouse.current.rightButton.wasPressedThisFrame && !isFlickering)
             {
                 if (internalClosetLight != null)
                 {
                     internalClosetLight.enabled = !internalClosetLight.enabled;
 
-                    // Play toggle sounds
-                    if (internalClosetLight.enabled)
-                    {
-                        PlaySound(turnOnSound);
-                    }
-                    else
-                    {
-                        PlaySound(turnOffSound);
-                    }
+                    if (internalClosetLight.enabled) PlaySound(turnOnSound);
+                    else PlaySound(turnOffSound);
                 }
             }
 
-            // 3. Listen for the Exit Key (G) directly
             if (Keyboard.current.gKey.wasPressedThisFrame)
             {
                 if (internalClosetLight != null)
                 {
-                    // Only play the off sound if it was actually on when we exited
-                    if (internalClosetLight.enabled)
-                    {
-                        PlaySound(turnOffSound);
-                    }
+                    if (internalClosetLight.enabled) PlaySound(turnOffSound);
                     internalClosetLight.enabled = false;
                 }
 
@@ -158,7 +161,6 @@ public class ClosetHideInteract : MonoBehaviour
                 HUDInteractController hud = GetHUD();
                 if (hud != null) hud.DisableInteractionText();
 
-                // Play close sound when exiting manually with inspector delay
                 PlaySound(closetCloseSound, closeSoundDelay);
 
                 StartCoroutine(InputDelay());
@@ -183,8 +185,13 @@ public class ClosetHideInteract : MonoBehaviour
 
         bool canHide = true;
 
-        if (entity != null && !entity.canHideFromEnemy) canHide = false;
+        // 1. Check Aggro Entity
+        if (aggroEntity != null && !aggroEntity.canHideFromEnemy) canHide = false;
 
+        // 2. Check Despawning Entity
+        if (despawningEntity != null && !despawningEntity.canHideFromEnemy) canHide = false;
+
+        // 3. Check White Lady Distance/State
         if (whiteLady != null && playerTransform != null)
         {
             float distanceToWL = Vector3.Distance(playerTransform.position, whiteLady.transform.position);
@@ -196,14 +203,22 @@ public class ClosetHideInteract : MonoBehaviour
 
         if (!canHide)
         {
-            Debug.Log("Enemy is too close. Cannot hide yet.");
+            Debug.Log("An enemy is blocking your ability to hide right now.");
             return;
         }
 
-        if (entity != null)
+        // Handle AI state switches for standard Aggro Entity
+        if (aggroEntity != null)
         {
-            if (entityAi != null) entityAi.enabled = false;
-            if (entityWondering != null) entityWondering.enabled = true;
+            if (aggroEntityAi != null) aggroEntityAi.enabled = false;
+            if (aggroEntityWondering != null) aggroEntityWondering.enabled = true;
+        }
+
+        // Handle AI state switches for Despawning Entity
+        if (despawningEntity != null)
+        {
+            if (despawningEntityAi != null) despawningEntityAi.enabled = false;
+            if (despawningEntityWondering != null) despawningEntityWondering.enabled = true;
         }
 
         if (closetInteractable != null) closetInteractable.DisableOutline();
@@ -218,7 +233,6 @@ public class ClosetHideInteract : MonoBehaviour
 
         if (internalClosetLight != null) internalClosetLight.enabled = false;
 
-        // Play open sound when entering the closet with inspector delay
         PlaySound(closetOpenSound, openSoundDelay);
 
         StartCoroutine(InputDelay());
@@ -254,11 +268,7 @@ public class ClosetHideInteract : MonoBehaviour
     {
         if (internalClosetLight != null)
         {
-            // Play the off sound if the stalker kicks us out while the light is on
-            if (internalClosetLight.enabled)
-            {
-                PlaySound(turnOffSound);
-            }
+            if (internalClosetLight.enabled) PlaySound(turnOffSound);
             internalClosetLight.enabled = false;
         }
 
@@ -269,17 +279,14 @@ public class ClosetHideInteract : MonoBehaviour
         HUDInteractController hud = GetHUD();
         if (hud != null) hud.DisableInteractionText();
 
-        // Play close sound when forced out by an enemy with inspector delay
         PlaySound(closetCloseSound, closeSoundDelay);
 
         StartCoroutine(InputDelay());
         StartCoroutine(ExitClosetRoutine());
     }
 
-    // „Ÿ„Ÿ„Ÿ FLICKER LOGIC „Ÿ„Ÿ„Ÿ
     public void TriggerClosetLightFlicker(float duration = 1.5f)
     {
-        // Only flicker if we are actually hiding inside THIS closet
         if (currentCloset != null && currentCloset.InsideCloset && internalClosetLight != null && !isFlickering)
         {
             StartCoroutine(FlickerRoutine(duration));
@@ -289,42 +296,30 @@ public class ClosetHideInteract : MonoBehaviour
     private IEnumerator FlickerRoutine(float duration)
     {
         isFlickering = true;
-        bool originalState = internalClosetLight.enabled; // Remember if they had it on or off
+        bool originalState = internalClosetLight.enabled;
         float elapsed = 0f;
 
         while (elapsed < duration)
         {
-            // Randomly toggle the light
             internalClosetLight.enabled = Random.value > 0.5f;
-
-            // Random wait time between flashes (fast flicker)
             float waitTime = Random.Range(0.05f, 0.15f);
             yield return new WaitForSeconds(waitTime);
             elapsed += waitTime;
         }
 
-        // Restore to however they had it before the White Lady teleported
         internalClosetLight.enabled = originalState;
         isFlickering = false;
     }
 
-    // --- Helper method to safely play audio with optional delay ---
     private void PlaySound(AudioClip clip, float delay = 0f)
     {
         if (audioSource != null && clip != null)
         {
-            if (delay > 0f)
-            {
-                StartCoroutine(PlaySoundCO(clip, delay));
-            }
-            else
-            {
-                audioSource.PlayOneShot(clip);
-            }
+            if (delay > 0f) StartCoroutine(PlaySoundCO(clip, delay));
+            else audioSource.PlayOneShot(clip);
         }
     }
 
-    // --- Coroutine to handle the actual timing ---
     private IEnumerator PlaySoundCO(AudioClip clip, float delay)
     {
         yield return new WaitForSeconds(delay);
