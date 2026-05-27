@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.InputSystem;
-using UnityEngine.EventSystems; // CRITICAL: Added this to talk to the UI Event System
+using UnityEngine.EventSystems;
 
 public class PauseMenu : MonoBehaviour
 {
@@ -34,14 +34,20 @@ public class PauseMenu : MonoBehaviour
         pauseMenuUI.SetActive(false);
         Time.timeScale = 1f;
         GameIsPaused = false;
-
         AudioListener.pause = false;
-
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-
-        // Clear selection just to be safe when unpausing
         EventSystem.current.SetSelectedGameObject(null);
+
+        var zoom = FindFirstObjectByType<objectZoom>();
+        if (zoom != null && zoom.isInPuzzle)
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+        else
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
     }
 
     void Pause()
@@ -49,13 +55,9 @@ public class PauseMenu : MonoBehaviour
         pauseMenuUI.SetActive(true);
         Time.timeScale = 0f;
         GameIsPaused = true;
-
         AudioListener.pause = true;
-
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
-
-        // Clear any leftover selections from the last time we paused
         EventSystem.current.SetSelectedGameObject(null);
     }
 
@@ -63,8 +65,8 @@ public class PauseMenu : MonoBehaviour
     {
         pauseMenuUI.SetActive(false);
         settingsMenuUI.SetActive(true);
-
-        // Clear selection so the Settings menu buttons start fresh
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
         EventSystem.current.SetSelectedGameObject(null);
     }
 
@@ -72,8 +74,8 @@ public class PauseMenu : MonoBehaviour
     {
         settingsMenuUI.SetActive(false);
         pauseMenuUI.SetActive(true);
-
-        // THIS FIXES THE BUG: Clear the stuck "Settings" button selection
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
         EventSystem.current.SetSelectedGameObject(null);
     }
 
@@ -83,7 +85,6 @@ public class PauseMenu : MonoBehaviour
         GameIsPaused = false;
         AudioListener.pause = false;
 
-        // --- DESTROY ALL PERSISTENT OBJECTS BEFORE LOADING MENU ---
         PersistAcrossScenes player = FindFirstObjectByType<PersistAcrossScenes>();
         if (player != null) Destroy(player.gameObject);
 
