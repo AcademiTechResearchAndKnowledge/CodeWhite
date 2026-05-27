@@ -12,20 +12,23 @@ public class AnalogClock : MonoBehaviour
 
     private bool draggingHour = false;
     private bool draggingMinute = false;
+
     public int hours = 3;
     public int minutes = 0;
 
     public objectZoom objzoom;
 
-
     public static List<AnalogClock> allClocks = new List<AnalogClock>();
     public static bool puzzleDone = false;
+
     public bool allPuzzleDone = false;
+
     private static RandomPortalSpawner RPS;
 
     void Awake()
     {
         allClocks.Add(this);
+
         if (RPS == null)
         {
             RPS = FindFirstObjectByType<RandomPortalSpawner>();
@@ -45,23 +48,26 @@ public class AnalogClock : MonoBehaviour
         if (mainCamera == null)
             mainCamera = Camera.main;
 
-        SetPuzzleActive(false);
         UpdateClockVisuals();
     }
 
     void Update()
     {
-        if (objzoom.isInPuzzle)
-            SetPuzzleActive(true);
-        else
-            SetPuzzleActive(false);
+        if (!objzoom.isInPuzzle)
+            return;
 
         HandleDragging();
+
+        if (Keyboard.current.escapeKey.wasPressedThisFrame)
+        {
+            objzoom.ExitPuzzle();
+        }
     }
 
     private void HandleDragging()
     {
-        if (Mouse.current == null) return;
+        if (Mouse.current == null)
+            return;
 
         Ray ray = mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
         RaycastHit hit;
@@ -125,30 +131,28 @@ public class AnalogClock : MonoBehaviour
 
         float hourRot = hourPivot.localEulerAngles.z;
         hours = Mathf.RoundToInt(hourRot / 30f) % 12;
-        if (hours == 0) hours = 12;
 
+        if (hours == 0)
+            hours = 12;
 
         CheckAllClocks();
     }
 
     private void CheckAllClocks()
     {
-        if (puzzleDone) return;
+        if (puzzleDone)
+            return;
 
         foreach (AnalogClock clock in allClocks)
         {
             if (clock.hours != 5 || clock.minutes != 0)
                 return;
-
         }
+
         allPuzzleDone = true;
         puzzleDone = true;
-        RPS.SpawnPortalRandom(RandomPortalSpawner.PortalOrientation.Horizontal);
-    }
 
-    public void SetPuzzleActive(bool state)
-    {
-        objzoom.isInPuzzle = state;
+        RPS.SpawnPortalRandom(RandomPortalSpawner.PortalOrientation.Horizontal);
     }
 
     public void UpdateClockVisuals()

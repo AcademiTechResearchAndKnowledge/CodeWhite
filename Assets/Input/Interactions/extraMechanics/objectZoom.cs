@@ -20,11 +20,15 @@ public class objectZoom : MonoBehaviour
     public PlayerLook playerlookCamera;
     public Flashlight fl;
 
+    [SerializeField] private Outline outline;
+
     public bool isInPuzzle = false;
 
     private Rigidbody playerRb;
 
     private float lastInteractTime;
+    private float puzzleEnterTime;
+
     public float interactCooldown = 0.2f;
 
     void OnEnable()
@@ -44,36 +48,29 @@ public class objectZoom : MonoBehaviour
 
         playerVCam = PlayerCameraReference.Instance;
 
-        if (playerVCam == null)
-            Debug.LogError("Player VCam NOT FOUND (PlayerCameraReference missing)");
-
-        if (puzzleVCam == null)
-            Debug.LogError("Puzzle VCam NOT ASSIGNED in Inspector");
-
         yield return null;
 
         StartCoroutine(BindAllRoutine());
 
-        SetCameraState(false);
+        yield return null;
 
-        Debug.Log("INITIAL CAMERA STATE APPLIED");
+        isInPuzzle = false;
+        SetCameraState(false);
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        Debug.Log("SCENE LOADED | Rebinding objectZoom references...");
+        isInPuzzle = false;
         StartCoroutine(BindAllRoutine());
+        SetCameraState(false);
     }
 
     private IEnumerator BindAllRoutine()
     {
         yield return null;
-
         BindPlayer();
         yield return null;
         EnsureHandler();
-
-        Debug.Log("objectZoom BIND COMPLETE");
     }
 
     private void BindPlayer()
@@ -83,15 +80,9 @@ public class objectZoom : MonoBehaviour
         fl = FindFirstObjectByType<Flashlight>();
 
         if (playerController != null)
-        {
             playerRb = playerController.GetComponent<Rigidbody>();
-            Debug.Log("PLAYER LINKED OK");
-        }
         else
-        {
             playerRb = null;
-            Debug.LogWarning("PLAYER NOT FOUND IN THIS SCENE");
-        }
     }
 
     void Update()
@@ -101,19 +92,20 @@ public class objectZoom : MonoBehaviour
 
         if (interactableText == null && !isInPuzzle)
             interactableText = GameObject.FindWithTag("InteractText");
-        
+
         if (interactableText != null && isInPuzzle)
             interactableText.SetActive(false);
 
-        if (isInPuzzle && Keyboard.current.escapeKey.wasPressedThisFrame)
+        if (isInPuzzle &&
+            Time.time - puzzleEnterTime > 0.2f &&
+            Keyboard.current.fKey.wasPressedThisFrame)
         {
+            ExitPuzzle();
+
             if (interactableText != null)
                 interactableText.SetActive(true);
 
             LaptopManager.Instance?.StopInteraction(true);
-
-            ExitPuzzle();
-            isInPuzzle = false;
 
             if (mainObjHandler != null)
                 mainObjHandler.IsInteracting = false;
@@ -124,7 +116,9 @@ public class objectZoom : MonoBehaviour
 
     public void InteractZoomObj()
     {
-        if (Time.time - lastInteractTime < interactCooldown) return;
+        if (Time.time - lastInteractTime < interactCooldown)
+            return;
+
         lastInteractTime = Time.time;
 
         EnsureHandler();
@@ -152,12 +146,18 @@ public class objectZoom : MonoBehaviour
 
         if (puzzleVCam != null)
             puzzleVCam.Priority = puzzleActive ? 200 : 0;
-
-        Debug.Log($"CAM SWITCH | player: {playerVCam?.Priority} puzzle: {puzzleVCam?.Priority}");
     }
 
     private void EnterPuzzle()
     {
+        puzzleEnterTime = Time.time;
+
+        if (outline != null)
+        {
+            outline.enabled = false;
+            //outline.enabled = true;
+        }
+
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
@@ -174,12 +174,16 @@ public class objectZoom : MonoBehaviour
             fl.enabled = false;
 
         mainObjHandler?.StartInteraction();
-
-        Debug.Log("ENTER PUZZLE");
     }
 
     public void ExitPuzzle()
     {
+        if (outline != null)
+        {
+            //outline.enabled = false;
+            outline.enabled = true;
+        }
+
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
@@ -201,14 +205,14 @@ public class objectZoom : MonoBehaviour
         mainObjHandler?.StopInteraction();
 
         SetCameraState(false);
-        isInPuzzle = false;
 
-        Debug.Log("EXIT PUZZLE");
+        isInPuzzle = false;
     }
 
     private void StopPlayerInstantly()
     {
-        if (playerRb == null) return;
+        if (playerRb == null)
+            return;
 
         playerRb.linearVelocity = Vector3.zero;
         playerRb.angularVelocity = Vector3.zero;
@@ -224,13 +228,6 @@ public class objectZoom : MonoBehaviour
         }
 
         if (interactableText == null)
-        {
             interactableText = GameObject.FindWithTag("InteractText");
-
-            if (interactableText != null)
-                Debug.Log("INTERACTABLE TEXT AUTO-FOUND");
-            else
-                Debug.LogWarning("INTERACTABLE TEXT NOT FOUND — ensure tag 'InteractText' is assigned");
-        }
     }
 }
