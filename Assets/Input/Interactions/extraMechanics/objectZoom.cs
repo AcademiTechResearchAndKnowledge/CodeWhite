@@ -11,11 +11,9 @@ public class objectZoom : MonoBehaviour
     [SerializeField] private MonoBehaviour interactableObject;
     private IZoomInteractable mainObjHandler;
 
-    [Header("Cameras")]
     public CinemachineCamera playerVCam;
     public CinemachineCamera puzzleVCam;
 
-    [Header("Player")]
     public PlayerMovement playerController;
     public PlayerLook playerlookCamera;
     public Flashlight fl;
@@ -45,15 +43,10 @@ public class objectZoom : MonoBehaviour
     private IEnumerator StartRoutine()
     {
         EnsureHandler();
-
         playerVCam = PlayerCameraReference.Instance;
-
         yield return null;
-
         StartCoroutine(BindAllRoutine());
-
         yield return null;
-
         isInPuzzle = false;
         SetCameraState(false);
     }
@@ -78,7 +71,6 @@ public class objectZoom : MonoBehaviour
         playerController = FindFirstObjectByType<PlayerMovement>();
         playerlookCamera = FindFirstObjectByType<PlayerLook>();
         fl = FindFirstObjectByType<Flashlight>();
-
         if (playerController != null)
             playerRb = playerController.GetComponent<Rigidbody>();
         else
@@ -87,6 +79,9 @@ public class objectZoom : MonoBehaviour
 
     void Update()
     {
+        if (PauseMenu.GameIsPaused)
+            return;
+
         if (mainObjHandler == null)
             EnsureHandler();
 
@@ -116,6 +111,9 @@ public class objectZoom : MonoBehaviour
 
     public void InteractZoomObj()
     {
+        if (PauseMenu.GameIsPaused)
+            return;
+
         if (Time.time - lastInteractTime < interactCooldown)
             return;
 
@@ -150,13 +148,13 @@ public class objectZoom : MonoBehaviour
 
     private void EnterPuzzle()
     {
+        if (PauseMenu.GameIsPaused)
+            return;
+
         puzzleEnterTime = Time.time;
 
         if (outline != null)
-        {
             outline.enabled = false;
-            //outline.enabled = true;
-        }
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
@@ -178,11 +176,11 @@ public class objectZoom : MonoBehaviour
 
     public void ExitPuzzle()
     {
+        if (PauseMenu.GameIsPaused)
+            return;
+
         if (outline != null)
-        {
-            //outline.enabled = false;
             outline.enabled = true;
-        }
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
