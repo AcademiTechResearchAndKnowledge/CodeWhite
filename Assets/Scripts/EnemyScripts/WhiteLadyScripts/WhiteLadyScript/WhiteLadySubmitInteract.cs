@@ -4,15 +4,13 @@ public class WhiteLadySubmitInteract : Interactable
 {
     private WhiteLady whiteLady;
 
-    // REMOVED: private Outline outline;
-    // REMOVED: The Awake() method
+    [Header("Accepted Submission Items")]
+    public ObjectiveItemData flowerData;
+    public ObjectiveItemData fixedMirrorData;
 
-    void Start()
+    void Awake()
     {
         whiteLady = GetComponentInParent<WhiteLady>();
-
-        // We can just call the method from your base Interactable class 
-        // to force the outline off at the very start!
         DisableOutline();
     }
 
@@ -26,20 +24,56 @@ public class WhiteLadySubmitInteract : Interactable
             return;
         }
 
-        bool hasFlower = WLObjectiveManager.Instance.flowerCollected;
-        bool hasFixedMirror = WLObjectiveManager.Instance.collectedMirrorPieces >= WLObjectiveManager.Instance.totalMirrorPieces;
+        // Grab whatever the player is currently holding
+        ObjectiveInventorySlot activeSlot = ObjectiveInventoryManager.Instance.GetSelectedSlot();
 
-        if (hasFlower || hasFixedMirror)
+        if (activeSlot == null || activeSlot.IsEmpty())
+        {
+            Debug.Log("You need to hold the item in your hand to submit it!");
+            return;
+        }
+
+        ObjectiveItemData heldItem = activeSlot.item;
+
+        // Verify the held item is one of the accepted items
+        if (heldItem == flowerData || heldItem == fixedMirrorData)
         {
             base.Interact();
+            Debug.Log($"Successfully submitted {heldItem.itemName} to the White Lady!");
 
-            Debug.Log("Successfully submitted the objective items to the White Lady!");
+            // ---------------------------------------------------------
+            // NEW: DETERMINE THE "OTHER" ITEM TO DESTROY
+            // ---------------------------------------------------------
+            // If we are holding the flower, the other item is the mirror. If holding the mirror, it's the flower.
+            ObjectiveItemData otherItem = (heldItem == flowerData) ? fixedMirrorData : flowerData;
 
+            // 1. Consume the item currently in our hand
+            activeSlot.amount--;
+            if (activeSlot.amount <= 0)
+            {
+                activeSlot.Clear();
+                ObjectiveInventoryManager.Instance.DeselectAll(); // Drop hand visual model
+            }
+
+            // 2. NEW: Search the entire inventory and erase the other item if it exists
+            ObjectiveInventoryManager.Instance.RemoveItem(otherItem, 1);
+
+            // 3. Refresh the UI once so the player sees both changes simultaneously
+            ObjectiveInventoryManager.Instance.RefreshUI();
+            // ---------------------------------------------------------
+
+            // 4. Subdue the entity
+            whiteLady.gameObject.SetActive(false);
+
+            // 5. Unlock progression and spawn the portal
+            WLObjectiveManager.Instance.UnlockProgress($"Submitted {heldItem.itemName} to White Lady");
+
+            // 6. Destroy the hitbox
             Destroy(gameObject);
         }
         else
         {
-            Debug.Log("You don't have the Fixed Mirror or the Flower yet to submit!");
+            Debug.Log("The White Lady does not want this item.");
         }
     }
 }

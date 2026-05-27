@@ -51,9 +51,9 @@ public class WLObjectiveManager : MonoBehaviour
         if (flowerCollected) return;
 
         flowerCollected = true;
-        Debug.Log("Flower collected");
+        Debug.Log("Flower collected. Find the White Lady to submit it.");
 
-        UnlockProgress("Flower collected");
+        // REMOVED: UnlockProgress("Flower collected"); 
     }
 
     private void GiveFixedMirror()
@@ -84,7 +84,7 @@ public class WLObjectiveManager : MonoBehaviour
     }
 
     //Placeholder
-    private void UnlockProgress(string reason)
+    public void UnlockProgress(string reason)
     {
         if (progressionUnlocked) return;
 
