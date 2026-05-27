@@ -25,6 +25,8 @@ public class doorsGen : MonoBehaviour
 
     private GameObject rainbowDoor;
 
+    private bool keySpawned;
+
     void Start()
     {
         if (playerTransform == null)
@@ -38,7 +40,6 @@ public class doorsGen : MonoBehaviour
         floorTop = floorCollider.bounds.max.y;
 
         SpawnDoors();
-        SpawnKey();
     }
 
     void SpawnDoors()
@@ -95,6 +96,26 @@ public class doorsGen : MonoBehaviour
         }
     }
 
+    public void SpawnKeyOnce()
+    {
+        if (keySpawned) return;
+        keySpawned = true;
+        SpawnKey();
+    }
+
+    void SpawnKey()
+    {
+        Vector3 pos = GetValidRandomPosition();
+
+        if (pos == Vector3.zero)
+            return;
+
+        pos.y = floorTop;
+
+        GameObject key = Instantiate(keyPrefab, pos, Quaternion.identity, keysParent);
+        AdjustToFloor(key);
+    }
+
     private void OnRainbowDoorOpened()
     {
         if (rainbowDoor == null) return;
@@ -106,24 +127,16 @@ public class doorsGen : MonoBehaviour
         spawner.SpawnPortalAt(spawnPos, RandomPortalSpawner.PortalOrientation.Vertical);
     }
 
-    private Vector3 GetDoorCenter(GameObject door)
+    Vector3 GetDoorCenter(GameObject door)
     {
         Renderer[] renderers = door.GetComponentsInChildren<Renderer>();
+
         if (renderers.Length > 0)
         {
-            Bounds bounds = renderers[0].bounds;
+            Bounds b = renderers[0].bounds;
             foreach (Renderer r in renderers)
-                bounds.Encapsulate(r.bounds);
-            return bounds.center;
-        }
-
-        Collider[] colliders = door.GetComponentsInChildren<Collider>();
-        if (colliders.Length > 0)
-        {
-            Bounds bounds = colliders[0].bounds;
-            foreach (Collider c in colliders)
-                bounds.Encapsulate(c.bounds);
-            return bounds.center;
+                b.Encapsulate(r.bounds);
+            return b.center;
         }
 
         return door.transform.position;
@@ -181,17 +194,6 @@ public class doorsGen : MonoBehaviour
 
         float offset = floorTop - col.bounds.min.y;
         obj.transform.position += new Vector3(0f, offset, 0f);
-    }
-
-    void SpawnKey()
-    {
-        Vector3 pos = GetValidRandomPosition();
-        if (pos == Vector3.zero) return;
-
-        pos.y = floorTop;
-
-        GameObject key = Instantiate(keyPrefab, pos, Quaternion.identity, keysParent);
-        AdjustToFloor(key);
     }
 
     Vector3 GetValidRandomPosition()

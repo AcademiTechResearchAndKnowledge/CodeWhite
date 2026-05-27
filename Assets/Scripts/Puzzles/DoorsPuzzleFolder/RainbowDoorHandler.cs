@@ -6,29 +6,32 @@ public class RainbowDoorInteractable : Interactable
 {
     [SerializeField] private GameObject entity_1;
 
-    [Header("Animator")]
     public Animator doorAnimator;
     public float openTime = 1f;
 
     private Transform entity_1_spawn;
-    private bool spawnFound = false;
+    private bool spawnFound;
 
-    private bool isOpened = false;
-    private bool entitySpawned = false;
+    private bool isOpened;
+    private bool entitySpawned;
 
     private GameObject spawnedEntity;
 
     private Transform player;
-    private bool playerFound = false;
+    private bool playerFound;
 
     private RandomPortalSpawner portalSpawner;
+    private doorsGen doorGen;
 
     [HideInInspector] public Action onPuzzleComplete;
+
+    private bool hasInteracted;
 
     void Awake()
     {
         CacheSpawnPoint();
         CachePortalSpawner();
+        CacheDoorGen();
     }
 
     void Start()
@@ -46,29 +49,34 @@ public class RainbowDoorInteractable : Interactable
 
     public override void Interact()
     {
-        if (isOpened)
+        if (!hasInteracted)
         {
-            Debug.Log("Rainbow door is already open.");
-            return;
+            hasInteracted = true;
+
+            if (doorGen == null)
+                CacheDoorGen();
+
+            if (doorGen != null)
+                doorGen.SpawnKeyOnce();
         }
+
+        if (isOpened)
+            return;
 
         if (DoorPuzzleHandler.instance != null && DoorPuzzleHandler.instance.hasKey)
         {
-            Debug.Log("Rainbow door opened with key — destroying door.");
             isOpened = true;
 
             if (spawnedEntity != null)
             {
                 Destroy(spawnedEntity);
                 spawnedEntity = null;
-                Debug.Log("Entity destroyed because door was opened.");
             }
 
             StartCoroutine(OpenDoorRoutine());
         }
         else
         {
-            Debug.Log("The rainbow door is locked. You need a key.");
             TriggerEntity();
         }
     }
@@ -83,61 +91,37 @@ public class RainbowDoorInteractable : Interactable
         else
         {
             yield return null;
-            Debug.LogWarning("[RainbowDoorInteractable] No Animator assigned — destroying immediately.");
         }
 
-        Debug.Log("[RainbowDoorInteractable] Invoking onPuzzleComplete. Is null: " + (onPuzzleComplete == null));
         onPuzzleComplete?.Invoke();
 
         if (portalSpawner != null)
         {
-            Debug.Log("[RainbowDoorInteractable] Calling SpawnPortalRandom.");
             portalSpawner.SpawnPortalRandom(RandomPortalSpawner.PortalOrientation.Vertical);
-        }
-        else
-        {
-            Debug.LogWarning("[RainbowDoorInteractable] RandomPortalSpawner not found — skipping portal spawn.");
         }
 
         GameObject toDestroy = transform.parent != null ? transform.parent.gameObject : gameObject;
-        Debug.Log($"[RainbowDoorInteractable] Destroying: {toDestroy.name}");
         Destroy(toDestroy);
+    }
+
+    void CacheDoorGen()
+    {
+        doorGen = FindFirstObjectByType<doorsGen>();
     }
 
     private void CachePortalSpawner()
     {
         portalSpawner = FindFirstObjectByType<RandomPortalSpawner>();
-
-        if (portalSpawner != null)
-            Debug.Log("[RainbowDoorInteractable] RandomPortalSpawner found and cached.");
-        else
-            Debug.LogWarning("[RainbowDoorInteractable] RandomPortalSpawner not found in scene.");
     }
 
     void TriggerEntity()
     {
-        if (entitySpawned)
-        {
-            Debug.Log("Entity already spawned.");
-            return;
-        }
-
-        if (entity_1 == null)
-        {
-            Debug.LogWarning("Entity prefab is not assigned.");
-            return;
-        }
-
-        if (!spawnFound || entity_1_spawn == null)
-        {
-            Debug.LogWarning("Entity spawn point not found or not assigned.");
-            return;
-        }
+        if (entitySpawned) return;
+        if (entity_1 == null) return;
+        if (!spawnFound || entity_1_spawn == null) return;
 
         spawnedEntity = Instantiate(entity_1, entity_1_spawn.position, entity_1_spawn.rotation);
         entitySpawned = true;
-
-        Debug.Log("Entity spawned and is approaching the player...");
     }
 
     void CachePlayer()
@@ -169,13 +153,11 @@ public class RainbowDoorInteractable : Interactable
             else
             {
                 spawnFound = false;
-                Debug.LogWarning("No GameObject with tag 'EntitySpawn' found in scene.");
             }
         }
-        catch (UnityException e)
+        catch (UnityException)
         {
             spawnFound = false;
-            Debug.LogError("Missing Tag in Unity Tag Manager: 'EntitySpawn'\n" + e.Message);
         }
     }
 }
