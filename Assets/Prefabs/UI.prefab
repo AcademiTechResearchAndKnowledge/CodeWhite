@@ -1125,6 +1125,7 @@ GameObject:
   - component: {fileID: 8067658845703144923}
   - component: {fileID: 1909999875984101572}
   - component: {fileID: 3714974668845681688}
+  - component: {fileID: 3596159825112240101}
   m_Layer: 6
   m_Name: PersistentUI
   m_TagString: Untagged
@@ -1194,6 +1195,23 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
+--- !u!114 &3596159825112240101
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1069676038880221878}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a7b51e1110761e438c2fd4d7a8d8485, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PersistentUIBinder
+  dialoguePanel: {fileID: 9046845238555029153}
+  dialogueText: {fileID: 1291669475795075753}
+  nameText: {fileID: 8492417226827159636}
+  expressionImage: {fileID: 733289360805967563}
+  tipsText: {fileID: 3506698353532686065}
 --- !u!1 &1079876771028553573
 GameObject:
   m_ObjectHideFlags: 0
