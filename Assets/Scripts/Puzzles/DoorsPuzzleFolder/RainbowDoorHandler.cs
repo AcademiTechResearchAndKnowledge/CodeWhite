@@ -4,6 +4,10 @@ using System.Collections;
 
 public class RainbowDoorInteractable : Interactable
 {
+    [Header("Puzzle Requirements")]
+    [SerializeField] private ObjectiveItemData requiredKeyData;
+
+    [Header("Entity Settings")]
     [SerializeField] private GameObject entity_1;
 
     public Animator doorAnimator;
@@ -62,9 +66,19 @@ public class RainbowDoorInteractable : Interactable
 
         if (isOpened) return;
 
-        if (DoorPuzzleHandler.instance != null && DoorPuzzleHandler.instance.hasKey)
+        // 1. Grab the currently selected slot from the Inventory Manager
+        ObjectiveInventorySlot selectedSlot = ObjectiveInventoryManager.Instance.GetSelectedSlot();
+
+        // 2. Check if the slot contains an item and if that item matches our required key
+        bool hasCorrectKeySelected = selectedSlot != null && !selectedSlot.IsEmpty() && selectedSlot.item == requiredKeyData;
+
+        if (hasCorrectKeySelected)
         {
             isOpened = true;
+
+            // 3. Remove the key from the inventory and clear the player's active selection/hand visual
+            ObjectiveInventoryManager.Instance.RemoveItem(requiredKeyData, 1);
+            ObjectiveInventoryManager.Instance.DeselectAll();
 
             if (spawnedEntity != null)
             {
@@ -76,6 +90,7 @@ public class RainbowDoorInteractable : Interactable
         }
         else
         {
+            // Triggers the monster if the user doesn't have the key selected
             TriggerEntity();
         }
     }
