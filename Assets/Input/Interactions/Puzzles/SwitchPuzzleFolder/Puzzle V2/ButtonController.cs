@@ -1,6 +1,5 @@
 using UnityEngine;
 
-// FOR EMPTY OBJECT THAT READS THE BUTTONS AND CONTROLS THE DOOR AND BULB
 public class ButtonController : MonoBehaviour
 {
     public static ButtonController Instance;
@@ -25,24 +24,27 @@ public class ButtonController : MonoBehaviour
     public Material bulbOffMaterial;
     public Material bulbOnMaterial;
 
+    [Header("Audio Settings")]
+    public AudioSource audioSource;
+    public AudioClip switchSFX;
+
     private int firstPressedButton = -1;
     private int secondPressedButton = -1;
     private int pressCount = 0;
     private bool buttonsLocked = false;
-    // REMOVED: private bool doorIsOpen = true;
 
     void Awake()
     {
         Instance = this;
+
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+        }
     }
 
     void Start()
     {
-        ApplyDoorState(true);
-        SetBulbState(false);
-
-        // Note: You had these two lines written twice in your original script, 
-        // I left them as-is but you can safely delete one pair!
         ApplyDoorState(true);
         SetBulbState(false);
     }
@@ -52,13 +54,12 @@ public class ButtonController : MonoBehaviour
         if (buttonsLocked) return;
         if (pressCount >= 2) return;
 
-        //First press
         if (pressCount == 0)
         {
             firstPressedButton = buttonIndex;
             SetButtonVisual(buttonIndex, true);
+            PlaySwitchSFX();
 
-            // REMOVED: doorIsOpen = false;
             ApplyDoorState(false);
 
             bool firstIsCorrect = SwitchPuzzleManager.Instance.CheckAnswer(buttonIndex);
@@ -68,15 +69,14 @@ public class ButtonController : MonoBehaviour
 
             pressCount = 1;
         }
-        //Second press
         else if (pressCount == 1)
         {
             if (buttonIndex == firstPressedButton) return;
 
             secondPressedButton = buttonIndex;
             SetButtonVisual(buttonIndex, true);
+            PlaySwitchSFX(); // Play the switch sound!
 
-            // REMOVED: doorIsOpen = true;
             ApplyDoorState(true);
 
             bool secondIsCorrect = SwitchPuzzleManager.Instance.CheckAnswer(buttonIndex);
@@ -88,6 +88,14 @@ public class ButtonController : MonoBehaviour
             LockAllButtons();
 
             LaptopManager.Instance.UnlockAnswers();
+        }
+    }
+
+    private void PlaySwitchSFX()
+    {
+        if (audioSource != null && switchSFX != null)
+        {
+            audioSource.PlayOneShot(switchSFX);
         }
     }
 

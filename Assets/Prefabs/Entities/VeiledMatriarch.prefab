@@ -104,17 +104,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AggroEntityWondering
   currentState: 0
-  wanderRadius: 10
-  wanderTimer: 5
-  investigationOffset: 3
+  wanderRadius: 8
+  wanderTimer: 2
+  investigationOffset: 2
   edgeBufferDistance: 2
-  maxPointRetries: 10
-  stagnationRadius: 15
-  maxStagnationTime: 30
-  maxBreadcrumbs: 3
-  breadcrumbAvoidanceRadius: 6
-  localSearchDuration: 10
-  relocateDistance: 30
+  maxPointRetries: 50
+  stagnationRadius: 10
+  maxStagnationTime: 15
+  maxBreadcrumbs: 2
+  breadcrumbAvoidanceRadius: 3
+  localSearchDuration: 5
+  relocateDistance: 15
 --- !u!114 &4743019197740721913
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -127,10 +127,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 757be479b27377d4b8b1beae5be901ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AggroEntityDetector
-  detectRange: 8
-  hideAllowedRange: 12
-  loseRange: 15
+  detectRange: 7
+  hideAllowedRange: 10
+  loseRange: 12
   crouchSafeDistance: 3
+  obstacleLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  maxHeightDifference: 3.5
+  loseSightDelay: 2
   isLookingPlayer: 0
   canHideFromEnemy: 0
   distanceToPlayer: 0

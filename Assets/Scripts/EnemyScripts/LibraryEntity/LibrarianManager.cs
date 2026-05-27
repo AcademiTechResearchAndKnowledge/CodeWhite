@@ -62,19 +62,27 @@ public class LibrarianManager : MonoBehaviour
                     {
                         audioSource.PlayOneShot(correctBookSFX);
                     }
-                }
 
-                if (signedBooksSubmitted >= requiredSignedBooks)
+                    // 1. Tell the player how many books are remaining
+                    int booksRemaining = requiredSignedBooks - signedBooksSubmitted;
+                    ShowDialogue($"Thank you! I need {booksRemaining} more books!");
+                }
+                else
                 {
+                    ShowDialogue("You found them all! Opening the portal...");
                     SpawnPortal();
                 }
                 break;
 
             case LibraryBookType.Unsigned:
                 ModifyAnxiety(5f);
+                // 3. Tell the player you gave them an unsigned book
+                ShowDialogue("An unsigned book? This is not welcome here.");
                 break;
 
             case LibraryBookType.Forged:
+                // 2. Tell the player they gave a forged book and will pay
+                ShowDialogue("You gave me a forged book! You will pay!");
                 SpawnHuntingEntity();
                 break;
         }
@@ -110,10 +118,16 @@ public class LibrarianManager : MonoBehaviour
             audioSource.PlayOneShot(noBookSFX);
         }
 
+        ShowDialogue(message);
+    }
+
+    // Helper method to display text and trigger the clear coroutine
+    private void ShowDialogue(string message)
+    {
         if (hintText != null)
         {
             hintText.text = message;
-            StopAllCoroutines();
+            StopAllCoroutines(); // Stops existing timers so messages don't disappear too quickly if spammed
             StartCoroutine(ClearHintText());
         }
     }

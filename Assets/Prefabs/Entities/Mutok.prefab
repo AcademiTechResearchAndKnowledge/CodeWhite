@@ -103,17 +103,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AggroEntityWondering
   currentState: 0
-  wanderRadius: 10
-  wanderTimer: 5
-  investigationOffset: 3
-  edgeBufferDistance: 2
+  wanderRadius: 5
+  wanderTimer: 2
+  investigationOffset: 1
+  edgeBufferDistance: 0.5
   maxPointRetries: 10
   stagnationRadius: 15
   maxStagnationTime: 30
-  maxBreadcrumbs: 3
-  breadcrumbAvoidanceRadius: 6
-  localSearchDuration: 10
-  relocateDistance: 30
+  maxBreadcrumbs: 2
+  breadcrumbAvoidanceRadius: 2
+  localSearchDuration: 6
+  relocateDistance: 10
 --- !u!114 &342889759860861742
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -126,10 +126,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 757be479b27377d4b8b1beae5be901ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AggroEntityDetector
-  detectRange: 8
-  hideAllowedRange: 12
-  loseRange: 15
-  crouchSafeDistance: 3
+  detectRange: 6
+  hideAllowedRange: 8
+  loseRange: 12
+  crouchSafeDistance: 2
+  obstacleLayer:
+    serializedVersion: 2
+    m_Bits: 584
+  maxHeightDifference: 3.5
+  loseSightDelay: 2
   isLookingPlayer: 0
   canHideFromEnemy: 0
   distanceToPlayer: 0
@@ -171,8 +176,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 500fc40a0b094084089538eea15ae860, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AggroJumpscareTrigger
-  catchRadius: 2.5
-  anxietySpikePercentage: 25
+  catchRadius: 1
+  anxietySpikePercentage: 100
   anxietyAuraRadius: 15
   anxietyDistanceCurve:
     serializedVersion: 2
@@ -234,10 +239,10 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 0
+  m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.8958583, y: 2.2556703, z: 0.22580147}
-  m_Center: {x: 0.045022726, y: 0.1919812, z: -0.020842552}
+  m_Size: {x: 0.12075472, y: 1.3678509, z: 0.22580147}
+  m_Center: {x: -0.0004837513, y: -0.2519285, z: -0.020842552}
 --- !u!82 &1476172042127616746
 AudioSource:
   m_ObjectHideFlags: 0

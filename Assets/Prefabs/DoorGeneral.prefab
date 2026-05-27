@@ -60,9 +60,21 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7761636164139827122, guid: 1e96889930e69ca4faa2610d07358561, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 781679719685557685, guid: 1e96889930e69ca4faa2610d07358561, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 1e96889930e69ca4faa2610d07358561, type: 3}
       propertyPath: m_Name
       value: DoorGeneral
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 1e96889930e69ca4faa2610d07358561, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 3863475066689344642, guid: 1e96889930e69ca4faa2610d07358561, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
@@ -72,6 +84,18 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 36128d68fcf18e04b960428a660c0591, type: 2}
+    - target: {fileID: 4563423875144459721, guid: 1e96889930e69ca4faa2610d07358561, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 4984152921246419141, guid: 1e96889930e69ca4faa2610d07358561, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 7083803182008094071, guid: 1e96889930e69ca4faa2610d07358561, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 7083803182008094071, guid: 1e96889930e69ca4faa2610d07358561, type: 3}
       propertyPath: m_TagString
       value: Interactable
@@ -103,6 +127,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7083803182008094071, guid: 1e96889930e69ca4faa2610d07358561, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8199432622305440393}
+    - targetCorrespondingSourceObject: {fileID: 7083803182008094071, guid: 1e96889930e69ca4faa2610d07358561, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8665726797899204314}
     - targetCorrespondingSourceObject: {fileID: 7083803182008094071, guid: 1e96889930e69ca4faa2610d07358561, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5364436702644462706}
@@ -177,6 +204,27 @@ MonoBehaviour:
   openSoundDelay: 0
   doorCloseSound: {fileID: 8300000, guid: a5b811423247ed047a44d74aa87c103e, type: 3}
   closeSoundDelay: 0
+--- !u!65 &8665726797899204314
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 654594292905750092}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.012534243, y: 0.03411399, z: 0.0033016996}
+  m_Center: {x: 0.0000000011353266, y: 0.00048720484, z: -0.009985515}
 --- !u!82 &5364436702644462706
 AudioSource:
   m_ObjectHideFlags: 0

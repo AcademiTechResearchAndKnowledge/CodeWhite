@@ -8,39 +8,42 @@ public class AggroEntityDetector : MonoBehaviour
     public float loseRange = 15f;
     public float crouchSafeDistance = 3f;
 
+    // [NEW] Line of Sight & Verticality Settings
+    [Header("Line of Sight Settings")]
+    public LayerMask obstacleLayer;
+    [Tooltip("Max vertical distance allowed to spot the player (e.g., one floor height).")]
+    public float maxHeightDifference = 3.5f;
+    [Tooltip("How long the entity will keep chasing you after breaking line of sight.")]
+    public float loseSightDelay = 2.0f;
+
+    private float currentLoseTimer; // Tracks how long the player has been out of sight
+
     [Header("State")]
     public bool isLookingPlayer = false;
     public bool canHideFromEnemy;
-    public float distanceToPlayer;
+    public float distanceToPlayer; // Note: Now calculates 2D flat distance
 
     [Header("Audio Settings")]
-    public AudioSource audioSource; // For chase music
-    public AudioSource ambientAudioSource; // For random entity noises
+    public AudioSource audioSource;
+    public AudioSource ambientAudioSource;
     public AudioClip chasingSfx;
     public AudioClip chasingStoppedSfx;
 
     [Header("Ambient Noise Settings")]
-    [Tooltip("Add multiple clips for variety. The entity will pick one at random.")]
     public AudioClip[] ambientNoises;
-    [Tooltip("Minimum time in seconds between random noises.")]
     public float minNoiseInterval = 4f;
-    [Tooltip("Maximum time in seconds between random noises.")]
     public float maxNoiseInterval = 10f;
-    [Tooltip("Volume for ambient noises.")]
     [Range(0f, 1f)] public float ambientVolume = 0.8f;
 
     private float noiseTimer;
-
     private bool isChaseMusicPlaying = false;
     private bool isWaitingToStopChaseMusic = false;
-
     private bool isCurrentlyIgnoringHiddenPlayer = false;
     private Vector3 lastKnownPlayerPosition;
 
     private Transform playerTransform;
     private PlayerMovement playerMovement;
     private TableHideState playerTableState;
-
     private ClosetHidingSystem[] allClosets;
 
     private AggroEntityAI entityAi;
@@ -55,12 +58,10 @@ public class AggroEntityDetector : MonoBehaviour
 
         if (audioSource != null)
         {
-            // Set chase music to 2D so it plays everywhere at maximum volume
             audioSource.spatialBlend = 0f;
         }
         if (ambientAudioSource != null)
         {
-            // Keep ambient entity noises in 3D so the player can track them
             ambientAudioSource.spatialBlend = 1f;
         }
     }
@@ -68,13 +69,13 @@ public class AggroEntityDetector : MonoBehaviour
     void Start()
     {
         FindPlayerReferences();
-
         allClosets = FindObjectsByType<ClosetHidingSystem>(FindObjectsInactive.Include, FindObjectsSortMode.None);
 
         isLookingPlayer = false;
         isCurrentlyIgnoringHiddenPlayer = false;
         isChaseMusicPlaying = false;
         isWaitingToStopChaseMusic = false;
+        currentLoseTimer = loseSightDelay; // [NEW] Initialize timer
 
         ResetNoiseTimer();
 
@@ -123,11 +124,22 @@ public class AggroEntityDetector : MonoBehaviour
 
         if (playerTransform == null) return;
 
-        distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
-        canHideFromEnemy = distanceToPlayer > hideAllowedRange;
+        // [NEW] Calculate 2D distance on the X and Z axes only to prevent floor-hacking
+        Vector3 entityPos2D = new Vector3(transform.position.x, 0, transform.position.z);
+        Vector3 playerPos2D = new Vector3(playerTransform.position.x, 0, playerTransform.position.z);
+        distanceToPlayer = Vector3.Distance(entityPos2D, playerPos2D);
 
+        // [NEW] Check actual height difference. If already chasing, ignore this rule so it can follow up stairs.
+        float heightDifference = Mathf.Abs(transform.position.y - playerTransform.position.y);
+        bool isOnSameFloor = (heightDifference <= maxHeightDifference) || isLookingPlayer;
+
+        // [NEW] Check Line of Sight
+        bool hasLineOfSight = HasLineOfSight();
+
+        canHideFromEnemy = distanceToPlayer > hideAllowedRange;
         bool playerIsCrouching = playerMovement != null && playerMovement.isCrouching;
 
+        // --- Hiding Logic (Kept Original) ---
         bool isHidingInCloset = false;
         if (allClosets != null)
         {
@@ -201,16 +213,19 @@ public class AggroEntityDetector : MonoBehaviour
             isCurrentlyIgnoringHiddenPlayer = false;
         }
 
+        // --- Detection & Chase Logic ---
         if (isLookingPlayer)
         {
             lastKnownPlayerPosition = playerTransform.position;
         }
 
-        if (distanceToPlayer <= detectRange)
+        // 1. Initial Spotting
+        if (distanceToPlayer <= detectRange && !isLookingPlayer)
         {
             bool successfullySneaking = playerIsCrouching && distanceToPlayer > crouchSafeDistance;
 
-            if (isLookingPlayer || !successfullySneaking)
+            // [NEW] Entity must be on the same floor AND have Line of Sight to spot you
+            if (!successfullySneaking && isOnSameFloor && hasLineOfSight)
             {
                 isLookingPlayer = true;
                 isWaitingToStopChaseMusic = false;
@@ -218,18 +233,34 @@ public class AggroEntityDetector : MonoBehaviour
 
                 entityAi.enabled = true;
                 entityWondering.enabled = false;
+            }
+        }
+
+        // 2. Maintaining the Chase
+        if (isLookingPlayer)
+        {
+            // [NEW] Cooldown logic for losing line of sight
+            if (hasLineOfSight)
+            {
+                currentLoseTimer = loseSightDelay; // Reset timer if the monster can see you
+            }
+            else
+            {
+                currentLoseTimer -= Time.deltaTime; // Tick down if you are behind cover
+            }
+
+            // Keep chasing if close enough AND timer hasn't run out
+            if (distanceToPlayer <= loseRange && currentLoseTimer > 0f)
+            {
+                entityAi.enabled = true;
+                entityWondering.enabled = false;
                 return;
             }
         }
 
-        if (isLookingPlayer && distanceToPlayer <= loseRange)
-        {
-            entityAi.enabled = true;
-            entityWondering.enabled = false;
-            return;
-        }
-
-        if (distanceToPlayer > loseRange)
+        // 3. Losing the Player
+        // [NEW] Modified to drop aggro if distance is too far OR the timer ran out
+        if (isLookingPlayer && (distanceToPlayer > loseRange || currentLoseTimer <= 0f))
         {
             isLookingPlayer = false;
             isWaitingToStopChaseMusic = false;
@@ -240,8 +271,33 @@ public class AggroEntityDetector : MonoBehaviour
             if (!entityWondering.enabled)
             {
                 entityWondering.enabled = true;
+                // Go to the last place the player was seen before breaking line of sight
+                entityWondering.InvestigateLocation(lastKnownPlayerPosition);
             }
         }
+    }
+
+    // [NEW] Helper Method for Line of Sight
+    private bool HasLineOfSight()
+    {
+        if (playerTransform == null) return false;
+
+        // Offset positions up by 1.5 units so the raycast fires from chest/eye level, not from the floor
+        Vector3 startPos = transform.position + (Vector3.up * 1.5f);
+        Vector3 endPos = playerTransform.position + (Vector3.up * 1.5f);
+
+        Vector3 directionToPlayer = endPos - startPos;
+        float distance = directionToPlayer.magnitude;
+
+        // Fire the Raycast
+        if (Physics.Raycast(startPos, directionToPlayer.normalized, out RaycastHit hit, distance, obstacleLayer))
+        {
+            // Ray hit a wall, floor, or obstacle
+            return false;
+        }
+
+        // Clear line of sight
+        return true;
     }
 
     private void HandleAmbientNoises()

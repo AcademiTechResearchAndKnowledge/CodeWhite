@@ -9,7 +9,6 @@ public class DoorControllerGeneral : Interactable
     [Tooltip("How long to wait before switching to the Idle state after opening/closing.")]
     public float animationStepDelay = 0.5f;
 
-    // --- ADDED: Audio Settings ---
     [Header("Audio Settings")]
     public AudioSource audioSource;
     public AudioClip doorOpenSound;
@@ -19,38 +18,38 @@ public class DoorControllerGeneral : Interactable
     public AudioClip doorCloseSound;
     [Tooltip("Delay in seconds before the close sound plays.")]
     public float closeSoundDelay = 0f;
-    // -----------------------------
 
     private bool isOpen = false;
-    private bool isBusy = false; // Prevents spamming the interaction key
+    private bool isBusy = false;
 
-    // Keeps track of if the White Lady is standing in the doorway
     private int aiInZone = 0;
-
-    // Reference to the tutorial manager
     private TutorialManager tutorialManager;
 
     private void Start()
     {
-        // Auto-find the TutorialManager in the scene so you don't have to drag-and-drop it manually
         tutorialManager = FindAnyObjectByType<TutorialManager>();
 
-        // --- ADDED: Auto-grab AudioSource if not assigned ---
         if (audioSource == null)
         {
             audioSource = GetComponent<AudioSource>();
         }
     }
 
+    private void Update()
+    {
+        if (aiInZone > 0 && !isOpen && !isBusy)
+        {
+            Debug.Log($"[{gameObject.name}] AI is blocking the door! Forcing it open.");
+            StartCoroutine(OpenDoorRoutine());
+        }
+    }
+
     public override void Interact()
     {
-        // If the door is currently mid-animation, ignore the interaction
-        if (isBusy)
-            return;
+        if (isBusy) return;
 
         base.Interact();
 
-        // Tell the Tutorial Manager we interacted with the door!
         if (tutorialManager != null)
         {
             tutorialManager.DoorInteracted();
@@ -78,12 +77,13 @@ public class DoorControllerGeneral : Interactable
 
     private void OnTriggerEnter(Collider other)
     {
-        // Check if the object stepping into the zone is the White Lady
-        if (other.GetComponent<WhiteLady>() != null)
+        if (other.GetComponentInParent<WhiteLady>() != null ||
+            other.GetComponentInParent<AggroEntityDetector>() != null ||
+            other.GetComponentInParent<StalkerFollowScript>() != null ||
+            other.GetComponentInParent<DespawningEntityDetector>() != null)
         {
             aiInZone++;
 
-            // If the door is currently closed and not moving, open it for her!
             if (!isOpen && !isBusy)
             {
                 StartCoroutine(OpenDoorRoutine());
@@ -93,11 +93,13 @@ public class DoorControllerGeneral : Interactable
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.GetComponent<WhiteLady>() != null)
+        if (other.GetComponentInParent<WhiteLady>() != null ||
+            other.GetComponentInParent<AggroEntityDetector>() != null ||
+            other.GetComponentInParent<StalkerFollowScript>() != null ||
+            other.GetComponentInParent<DespawningEntityDetector>() != null)
         {
             aiInZone--;
 
-            // If she completely left the zone, and the door is open, close it behind her!
             if (aiInZone <= 0 && isOpen && !isBusy)
             {
                 StartCoroutine(CloseDoorRoutine());
@@ -106,23 +108,16 @@ public class DoorControllerGeneral : Interactable
     }
 
     // „Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ
-    //  Coroutines
+    //  Coroutines & Audio
     // „Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ
 
     IEnumerator OpenDoorRoutine()
     {
         isBusy = true;
-
-        // --- ADDED: Play Open Sound ---
         PlaySound(doorOpenSound, openSoundDelay);
 
-        // C=1: Opens Door
         doorAnimator.SetInteger("C", 1);
-
-        // Wait for the opening animation to finish
         yield return new WaitForSeconds(animationStepDelay);
-
-        // C=2: Open Door Idle (door stays open)
         doorAnimator.SetInteger("C", 2);
 
         isOpen = true;
@@ -132,24 +127,16 @@ public class DoorControllerGeneral : Interactable
     IEnumerator CloseDoorRoutine()
     {
         isBusy = true;
-
-        // --- ADDED: Play Close Sound ---
         PlaySound(doorCloseSound, closeSoundDelay);
 
-        // C=3: Close Door
         doorAnimator.SetInteger("C", 3);
-
-        // Wait for the closing animation to finish
         yield return new WaitForSeconds(animationStepDelay);
-
-        // C=4: Goes back to idle (door is closed)
         doorAnimator.SetInteger("C", 4);
 
         isOpen = false;
         isBusy = false;
     }
 
-    // --- ADDED: Helper Methods for Audio ---
     private void PlaySound(AudioClip clip, float delay = 0f)
     {
         if (audioSource != null && clip != null)
