@@ -60,8 +60,7 @@ public class RainbowDoorInteractable : Interactable
                 doorGen.SpawnKeyOnce();
         }
 
-        if (isOpened)
-            return;
+        if (isOpened) return;
 
         if (DoorPuzzleHandler.instance != null && DoorPuzzleHandler.instance.hasKey)
         {
@@ -109,7 +108,7 @@ public class RainbowDoorInteractable : Interactable
         doorGen = FindFirstObjectByType<doorsGen>();
     }
 
-    private void CachePortalSpawner()
+    void CachePortalSpawner()
     {
         portalSpawner = FindFirstObjectByType<RandomPortalSpawner>();
     }

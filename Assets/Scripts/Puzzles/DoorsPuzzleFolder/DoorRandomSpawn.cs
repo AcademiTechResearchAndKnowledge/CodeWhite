@@ -108,12 +108,25 @@ public class doorsGen : MonoBehaviour
         Vector3 pos = GetValidRandomPosition();
 
         if (pos == Vector3.zero)
-            return;
+            pos = GetFallbackPosition();
 
         pos.y = floorTop;
 
         GameObject key = Instantiate(keyPrefab, pos, Quaternion.identity, keysParent);
         AdjustToFloor(key);
+    }
+
+    Vector3 GetFallbackPosition()
+    {
+        Vector3 center = floor != null ? floor.position : Vector3.zero;
+
+        Vector3 offset = new Vector3(
+            Random.Range(-spawnAreaSize, spawnAreaSize),
+            0,
+            Random.Range(-spawnAreaSize, spawnAreaSize)
+        );
+
+        return center + offset;
     }
 
     private void OnRainbowDoorOpened()
