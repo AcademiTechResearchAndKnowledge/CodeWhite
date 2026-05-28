@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4145632247611322950}
   - component: {fileID: 3178300009736031811}
   - component: {fileID: 390427579491288569}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: FX
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -137,15 +137,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: e21b647e018bfce4389d00369cbc7743, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -30.74663
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e21b647e018bfce4389d00369cbc7743, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 1.5000001
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e21b647e018bfce4389d00369cbc7743, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: 21.226393
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e21b647e018bfce4389d00369cbc7743, type: 3}
       propertyPath: m_LocalRotation.w
@@ -179,6 +179,14 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: cbbb193deddea1743a3c23af75e71bb2, type: 2}
+    - target: {fileID: -6943276415157153233, guid: e21b647e018bfce4389d00369cbc7743, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: -3641000652193603279, guid: e21b647e018bfce4389d00369cbc7743, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: -2030464709826609376, guid: e21b647e018bfce4389d00369cbc7743, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -188,8 +196,16 @@ PrefabInstance:
       value: TallLampWL
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: e21b647e018bfce4389d00369cbc7743, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: e21b647e018bfce4389d00369cbc7743, type: 3}
       propertyPath: m_TagString
       value: Interactable
+      objectReference: {fileID: 0}
+    - target: {fileID: 1235325404441655284, guid: e21b647e018bfce4389d00369cbc7743, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -213,6 +229,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e21b647e018bfce4389d00369cbc7743, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7598818523188349572}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e21b647e018bfce4389d00369cbc7743, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8768912369339322271}
   m_SourcePrefab: {fileID: 100100000, guid: e21b647e018bfce4389d00369cbc7743, type: 3}
 --- !u!4 &6179427373082485566 stripped
 Transform:
@@ -396,3 +415,23 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &8768912369339322271
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6812377062215022980}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e3fdca004f2d45fe8abbed571a8abd5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshModifier
+  m_SerializedVersion: 0
+  m_OverrideArea: 1
+  m_Area: 1
+  m_OverrideGenerateLinks: 0
+  m_GenerateLinks: 0
+  m_IgnoreFromBuild: 0
+  m_ApplyToChildren: 1
+  m_AffectedAgents: ffffffff
