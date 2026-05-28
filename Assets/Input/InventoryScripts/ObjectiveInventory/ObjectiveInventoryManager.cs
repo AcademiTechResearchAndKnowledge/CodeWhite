@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class ObjectiveInventoryManager : MonoBehaviour
 {
@@ -25,21 +26,29 @@ public class ObjectiveInventoryManager : MonoBehaviour
         transform.SetParent(null);
         DontDestroyOnLoad(gameObject);
 
+        SceneManager.sceneLoaded += OnSceneLoaded;
+
         while (slots.Count < objectiveSize)
         {
             slots.Add(new ObjectiveInventorySlot(null, 0));
         }
     }
 
+    private void OnDestroy()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        ClearInventory();
+        Debug.Log("[ObjectiveInventoryManager] New scene loaded. Inventory wiped.");
+    }
+
     private void Start()
     {
         RefreshUI();
     }
-
-    // -------------------------------------------------------------
-    // NOTE: The Update() method listening for 'E' was removed here! 
-    // Your PlayerInventoryController handles all keyboard input safely.
-    // -------------------------------------------------------------
 
     public bool AddItem(ObjectiveItemData item, int amount)
     {
@@ -143,17 +152,13 @@ public class ObjectiveInventoryManager : MonoBehaviour
         }
     }
 
-    // --- THE MASTER DROP METHOD ---
     public void DropSelectedItem(Vector3 dropPosition)
     {
-        // ---------------------------------------------------------
-        // NEW: PREVENT DROPPING WHILE READING!
-        // ---------------------------------------------------------
         BookInspectionUI inspectUI = FindFirstObjectByType<BookInspectionUI>();
         if (inspectUI != null && inspectUI.IsOpen())
         {
             Debug.Log("[Drop] Cannot drop the book while inspecting it!");
-            return; // Stop the drop!
+            return;
         }
 
         ObjectiveInventorySlot slot = GetSelectedSlot();
@@ -162,64 +167,53 @@ public class ObjectiveInventoryManager : MonoBehaviour
 
         ObjectiveItemData itemToDrop = slot.item;
 
-        // --- RESTRICT DROPPING TO BOOKS ONLY ---
         if (itemToDrop.bookType == LibraryBookType.None)
         {
             Debug.Log($"[Drop] You cannot drop {itemToDrop.itemName}.");
-            return; // Stops the code right here!
+            return;
         }
 
-        // Safety check: Does this item actually have a 3D model assigned to drop?
         if (itemToDrop.worldPrefab == null)
         {
             Debug.LogWarning($"[Drop] Cannot drop {itemToDrop.itemName}. No worldPrefab assigned in the Inspector!");
             return;
         }
 
-        // 1. Spawn the physical item in the world
         GameObject droppedObject = Instantiate(itemToDrop.worldPrefab, dropPosition, Quaternion.identity);
 
-        // 2. Give the dropped object our EXACT cloned data so it remembers if it was forged!
         ObjectiveItemPickup pickupScript = droppedObject.GetComponent<ObjectiveItemPickup>();
         if (pickupScript != null)
         {
             pickupScript.itemData = itemToDrop;
         }
 
-        // 3. Tell the physical book to show the correct color
         LibraryBook visualScript = droppedObject.GetComponent<LibraryBook>();
         if (visualScript != null)
         {
             visualScript.selectedVisualIndex = itemToDrop.visualIndex;
 
-            // Force the book to refresh its color immediately so it doesn't change on the floor
             visualScript.UpdateVisuals();
         }
 
-        // 4. Remove the item from your inventory
         slot.amount--;
 
         if (slot.amount <= 0)
         {
             slot.Clear();
-            DeselectAll(); // Removes the model from the player's hand
+            DeselectAll();
         }
 
         RefreshUI();
         Debug.Log($"[Drop] Successfully dropped: {itemToDrop.itemName}");
     }
 
-    // --- THE MASTER USE METHOD ---
     public void UseSelectedItem()
     {
-        // ---------------------------------------------------------
-        // FIXED: Now 'E' will close the canvas if it's already open!
-        // ---------------------------------------------------------
         BookInspectionUI inspectUI = FindFirstObjectByType<BookInspectionUI>();
         if (inspectUI != null && inspectUI.IsOpen())
         {
             Debug.Log("[Use] The book is already open! Closing it now.");
-            inspectUI.CloseInspection(); // <-- Call the close method!
+            inspectUI.CloseInspection();
             return;
         }
 
@@ -230,24 +224,20 @@ public class ObjectiveInventoryManager : MonoBehaviour
         ObjectiveItemData itemToUse = slot.item;
         Debug.Log("Using item: " + itemToUse.itemName);
 
-        // Now the sound will ONLY play if the UI wasn't already open!
         if (audioSource != null && itemToUse.useSound != null)
         {
             audioSource.PlayOneShot(itemToUse.useSound);
         }
 
-        // 1. IS IT A BOOK?
-        // If it's a book, open the UI and STOP reading the rest of this code.
         if (itemToUse.bookType != LibraryBookType.None)
         {
             if (inspectUI != null)
             {
                 inspectUI.OpenInspection(itemToUse);
-                return; // <-- This protects the book from being "consumed"
+                return;
             }
         }
 
-        // 2. DOES IT SPAWN A PORTAL?
         if (itemToUse.spawnsPortal)
         {
             RandomPortalSpawner spawner = FindFirstObjectByType<RandomPortalSpawner>();
@@ -258,7 +248,6 @@ public class ObjectiveInventoryManager : MonoBehaviour
             }
         }
 
-        // 3. IS IT CONSUMABLE?
         if (itemToUse.consumable)
         {
             slot.amount--;
@@ -266,13 +255,12 @@ public class ObjectiveInventoryManager : MonoBehaviour
             if (slot.amount <= 0)
             {
                 slot.Clear();
-                DeselectAll(); // Unequips the visual from the player's hand
+                DeselectAll();
             }
 
             RefreshUI();
         }
 
-        // 4. TRIGGER TUTORIAL
         TutorialManager tutorial = FindFirstObjectByType<TutorialManager>();
         if (tutorial != null)
         {
