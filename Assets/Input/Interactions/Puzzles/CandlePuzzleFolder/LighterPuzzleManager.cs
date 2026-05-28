@@ -19,6 +19,20 @@ public class LighterPuzzleManager : MonoBehaviour
     public GameObject entity_1;
     public Transform entity_1_spawn;
 
+    [Header("Entity Spawn Effects")] // <-- NEW SECTION
+    [Tooltip("The sound to play when the entity is summoned into the room.")]
+    public AudioClip entitySpawnSFX;
+    [Tooltip("Volume for the spawn sound.")]
+    [Range(0f, 1f)] public float spawnVolume = 1.0f;
+
+    [Header("Entity Despawn Effects")]
+    [Tooltip("The particle effect to spawn when the entity disappears.")]
+    public GameObject despawnParticlePrefab;
+    [Tooltip("The sound to play when the entity despawns.")]
+    public AudioClip despawnSound;
+    [Tooltip("Volume for the despawn sound.")]
+    [Range(0f, 1f)] public float despawnVolume = 1.0f;
+
     [Header("Audio Settings")]
     public AudioSource audioSource;
     public AudioClip noLighterSFX;
@@ -131,6 +145,13 @@ public class LighterPuzzleManager : MonoBehaviour
             if (currentActiveEntity == null && entity_1 != null && entity_1_spawn != null)
             {
                 currentActiveEntity = Instantiate(entity_1, entity_1_spawn.position, entity_1_spawn.rotation);
+
+                // --- NEW: PLAY SPAWN AUDIO ---
+                if (entitySpawnSFX != null && audioSource != null)
+                {
+                    audioSource.PlayOneShot(entitySpawnSFX, spawnVolume);
+                }
+
                 ShowDialogue($"Something is here... {candlesRemaining} candles remain)");
             }
             else
@@ -180,15 +201,18 @@ public class LighterPuzzleManager : MonoBehaviour
 
         if (currentActiveEntity != null)
         {
-            EntityDespawner despawner = currentActiveEntity.GetComponent<EntityDespawner>();
-            if (despawner != null)
+            if (despawnParticlePrefab != null)
             {
-                despawner.DespawnWithParticles();
+                Instantiate(despawnParticlePrefab, currentActiveEntity.transform.position, currentActiveEntity.transform.rotation);
             }
-            else
+
+            if (despawnSound != null && audioSource != null)
             {
-                Destroy(currentActiveEntity);
+                audioSource.PlayOneShot(despawnSound, despawnVolume);
             }
+
+            Destroy(currentActiveEntity);
+            currentActiveEntity = null;
         }
 
         if (audioSource != null && puzzleFinishedSFX != null)
