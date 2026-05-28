@@ -6,20 +6,37 @@ public class CutsceneManager : MonoBehaviour
     [Tooltip("The disabled GameObject holding the Timeline (PlayableDirector).")]
     public GameObject timelineGameObject;
 
-    [Tooltip("Reference to the player to disable controls.")]
+    [Tooltip("Reference to the player to disable controls. (Will auto-find if left empty)")]
     public PlayerReferences playerRefs;
 
-    // Tracks if the cutscene has already been triggered
     private bool hasPlayed = false;
+
+    private void Start()
+    {
+        FindPlayerReferences();
+    }
+
+    private void FindPlayerReferences()
+    {
+        if (playerRefs != null) return;
+
+        playerRefs = Object.FindFirstObjectByType<PlayerReferences>();
+
+        if (playerRefs == null)
+        {
+            Debug.LogWarning("CutsceneManager couldn't find a PlayerReferences component in the scene!");
+        }
+    }
 
     public void ActivateCutscene()
     {
         if (hasPlayed) return;
         hasPlayed = true;
 
+        FindPlayerReferences();
+
         DisablePlayerControls();
 
-        // Hide the Persistent UI globally
         if (PersistentUI.Instance != null)
         {
             PersistentUI.Instance.SetUIVisibility(false);
@@ -42,7 +59,6 @@ public class CutsceneManager : MonoBehaviour
             timelineGameObject.SetActive(false);
         }
 
-        // Show the Persistent UI again when the cutscene finishes
         if (PersistentUI.Instance != null)
         {
             PersistentUI.Instance.SetUIVisibility(true);

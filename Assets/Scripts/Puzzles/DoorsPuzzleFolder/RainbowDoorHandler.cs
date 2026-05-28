@@ -12,7 +12,7 @@ public class RainbowDoorInteractable : Interactable
 
     [Header("Entity Spawn Effects")]
     [Tooltip("The dedicated AudioSource to play the spawn sound (e.g., placed at the spawn point for 3D spatial audio).")]
-    [SerializeField] private AudioSource spawnAudioSource; // <-- SEPARATED
+    [SerializeField] private AudioSource spawnAudioSource;
     [Tooltip("The sound to play when the entity is spawned.")]
     [SerializeField] private AudioClip spawnSound;
     [Tooltip("Volume for the spawn sound.")]
@@ -20,7 +20,7 @@ public class RainbowDoorInteractable : Interactable
 
     [Header("Entity Despawn Effects")]
     [Tooltip("The dedicated AudioSource to play the despawn sound.")]
-    [SerializeField] private AudioSource despawnAudioSource; // <-- SEPARATED
+    [SerializeField] private AudioSource despawnAudioSource;
     [Tooltip("The particle effect to spawn when the entity disappears.")]
     [SerializeField] private GameObject despawnParticlePrefab;
     [Tooltip("The sound to play when the entity despawns (e.g., chase end music).")]
@@ -45,6 +45,8 @@ public class RainbowDoorInteractable : Interactable
     private RandomPortalSpawner portalSpawner;
     private doorsGen doorGen;
 
+    private CutsceneManager cutsceneManager;
+
     [HideInInspector] public Action onPuzzleComplete;
 
     private bool hasInteracted;
@@ -59,6 +61,7 @@ public class RainbowDoorInteractable : Interactable
     void Start()
     {
         CachePlayer();
+        CacheCutsceneManager();
     }
 
     void Update()
@@ -75,6 +78,15 @@ public class RainbowDoorInteractable : Interactable
         {
             hasInteracted = true;
 
+            if (cutsceneManager != null)
+            {
+                cutsceneManager.ActivateCutscene();
+            }
+            else
+            {
+                Debug.LogWarning("CutsceneManager was not found in the scene to play the door cutscene!");
+            }
+
             if (doorGen == null)
                 CacheDoorGen();
 
@@ -85,7 +97,6 @@ public class RainbowDoorInteractable : Interactable
         if (isOpened) return;
 
         ObjectiveInventorySlot selectedSlot = ObjectiveInventoryManager.Instance.GetSelectedSlot();
-
         bool hasCorrectKeySelected = selectedSlot != null && !selectedSlot.IsEmpty() && selectedSlot.item == requiredKeyData;
 
         if (hasCorrectKeySelected)
@@ -102,7 +113,6 @@ public class RainbowDoorInteractable : Interactable
                     Instantiate(despawnParticlePrefab, spawnedEntity.transform.position, spawnedEntity.transform.rotation);
                 }
 
-                // --- PLAY VIA DEDICATED DESPAWN AUDIO SOURCE ---
                 if (despawnSound != null)
                 {
                     if (despawnAudioSource != null)
@@ -111,7 +121,6 @@ public class RainbowDoorInteractable : Interactable
                     }
                     else
                     {
-                        // Fallback to runtime 2D object if no source is assigned
                         Play2DAudioFallback(despawnSound, despawnVolume);
                     }
                 }
@@ -151,6 +160,11 @@ public class RainbowDoorInteractable : Interactable
         Destroy(toDestroy);
     }
 
+    void CacheCutsceneManager()
+    {
+        cutsceneManager = FindFirstObjectByType<CutsceneManager>();
+    }
+
     void CacheDoorGen()
     {
         doorGen = FindFirstObjectByType<doorsGen>();
@@ -170,7 +184,6 @@ public class RainbowDoorInteractable : Interactable
         spawnedEntity = Instantiate(entity_1, entity_1_spawn.position, entity_1_spawn.rotation);
         entitySpawned = true;
 
-        // --- PLAY VIA DEDICATED SPAWN AUDIO SOURCE ---
         if (spawnSound != null)
         {
             if (spawnAudioSource != null)
@@ -179,7 +192,6 @@ public class RainbowDoorInteractable : Interactable
             }
             else
             {
-                // Fallback to runtime 2D object if no source is assigned
                 Play2DAudioFallback(spawnSound, spawnVolume);
             }
         }
@@ -222,7 +234,6 @@ public class RainbowDoorInteractable : Interactable
         }
     }
 
-    // Renamed to highlight its purpose as a safety fallback
     private void Play2DAudioFallback(AudioClip clip, float volume)
     {
         GameObject tempAudioObject = new GameObject("TempRuntimeAudio");
