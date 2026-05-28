@@ -575,7 +575,7 @@ Transform:
   m_GameObject: {fileID: 349711158}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 2.78786, y: 0.08499998, z: 15.719761}
+  m_LocalPosition: {x: 2.78786, y: -0.107, z: 15.719761}
   m_LocalScale: {x: 1, y: 0.2147, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -745,6 +745,7 @@ MonoBehaviour:
   fixedMirrorObject: {fileID: 6131110864726957006, guid: 58a196cd8de7bb04ea1beb604c5eab25, type: 3}
   portalToOpen: {fileID: 5588175437650982449, guid: 382ee694ce2f65341919b2b76bb093ef, type: 3}
   progressionUnlocked: 0
+  whiteLadyEntity: {fileID: 1486479774}
 --- !u!4 &516154003
 Transform:
   m_ObjectHideFlags: 0
@@ -1708,6 +1709,17 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1486479774 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 453859888704035866, guid: d0730ed0b07c4014bb1b8ed2ddff4f6b, type: 3}
+  m_PrefabInstance: {fileID: 2269752948052772476}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68b4955ea6eb29549950932c5d571626, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WhiteLady
 --- !u!1 &1514551835
 GameObject:
   m_ObjectHideFlags: 0
@@ -2455,9 +2467,33 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 8951522033556788330}
     - target: {fileID: 453859888704035866, guid: d0730ed0b07c4014bb1b8ed2ddff4f6b, type: 3}
+      propertyPath: weepChance
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 453859888704035866, guid: d0730ed0b07c4014bb1b8ed2ddff4f6b, type: 3}
       propertyPath: weepLocation
       value: 
       objectReference: {fileID: 349711162}
+    - target: {fileID: 453859888704035866, guid: d0730ed0b07c4014bb1b8ed2ddff4f6b, type: 3}
+      propertyPath: despawnVolume
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 453859888704035866, guid: d0730ed0b07c4014bb1b8ed2ddff4f6b, type: 3}
+      propertyPath: teleportChance
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2793818226136808801, guid: d0730ed0b07c4014bb1b8ed2ddff4f6b, type: 3}
+      propertyPath: m_Size.y
+      value: 1.4980245
+      objectReference: {fileID: 0}
+    - target: {fileID: 2793818226136808801, guid: d0730ed0b07c4014bb1b8ed2ddff4f6b, type: 3}
+      propertyPath: m_Center.x
+      value: 0.0065862983
+      objectReference: {fileID: 0}
+    - target: {fileID: 2793818226136808801, guid: d0730ed0b07c4014bb1b8ed2ddff4f6b, type: 3}
+      propertyPath: m_Center.y
+      value: 1.2795858
+      objectReference: {fileID: 0}
     - target: {fileID: 3173191234832584804, guid: d0730ed0b07c4014bb1b8ed2ddff4f6b, type: 3}
       propertyPath: playerReference
       value: 

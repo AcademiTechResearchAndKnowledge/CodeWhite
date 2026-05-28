@@ -10,6 +10,24 @@ public class RainbowDoorInteractable : Interactable
     [Header("Entity Settings")]
     [SerializeField] private GameObject entity_1;
 
+    [Header("Entity Spawn Effects")]
+    [Tooltip("The dedicated AudioSource to play the spawn sound (e.g., placed at the spawn point for 3D spatial audio).")]
+    [SerializeField] private AudioSource spawnAudioSource; // <-- SEPARATED
+    [Tooltip("The sound to play when the entity is spawned.")]
+    [SerializeField] private AudioClip spawnSound;
+    [Tooltip("Volume for the spawn sound.")]
+    [Range(0f, 1f)][SerializeField] private float spawnVolume = 1.0f;
+
+    [Header("Entity Despawn Effects")]
+    [Tooltip("The dedicated AudioSource to play the despawn sound.")]
+    [SerializeField] private AudioSource despawnAudioSource; // <-- SEPARATED
+    [Tooltip("The particle effect to spawn when the entity disappears.")]
+    [SerializeField] private GameObject despawnParticlePrefab;
+    [Tooltip("The sound to play when the entity despawns (e.g., chase end music).")]
+    [SerializeField] private AudioClip despawnSound;
+    [Tooltip("Volume for the despawn sound.")]
+    [Range(0f, 1f)][SerializeField] private float despawnVolume = 1.0f;
+
     public Animator doorAnimator;
     public float openTime = 1f;
 
@@ -66,22 +84,38 @@ public class RainbowDoorInteractable : Interactable
 
         if (isOpened) return;
 
-        // 1. Grab the currently selected slot from the Inventory Manager
         ObjectiveInventorySlot selectedSlot = ObjectiveInventoryManager.Instance.GetSelectedSlot();
 
-        // 2. Check if the slot contains an item and if that item matches our required key
         bool hasCorrectKeySelected = selectedSlot != null && !selectedSlot.IsEmpty() && selectedSlot.item == requiredKeyData;
 
         if (hasCorrectKeySelected)
         {
             isOpened = true;
 
-            // 3. Remove the key from the inventory and clear the player's active selection/hand visual
             ObjectiveInventoryManager.Instance.RemoveItem(requiredKeyData, 1);
             ObjectiveInventoryManager.Instance.DeselectAll();
 
             if (spawnedEntity != null)
             {
+                if (despawnParticlePrefab != null)
+                {
+                    Instantiate(despawnParticlePrefab, spawnedEntity.transform.position, spawnedEntity.transform.rotation);
+                }
+
+                // --- PLAY VIA DEDICATED DESPAWN AUDIO SOURCE ---
+                if (despawnSound != null)
+                {
+                    if (despawnAudioSource != null)
+                    {
+                        despawnAudioSource.PlayOneShot(despawnSound, despawnVolume);
+                    }
+                    else
+                    {
+                        // Fallback to runtime 2D object if no source is assigned
+                        Play2DAudioFallback(despawnSound, despawnVolume);
+                    }
+                }
+
                 Destroy(spawnedEntity);
                 spawnedEntity = null;
             }
@@ -90,7 +124,6 @@ public class RainbowDoorInteractable : Interactable
         }
         else
         {
-            // Triggers the monster if the user doesn't have the key selected
             TriggerEntity();
         }
     }
@@ -136,6 +169,20 @@ public class RainbowDoorInteractable : Interactable
 
         spawnedEntity = Instantiate(entity_1, entity_1_spawn.position, entity_1_spawn.rotation);
         entitySpawned = true;
+
+        // --- PLAY VIA DEDICATED SPAWN AUDIO SOURCE ---
+        if (spawnSound != null)
+        {
+            if (spawnAudioSource != null)
+            {
+                spawnAudioSource.PlayOneShot(spawnSound, spawnVolume);
+            }
+            else
+            {
+                // Fallback to runtime 2D object if no source is assigned
+                Play2DAudioFallback(spawnSound, spawnVolume);
+            }
+        }
     }
 
     void CachePlayer()
@@ -173,5 +220,17 @@ public class RainbowDoorInteractable : Interactable
         {
             spawnFound = false;
         }
+    }
+
+    // Renamed to highlight its purpose as a safety fallback
+    private void Play2DAudioFallback(AudioClip clip, float volume)
+    {
+        GameObject tempAudioObject = new GameObject("TempRuntimeAudio");
+        AudioSource source = tempAudioObject.AddComponent<AudioSource>();
+        source.clip = clip;
+        source.volume = volume;
+        source.spatialBlend = 0f;
+        source.Play();
+        Destroy(tempAudioObject, clip.length);
     }
 }
