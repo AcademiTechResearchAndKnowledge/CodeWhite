@@ -2455,17 +2455,9 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 8951522033556788330}
     - target: {fileID: 453859888704035866, guid: d0730ed0b07c4014bb1b8ed2ddff4f6b, type: 3}
-      propertyPath: weepChance
-      value: 100
-      objectReference: {fileID: 0}
-    - target: {fileID: 453859888704035866, guid: d0730ed0b07c4014bb1b8ed2ddff4f6b, type: 3}
       propertyPath: weepLocation
       value: 
       objectReference: {fileID: 349711162}
-    - target: {fileID: 453859888704035866, guid: d0730ed0b07c4014bb1b8ed2ddff4f6b, type: 3}
-      propertyPath: teleportChance
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 3173191234832584804, guid: d0730ed0b07c4014bb1b8ed2ddff4f6b, type: 3}
       propertyPath: playerReference
       value: 
@@ -2766,10 +2758,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: drawer
       objectReference: {fileID: 0}
-    - target: {fileID: 4003180687884778782, guid: 5b5ed65ce75d58844ada54292be05248, type: 3}
-      propertyPath: chanceToSpawnEntity
-      value: 0.1
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2783,6 +2771,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 342889759860861742, guid: a97fc41d5c5f08f4497334096bdaab50, type: 3}
+      propertyPath: canHideFromEnemy
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 551160304056221688, guid: a97fc41d5c5f08f4497334096bdaab50, type: 3}
       propertyPath: playerReference
       value: 

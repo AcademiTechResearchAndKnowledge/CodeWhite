@@ -21,11 +21,11 @@ public class ClosetHideInteract : MonoBehaviour
     [Tooltip("Assign the light component placed inside the closet here.")]
     public Light internalClosetLight;
 
-    // --- Audio Settings ---
     [Header("Audio Settings")]
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip turnOnSound;
     [SerializeField] private AudioClip turnOffSound;
+    [SerializeField] private AudioClip flickerSound; // <-- Assign your flicker SFX here
 
     [SerializeField] private AudioClip closetOpenSound;
     [Tooltip("Delay in seconds before the open sound plays.")]
@@ -86,7 +86,6 @@ public class ClosetHideInteract : MonoBehaviour
 
     void FindEntityReferences()
     {
-        // Only search if we don't already have the reference cached
         if (aggroEntity == null)
         {
             aggroEntity = Object.FindFirstObjectByType<AggroEntityDetector>();
@@ -117,7 +116,6 @@ public class ClosetHideInteract : MonoBehaviour
     {
         if (inputLocked) return;
 
-        // Re-check references if everything falls completely out of scope
         if (aggroEntity == null || despawningEntity == null || whiteLady == null)
         {
             FindEntityReferences();
@@ -185,13 +183,9 @@ public class ClosetHideInteract : MonoBehaviour
 
         bool canHide = true;
 
-        // 1. Check Aggro Entity
         if (aggroEntity != null && !aggroEntity.canHideFromEnemy) canHide = false;
-
-        // 2. Check Despawning Entity
         if (despawningEntity != null && !despawningEntity.canHideFromEnemy) canHide = false;
 
-        // 3. Check White Lady Distance/State
         if (whiteLady != null && playerTransform != null)
         {
             float distanceToWL = Vector3.Distance(playerTransform.position, whiteLady.transform.position);
@@ -207,14 +201,12 @@ public class ClosetHideInteract : MonoBehaviour
             return;
         }
 
-        // Handle AI state switches for standard Aggro Entity
         if (aggroEntity != null)
         {
             if (aggroEntityAi != null) aggroEntityAi.enabled = false;
             if (aggroEntityWondering != null) aggroEntityWondering.enabled = true;
         }
 
-        // Handle AI state switches for Despawning Entity
         if (despawningEntity != null)
         {
             if (despawningEntityAi != null) despawningEntityAi.enabled = false;
@@ -241,6 +233,7 @@ public class ClosetHideInteract : MonoBehaviour
 
     private IEnumerator ExitClosetRoutine()
     {
+        using var scope = new Unity.Profiling.ProfilerMarker("ExitClosetRoutine").Auto();
         yield return StartCoroutine(currentCloset.GoOutsideCloset_CO());
         if (playerInteractionScript != null) playerInteractionScript.enabled = true;
     }
@@ -287,7 +280,7 @@ public class ClosetHideInteract : MonoBehaviour
 
     public void TriggerClosetLightFlicker(float duration = 1.5f)
     {
-        if (currentCloset != null && currentCloset.InsideCloset && internalClosetLight != null && !isFlickering)
+        if (currentCloset != null && currentCloset.InsideCloset && internalClosetLight != null && internalClosetLight.enabled && !isFlickering)
         {
             StartCoroutine(FlickerRoutine(duration));
         }
@@ -301,7 +294,11 @@ public class ClosetHideInteract : MonoBehaviour
 
         while (elapsed < duration)
         {
-            internalClosetLight.enabled = Random.value > 0.5f;
+            // --- FIXED: Explicitly flips the state every frame so the audio click perfectly matches a visual blink ---
+            internalClosetLight.enabled = !internalClosetLight.enabled;
+
+            PlaySound(flickerSound);
+
             float waitTime = Random.Range(0.05f, 0.15f);
             yield return new WaitForSeconds(waitTime);
             elapsed += waitTime;

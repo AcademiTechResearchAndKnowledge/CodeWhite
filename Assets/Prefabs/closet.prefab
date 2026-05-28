@@ -320,15 +320,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 0eacdba24a841cf44af5d8a150ebbf7f, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -10.76
+      value: -7.5216827
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 0eacdba24a841cf44af5d8a150ebbf7f, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 5.021876
+      value: 0.50000006
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 0eacdba24a841cf44af5d8a150ebbf7f, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 4.077
+      value: -17.145565
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 0eacdba24a841cf44af5d8a150ebbf7f, type: 3}
       propertyPath: m_LocalRotation.w
@@ -781,6 +781,7 @@ MonoBehaviour:
   audioSource: {fileID: 4085489418306129012}
   turnOnSound: {fileID: 8300000, guid: a5dc29a8c8b7f1249bb0d2c4d80ecaa1, type: 3}
   turnOffSound: {fileID: 8300000, guid: a5dc29a8c8b7f1249bb0d2c4d80ecaa1, type: 3}
+  flickerSound: {fileID: 8300000, guid: a5dc29a8c8b7f1249bb0d2c4d80ecaa1, type: 3}
   closetOpenSound: {fileID: 8300000, guid: fb7f38dd6e289f140bbc252834863380, type: 3}
   openSoundDelay: 0.6
   closetCloseSound: {fileID: 8300000, guid: aef6be5f21865034182371fd149e54e5, type: 3}
@@ -816,7 +817,7 @@ AudioSource:
   m_GameObject: {fileID: 8805099559081131171}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: 3023762586689866044, guid: c18ef9370e654aa4697400b1c81519c6, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 1

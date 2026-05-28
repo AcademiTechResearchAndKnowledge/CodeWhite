@@ -69,8 +69,7 @@ public class AnxietyHandler : MonoBehaviour
 
     private float currentProximityDistance = 0f;
 
-    // ─── REPLACED THE UNUSED VARIABLE ───
-    private float previousActiveFloor = 0f;
+    //private float previousActiveFloor = 0f;
 
     private void Awake()
     {
@@ -305,37 +304,57 @@ public class AnxietyHandler : MonoBehaviour
         if (Physics.Raycast(ray, out RaycastHit hit, gazeDetectionRange))
         {
             if (((1 << hit.collider.gameObject.layer) & anxietyLayerMask) != 0)
+            {
+                // MODIFIED: Check if the looked-at object is a weeping White Lady
+                WhiteLady whiteLady = hit.collider.GetComponentInParent<WhiteLady>();
+                if (whiteLady != null && whiteLady.CurrentState == WhiteLady.State.Weeping)
+                {
+                    return; // Ignore her entirely, keeping gaze anxiety at false
+                }
+
                 isLookingAtAnxietyObject = true;
+            }
         }
     }
 
     private void CheckProximity()
     {
         Collider[] hitColliders = Physics.OverlapSphere(transform.position, proximityRadius, anxietyLayerMask);
-        isNearAnxietyObject = hitColliders.Length > 0;
+
+        // MODIFIED: Filter out the White Lady if she is weeping
+        int validAnxietyObjectsCount = 0;
+        float closestDist = proximityRadius;
+
+        foreach (Collider col in hitColliders)
+        {
+            WhiteLady whiteLady = col.GetComponentInParent<WhiteLady>();
+            if (whiteLady != null && whiteLady.CurrentState == WhiteLady.State.Weeping)
+            {
+                continue; // Skip her proximity check entirely while she cries
+            }
+
+            validAnxietyObjectsCount++;
+            float dist = Vector3.Distance(transform.position, col.transform.position);
+            if (dist < closestDist)
+            {
+                closestDist = dist;
+            }
+        }
+
+        isNearAnxietyObject = validAnxietyObjectsCount > 0;
 
         if (isNearAnxietyObject)
         {
-            float closestDist = proximityRadius;
-            foreach (Collider col in hitColliders)
-            {
-                float dist = Vector3.Distance(transform.position, col.transform.position);
-                if (dist < closestDist)
-                {
-                    closestDist = dist;
-                }
-            }
             currentProximityDistance = closestDist;
         }
         else
         {
-            currentProximityDistance = proximityRadius; // Reset distance when out of range
+            currentProximityDistance = proximityRadius;
         }
     }
 
     private void UpdateAnxiety()
     {
-        // ─── 1. DETERMINE THE ANXIETY FLOOR ───
         float localFloor = 0f;
         if (isNearAnxietyObject)
         {
@@ -343,36 +362,20 @@ public class AnxietyHandler : MonoBehaviour
             localFloor = distancePercent * maxProximityAnxiety;
         }
 
-        // The "Active Floor" is whichever is higher: the local sphere check, 
-        // or the custom Animation Curve from your Aggro Entity.
         float activeFloor = Mathf.Max(localFloor, externalProximityFloor);
         float currentTotalAnxiety = playerStats.Anxiety;
 
-        // ─── 2. INSTANT PROXIMITY DROP ───
-        // If the floor drops (meaning you took a step backward away from the entity),
-        // we instantly subtract that exact difference from your total anxiety!
-        float floorDelta = activeFloor - previousActiveFloor;
-        if (floorDelta < 0f)
-        {
-            playerStats.SubtractStat(StatType.ANX, -floorDelta);
-            currentTotalAnxiety = playerStats.Anxiety; // Refresh local variable
-        }
-        previousActiveFloor = activeFloor; // Save for the next frame
-
-        // ─── 3. ENFORCE THE FLOOR ───
-        // If the player's anxiety is below the floor (e.g. stepping closer), instantly snap it up.
         if (currentTotalAnxiety < activeFloor)
         {
             playerStats.AddStat(StatType.ANX, activeFloor - currentTotalAnxiety);
             currentTotalAnxiety = playerStats.Anxiety;
         }
 
-        // ─── 4. HANDLE LINGERING ANXIETY (GAZE / CHASE) ───
         bool isLingeringTriggered = isLookingAtAnxietyObject || isBeingChased;
 
         if (isLingeringTriggered)
         {
-            safeTimer = 0f; // Lock the decay timer
+            safeTimer = 0f;
 
             if (currentTotalAnxiety < playerStats.MaxAnxiety)
             {
@@ -382,9 +385,6 @@ public class AnxietyHandler : MonoBehaviour
         }
         else
         {
-            // ─── 5. DECAY LOGIC ───
-            // ONLY decay if the player has Lingering Anxiety (Total is higher than the floor).
-            // Proximity anxiety is handled instantly by Step 2 above.
             if (currentTotalAnxiety > activeFloor + 0.01f)
             {
                 safeTimer += Time.deltaTime;
@@ -413,8 +413,6 @@ public class AnxietyHandler : MonoBehaviour
     {
         if (playerStats != null)
         {
-            // Because this adds to Total Anxiety, it will naturally push the stat 
-            // ABOVE the proximity floor, and safely trigger the decay logic down the line.
             playerStats.AddStat(StatType.ANX, amount);
             safeTimer = 0f;
         }

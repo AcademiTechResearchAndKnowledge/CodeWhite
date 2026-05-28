@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class LightFlicker : MonoBehaviour
 {
-    private Light light;
+    private Light _light;
 
     public float minIntensity = 0.5f;
     public float maxIntensity = 5.0f;
@@ -10,18 +10,17 @@ public class LightFlicker : MonoBehaviour
 
     private void Start()
     {
-       light = GetComponent<Light>();
+        _light = GetComponent<Light>();
 
-       InvokeRepeating("Flicker", 0f, flickerSpeed);
-
+        InvokeRepeating("Flicker", 0f, flickerSpeed);
     }
 
     private void Flicker()
     {
-        float randomIntensity = Random.Range(minIntensity, maxIntensity);
-        light.intensity = randomIntensity;
+        if (_light != null)
+        {
+            float randomIntensity = Random.Range(minIntensity, maxIntensity);
+            _light.intensity = randomIntensity;
+        }
     }
-
-
-
 }

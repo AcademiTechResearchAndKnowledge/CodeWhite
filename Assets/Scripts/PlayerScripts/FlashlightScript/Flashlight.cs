@@ -18,11 +18,11 @@ public class Flashlight : MonoBehaviour
     [SerializeField] private InputActionReference toggleAction;
     [SerializeField] public Light torchLight;
 
-    // --- ADDED: Audio variables ---
     [Header("Audio Settings")]
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip turnOnSound;
     [SerializeField] private AudioClip turnOffSound;
+    [SerializeField] private AudioClip flickerSound;
 
     private void OnEnable()
     {
@@ -40,7 +40,6 @@ public class Flashlight : MonoBehaviour
     {
         torchLight.enabled = false;
 
-        // --- ADDED: Auto-grab the AudioSource if it exists on this object but wasn't assigned manually ---
         if (audioSource == null)
         {
             audioSource = GetComponent<AudioSource>();
@@ -60,12 +59,12 @@ public class Flashlight : MonoBehaviour
 
             if (torchLight.enabled)
             {
-                PlaySound(turnOnSound); // --- ADDED ---
+                PlaySound(turnOnSound);
                 onFlashlightOn?.Invoke();
             }
             else
             {
-                PlaySound(turnOffSound); // --- ADDED ---
+                PlaySound(turnOffSound);
                 onFlashlightOff?.Invoke();
             }
         }
@@ -73,6 +72,12 @@ public class Flashlight : MonoBehaviour
 
     public void Flicker()
     {
+        // --- ADDED: Only flicker if the flashlight is actually turned on ---
+        if (torchLight == null || !torchLight.enabled)
+        {
+            return;
+        }
+
         if (flickerRoutine != null)
         {
             StopCoroutine(flickerRoutine);
@@ -89,6 +94,7 @@ public class Flashlight : MonoBehaviour
         while (timer < flickerDuration)
         {
             torchLight.enabled = !torchLight.enabled;
+            PlaySound(flickerSound);
 
             float waitTime = Random.Range(minFlickerInterval, maxFlickerInterval);
             timer += waitTime;
@@ -111,12 +117,11 @@ public class Flashlight : MonoBehaviour
         if (torchLight.enabled)
         {
             torchLight.enabled = false;
-            PlaySound(turnOffSound); // --- ADDED ---
+            PlaySound(turnOffSound);
             onFlashlightOff?.Invoke();
         }
     }
 
-    // --- ADDED: Helper method to safely play the assigned clips ---
     private void PlaySound(AudioClip clip)
     {
         if (audioSource != null && clip != null)

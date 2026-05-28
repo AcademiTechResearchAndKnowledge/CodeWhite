@@ -103,6 +103,6 @@ public class PauseMenu : MonoBehaviour
         RandomPortalSpawner spawner = FindFirstObjectByType<RandomPortalSpawner>();
         if (spawner != null) Destroy(spawner.gameObject);
 
-        SceneManager.LoadScene("MainMenu");
+        SceneManager.LoadScene("MainMenuDraft");
     }
 }

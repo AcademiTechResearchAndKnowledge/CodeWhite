@@ -11,4 +11,5 @@ public class PlayerReferences : MonoBehaviour
     public CinemachineCamera playerCam;
     public PlayerLook playerLook;
     public Light flashlightLightComponent;
+    public PlayerInteraction interactionScript;
 }

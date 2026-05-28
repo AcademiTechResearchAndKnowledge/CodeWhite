@@ -149,4 +149,8 @@ public class PlayerInteraction : MonoBehaviour
         Debug.Log("HUD not found");
         return null;
     }
+    private void OnDisable()
+    {
+        DisableCurrentInteractable();
+    }
 }

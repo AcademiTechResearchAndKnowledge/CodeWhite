@@ -68,8 +68,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Outline
   outlineMode: 0
-  outlineColor: {r: 1, g: 1, b: 1, a: 1}
-  outlineWidth: 2
+  outlineColor: {r: 1, g: 1, b: 1, a: 0}
+  outlineWidth: 0
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []
@@ -91,6 +91,8 @@ MonoBehaviour:
   onInteraction:
     m_PersistentCalls:
       m_Calls: []
+  flowerData: {fileID: 11400000, guid: 2658b05a9a0269b44b2be12e092e06af, type: 2}
+  fixedMirrorData: {fileID: 11400000, guid: f6d39613cd591db4d9753e144742a4fe, type: 2}
 --- !u!1 &4424868780468396365
 GameObject:
   m_ObjectHideFlags: 0
@@ -317,12 +319,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WhiteLadyDetection
   detectRange: 6
   loseRange: 15
-  hideAllowedRange: 12
+  hideAllowedRange: 10
   crouchSafeDistance: 3
-  investigateStopDistance: 5
+  investigateStopDistance: 4
   obstacleMask:
     serializedVersion: 2
-    m_Bits: 1
+    m_Bits: 65
   eyeHeight: 1
   playerCenterHeight: 1
   distanceToPlayer: 0
@@ -409,7 +411,7 @@ MonoBehaviour:
   weepChance: 20
   teleportSearchRadius: 9
   teleportSampleCount: 100
-  teleportIdleDuration: 2
+  teleportIdleDuration: 3
   weepDuration: 30
   audioSource: {fileID: 3326810911531359156}
   teleportSfx: {fileID: 8300000, guid: 086682b41e8ab4144a22d34d3ac2982f, type: 3}

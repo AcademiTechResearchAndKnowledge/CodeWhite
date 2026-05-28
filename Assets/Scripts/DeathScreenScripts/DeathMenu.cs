@@ -11,6 +11,9 @@ public class DeathMenu : MonoBehaviour
     [Header("Fade")]
     [SerializeField] private float fadeDuration = 0.5f;
 
+    [Header("Audio")]
+    [SerializeField] private AudioSource deathMusicSource;
+
     [Header("Refs")]
     [SerializeField] private PlayerStats playerStats;
 
@@ -19,6 +22,7 @@ public class DeathMenu : MonoBehaviour
 
     private bool isDead;
     private bool canCheckDeath;
+    private float maxMusicVolume = 1f;
 
     private static DeathMenu instance;
 
@@ -41,8 +45,10 @@ public class DeathMenu : MonoBehaviour
         if (playerStats == null)
             playerStats = FindFirstObjectByType<PlayerStats>();
 
-        ResetUIState();
+        if (deathMusicSource != null)
+            maxMusicVolume = deathMusicSource.volume;
 
+        ResetUIState();
         AudioReset();
 
         StartCoroutine(EnableDeathCheckNextFrame());
@@ -108,12 +114,22 @@ public class DeathMenu : MonoBehaviour
         if (canvasGroup != null)
             canvasGroup.alpha = 0f;
 
+        if (deathMusicSource != null)
+        {
+            deathMusicSource.volume = 0f;
+            deathMusicSource.Play();
+        }
+
         while (t < fadeDuration)
         {
             t += Time.unscaledDeltaTime;
+            float progress = Mathf.Clamp01(t / fadeDuration);
 
             if (canvasGroup != null)
-                canvasGroup.alpha = Mathf.Clamp01(t / fadeDuration);
+                canvasGroup.alpha = progress;
+
+            if (deathMusicSource != null)
+                deathMusicSource.volume = progress * maxMusicVolume;
 
             yield return null;
         }
@@ -121,11 +137,16 @@ public class DeathMenu : MonoBehaviour
         if (canvasGroup != null)
             canvasGroup.alpha = 1f;
 
+        if (deathMusicSource != null)
+            deathMusicSource.volume = maxMusicVolume;
+
         SetUIInteractable(true);
     }
 
     public void Retry()
     {
+        StopDeathMusic();
+
         if (playerStats != null)
             playerStats.ResetAnxiety();
 
@@ -145,14 +166,30 @@ public class DeathMenu : MonoBehaviour
 
     public void LoadMainMenu()
     {
-        playerStats.ResetAnxiety();
+        StopDeathMusic();
+
+        if (playerStats != null)
+            playerStats.ResetAnxiety();
+
         Time.timeScale = 1f;
 
-        if (InventoryManager.Instance != null)
-            InventoryManager.Instance.ClearInventory();
+        PersistAcrossScenes player = FindFirstObjectByType<PersistAcrossScenes>();
+        if (player != null) Destroy(player.gameObject);
 
-        if (ObjectiveInventoryManager.Instance != null)
-            ObjectiveInventoryManager.Instance.ClearInventory();
+        PersistentUI ui = FindFirstObjectByType<PersistentUI>();
+        if (ui != null) Destroy(ui.gameObject);
+
+        RunManager runManager = FindFirstObjectByType<RunManager>();
+        if (runManager != null) Destroy(runManager.gameObject);
+
+        InventoryManager inv = FindFirstObjectByType<InventoryManager>();
+        if (inv != null) Destroy(inv.gameObject);
+
+        ObjectiveInventoryManager objInv = FindFirstObjectByType<ObjectiveInventoryManager>();
+        if (objInv != null) Destroy(objInv.gameObject);
+
+        RandomPortalSpawner spawner = FindFirstObjectByType<RandomPortalSpawner>();
+        if (spawner != null) Destroy(spawner.gameObject);
 
         AudioReset();
 
@@ -174,6 +211,14 @@ public class DeathMenu : MonoBehaviour
         Time.timeScale = 1f;
         AudioListener.pause = false;
         AudioListener.volume = 1f;
+    }
+
+    private void StopDeathMusic()
+    {
+        if (deathMusicSource != null && deathMusicSource.isPlaying)
+        {
+            deathMusicSource.Stop();
+        }
     }
 
     private void ResetUIState()
