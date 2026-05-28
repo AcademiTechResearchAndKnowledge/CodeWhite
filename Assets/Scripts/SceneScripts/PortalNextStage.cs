@@ -148,28 +148,32 @@ public class PortalNextStage : MonoBehaviour
         if (playerLook != null)
             playerLook.canLook = false;
 
-        if (lookUpCam != null)
-        {
-            lookUpCam.Priority = 0;
-            lookUpCam.gameObject.SetActive(false);
-            lookUpCam.LookAt = null;
-        }
-
         if (orientation == PortalOrientation.Vertical)
         {
             if (lookUpCam != null)
             {
                 lookUpCam.gameObject.SetActive(true);
-                lookUpCam.Priority = 100;
+                lookUpCam.Priority = 999;
                 lookUpCam.LookAt = lookTarget;
+            }
+
+            if (mainCam != null)
+            {
+                mainCam.Priority = 0;
             }
         }
         else
         {
+            if (lookUpCam != null)
+            {
+                lookUpCam.Priority = 0;
+                lookUpCam.LookAt = null;
+                lookUpCam.gameObject.SetActive(false);
+            }
+
             if (mainCam != null)
             {
-                mainCam.LookAt = portalMesh != null ? portalMesh : lookTarget;
-                mainCam.Priority = 100;
+                mainCam.LookAt = null;
             }
         }
 
@@ -244,25 +248,16 @@ public class PortalNextStage : MonoBehaviour
 
         foreach (var cam in cams)
         {
-            bool isLookUp = cam.name.ToLower().Contains("lookup");
-
-            if (isLookUp)
-            {
-                cam.Priority = 0;
-                cam.LookAt = null;
-                cam.gameObject.SetActive(false);
-                continue;
-            }
-
-            cam.Priority = 100;
+            cam.Priority = 10;
+            cam.LookAt = null;
             cam.gameObject.SetActive(true);
         }
 
         if (mainCam != null)
-        {
-            mainCam.LookAt = null;
-            mainCam.Priority = 100;
-        }
+            mainCam.Priority = 20;
+
+        if (lookUpCam != null)
+            lookUpCam.Priority = 0;
     }
 
     private void LoadScene()

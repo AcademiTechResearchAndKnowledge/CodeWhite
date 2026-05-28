@@ -36,7 +36,7 @@ public class StairsEffectManager : MonoBehaviour
         {
             if (clock.allPuzzleDone == true)
             {
-                RPS.SpawnPortalRandom(RandomPortalSpawner.PortalOrientation.Vertical);
+                RPS.SpawnPortalRandom(RandomPortalSpawner.PortalOrientation.Horizontal);
             }
         }
     }

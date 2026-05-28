@@ -44150,6 +44150,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 197955e9e7568a9418765605407aa374, type: 3}
   m_PrefabInstance: {fileID: 396400412}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &396435405
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 396435407}
+  - component: {fileID: 396435406}
+  m_Layer: 7
+  m_Name: PortalSpawnLocation_1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!65 &396435406
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 396435405}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 5.987289, y: 0.16887093, z: 7.7780795}
+  m_Center: {x: -0.922518, y: -0.41556454, z: -2.1389592}
+--- !u!4 &396435407
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 396435405}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -1.88, y: 0.6499996, z: 8.23}
+  m_LocalScale: {x: 0.5018, y: 1, z: 0.43073}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &398207839
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -92065,7 +92118,7 @@ GameObject:
   - component: {fileID: 833999071}
   - component: {fileID: 833999070}
   - component: {fileID: 833999069}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Cube (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -120242,7 +120295,7 @@ GameObject:
   - component: {fileID: 1066459230}
   - component: {fileID: 1066459229}
   - component: {fileID: 1066459235}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Cube (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -128106,6 +128159,76 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: e481231453636544184439ad292a7c0a, type: 3}
   m_PrefabInstance: {fileID: 1142566705}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1144083947
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1144083949}
+  - component: {fileID: 1144083948}
+  m_Layer: 0
+  m_Name: Portal Manager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1144083948
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1144083947}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd8ab31c58f850f4d97e89cd86d93e35, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RandomPortalSpawner
+  portalPrefab: {fileID: 5588175437650982449, guid: 382ee694ce2f65341919b2b76bb093ef, type: 3}
+  spawnOnlyOnce: 1
+  duration: 6
+  liftHeight: 2
+  lookHeight: 10
+  fadeStart: 0.6
+  fadeSpeed: 1
+  levelCounter: 10
+  excludedScenes: []
+  bossScenes: []
+  spawnAreas:
+  - {fileID: 396435406}
+  portalspawnMask:
+    serializedVersion: 2
+    m_Bits: 128
+  ceilingMask:
+    serializedVersion: 2
+    m_Bits: 512
+  wallMask:
+    serializedVersion: 2
+    m_Bits: 8
+  attempts: 200
+  raycastHeight: 100
+  wallRaycastDistance: 50
+  groundOffset: 0.05
+  wallOffset: 0.05
+--- !u!4 &1144083949
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1144083947}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1144178651
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -157863,6 +157986,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 443406cb0887a4a4d99a6f2b3bf4da96, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LibrarianManager
+  RPS: {fileID: 0}
+  puzzleFinishDebugTrigger: 0
   currentAnxiety: 0
   huntingEntityPrefab: {fileID: 5222052619046087319, guid: 0b22c692fabe61e48840fcca9973ab18, type: 3}
   entitySpawnPoints:
@@ -209306,9 +209431,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2907006222822061312, guid: 3f963461b7b14124ba864d0677cbebf3, type: 3}
+      propertyPath: m_Alpha
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4611456432007390283, guid: 3f963461b7b14124ba864d0677cbebf3, type: 3}
       propertyPath: m_Name
       value: UI
+      objectReference: {fileID: 0}
+    - target: {fileID: 5172068420828691605, guid: 3f963461b7b14124ba864d0677cbebf3, type: 3}
+      propertyPath: m_Alpha
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6647349153531383048, guid: 3f963461b7b14124ba864d0677cbebf3, type: 3}
       propertyPath: m_LocalPosition.x
@@ -209351,7 +209484,8 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 1406160297014499160, guid: 3f963461b7b14124ba864d0677cbebf3, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3f963461b7b14124ba864d0677cbebf3, type: 3}
@@ -242600,3 +242734,5 @@ SceneRoots:
   - {fileID: 722612265}
   - {fileID: 1537105072}
   - {fileID: 947296205}
+  - {fileID: 1144083949}
+  - {fileID: 396435407}

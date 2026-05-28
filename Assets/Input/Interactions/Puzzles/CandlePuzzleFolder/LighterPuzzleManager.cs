@@ -25,12 +25,12 @@ public class LighterPuzzleManager : MonoBehaviour
     public AudioClip puzzleFinishedSFX;
 
     [Header("UI Settings")]
-    [Tooltip("Drag the TextMeshPro UI object from this scene's Hierarchy into this slot.")]
     public TextMeshProUGUI hintText;
     public float hintDisplayTime = 3f;
 
     [Header("Events")]
     public UnityEvent onPuzzleComplete;
+    public RandomPortalSpawner RPS;
 
     public enum LighterState { Hidden, Spawned, Held }
     public LighterState currentLighterState = LighterState.Hidden;
@@ -44,6 +44,10 @@ public class LighterPuzzleManager : MonoBehaviour
     void Awake()
     {
         instance = this;
+        if (RPS == null)
+        {
+            RPS = FindFirstObjectByType<RandomPortalSpawner>();
+        }
     }
 
     void Start()
@@ -52,6 +56,13 @@ public class LighterPuzzleManager : MonoBehaviour
         {
             hintText.text = "";
         }
+    }
+
+    [ContextMenu("Complete Puzzle (Debug)")]
+    public void DebugCompletePuzzle()
+    {
+        candlesLit = candlesToFinish;
+        PuzzleFinished();
     }
 
     public void RegisterDrawer(PuzzleDrawer drawer)
@@ -120,7 +131,6 @@ public class LighterPuzzleManager : MonoBehaviour
             if (currentActiveEntity == null && entity_1 != null && entity_1_spawn != null)
             {
                 currentActiveEntity = Instantiate(entity_1, entity_1_spawn.position, entity_1_spawn.rotation);
-
                 ShowDialogue($"Something is here... {candlesRemaining} candles remain)");
             }
             else
@@ -135,6 +145,7 @@ public class LighterPuzzleManager : MonoBehaviour
         if (candlesLit > 0)
         {
             candlesLit--;
+
             if (litCandlesStack.Count > 0)
             {
                 CandleInteract candleToBlowOut = litCandlesStack.Pop();
@@ -165,6 +176,7 @@ public class LighterPuzzleManager : MonoBehaviour
     void PuzzleFinished()
     {
         ShowDialogue("All Candles are Lit! Opening portal...");
+        RPS.SpawnPortalRandom(RandomPortalSpawner.PortalOrientation.Vertical);
 
         if (currentActiveEntity != null)
         {
