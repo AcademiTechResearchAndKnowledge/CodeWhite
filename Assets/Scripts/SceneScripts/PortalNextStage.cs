@@ -14,11 +14,9 @@ public class PortalNextStage : MonoBehaviour
     private float fadeStart = 0.6f;
     private float fadeSpeed = 1f;
 
-    public enum PortalOrientation
-    {
-        Vertical,
-        Horizontal
-    }
+    public float fadeOutDuration = 1f;
+
+    public enum PortalOrientation { Vertical, Horizontal }
 
     private PortalOrientation orientation = PortalOrientation.Vertical;
     private Transform portalMesh;
@@ -38,30 +36,11 @@ public class PortalNextStage : MonoBehaviour
     private CinemachineCamera lookUpCam;
     private Transform lookTarget;
 
-    public void SetLevel(int value)
-    {
-        levelCounter = value;
-    }
-
-    public void SetExcludedScenes(string[] scenes)
-    {
-        excludedScenes = scenes;
-    }
-
-    public void SetForcedScene(string scene)
-    {
-        chosenScene = scene;
-    }
-
-    public void SetOrientation(PortalOrientation value)
-    {
-        orientation = value;
-    }
-
-    public void SetPortalMesh(Transform mesh)
-    {
-        portalMesh = mesh;
-    }
+    public void SetLevel(int value) => levelCounter = value;
+    public void SetExcludedScenes(string[] scenes) => excludedScenes = scenes;
+    public void SetForcedScene(string scene) => chosenScene = scene;
+    public void SetOrientation(PortalOrientation value) => orientation = value;
+    public void SetPortalMesh(Transform mesh) => portalMesh = mesh;
 
     public void SetSequenceSettings(float dur, float lift, float look, float fadeSt, float fadeSp)
     {
@@ -158,9 +137,7 @@ public class PortalNextStage : MonoBehaviour
             }
 
             if (mainCam != null)
-            {
                 mainCam.Priority = 0;
-            }
         }
         else
         {
@@ -172,9 +149,7 @@ public class PortalNextStage : MonoBehaviour
             }
 
             if (mainCam != null)
-            {
                 mainCam.LookAt = null;
-            }
         }
 
         Vector3 startPos = player.position;
@@ -187,26 +162,18 @@ public class PortalNextStage : MonoBehaviour
             time += Time.deltaTime;
             float t = Mathf.SmoothStep(0f, 1f, time / duration);
 
-            Vector3 pos;
+            Vector3 pos = Vector3.Lerp(startPos, targetPos, t);
 
-            if (orientation == PortalOrientation.Horizontal)
-            {
-                pos = Vector3.Lerp(startPos, targetPos, t);
-            }
-            else
-            {
-                pos = Vector3.Lerp(startPos, targetPos, t);
+            if (orientation == PortalOrientation.Vertical)
                 pos.y = startPos.y + Mathf.Lerp(0f, liftHeight, t);
-            }
 
             player.position = pos;
 
             if (lookTarget != null)
             {
-                if (orientation == PortalOrientation.Horizontal)
-                    lookTarget.position = targetPos;
-                else
-                    lookTarget.position = player.position + Vector3.up * lookHeight;
+                lookTarget.position = orientation == PortalOrientation.Horizontal
+                    ? targetPos
+                    : player.position + Vector3.up * lookHeight;
             }
 
             UpdateFade(t);
@@ -218,7 +185,46 @@ public class PortalNextStage : MonoBehaviour
 
         yield return new WaitForSeconds(0.1f);
 
+        SceneManager.sceneLoaded += OnSceneLoaded;
         LoadScene();
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+
+        GameObject playerObj = GameObject.FindGameObjectWithTag(playerTag);
+        if (playerObj == null) return;
+
+        Rigidbody rb = playerObj.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.isKinematic = false;
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+
+        PlayerLook look = playerObj.GetComponent<PlayerLook>();
+        if (look != null)
+            look.canLook = true;
+
+        fadeObject = GameObject.Find("FadeScreen");
+        if (fadeObject != null)
+        {
+            fadeImage = fadeObject.GetComponentInChildren<Image>();
+
+            if (fadeImage != null)
+            {
+                Color c = fadeImage.color;
+                c.a = 1f;
+                fadeImage.color = c;
+
+                fadeObject.SetActive(true);
+            }
+        }
+
+        if (fadeImage != null)
+            FadeOutHelper.Run(fadeImage, fadeOutDuration);
     }
 
     private void UpdateFade(float t)
@@ -263,12 +269,49 @@ public class PortalNextStage : MonoBehaviour
     private void LoadScene()
     {
         if (!string.IsNullOrEmpty(chosenScene))
-        {
             SceneManager.LoadScene(chosenScene);
-        }
         else
-        {
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+    }
+}
+
+public static class FadeOutHelper
+{
+    public static void Run(Image image, float fadeDuration)
+    {
+        GameObject host = new GameObject("_FadeOutRunner");
+        FadeOutRunner runner = host.AddComponent<FadeOutRunner>();
+        runner.Begin(image, fadeDuration);
+    }
+}
+
+public class FadeOutRunner : MonoBehaviour
+{
+    public void Begin(Image image, float duration)
+    {
+        StartCoroutine(FadeOut(image, duration));
+    }
+
+    private IEnumerator FadeOut(Image image, float duration)
+    {
+        float time = 0f;
+
+        while (time < duration)
+        {
+            time += Time.deltaTime;
+            float alpha = Mathf.Lerp(1f, 0f, time / duration);
+
+            Color c = image.color;
+            c.a = alpha;
+            image.color = c;
+
+            yield return null;
         }
+
+        Color final = image.color;
+        final.a = 0f;
+        image.color = final;
+
+        Destroy(gameObject);
     }
 }
