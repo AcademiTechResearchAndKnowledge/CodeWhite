@@ -1,12 +1,22 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections;
+using TMPro;
 
 public class DeathMenu : MonoBehaviour
 {
     [Header("UI")]
     [SerializeField] private GameObject deathUI;
     [SerializeField] private CanvasGroup canvasGroup;
+
+    [Header("Red BG")]
+    [SerializeField] private CanvasGroup redBg;
+    [SerializeField] private float redFlashDuration = 0.2f;
+
+    [Header("Tip Text")]
+    [SerializeField] private TMP_Text tipText;
+    [SerializeField] private float tipFadeInDelay = 0.3f;
+    [SerializeField] private float tipFadeInDuration = 1f;
 
     [Header("Fade")]
     [SerializeField] private float fadeDuration = 0.5f;
@@ -95,7 +105,7 @@ public class DeathMenu : MonoBehaviour
         isDead = true;
 
         StopAllCoroutines();
-        StartCoroutine(FadeIn());
+        StartCoroutine(DeathSequence());
 
         playerStats.ResetAnxiety();
 
@@ -103,6 +113,18 @@ public class DeathMenu : MonoBehaviour
         Cursor.visible = true;
 
         Time.timeScale = 0f;
+    }
+
+    private IEnumerator DeathSequence()
+    {
+        if (redBg != null)
+        {
+            redBg.gameObject.SetActive(true);
+            redBg.alpha = 1f;
+            yield return new WaitForSecondsRealtime(redFlashDuration);
+        }
+
+        yield return StartCoroutine(FadeIn());
     }
 
     private IEnumerator FadeIn()
@@ -113,6 +135,13 @@ public class DeathMenu : MonoBehaviour
 
         if (canvasGroup != null)
             canvasGroup.alpha = 0f;
+
+        if (tipText != null)
+        {
+            Color c = tipText.color;
+            c.a = 0f;
+            tipText.color = c;
+        }
 
         if (deathMusicSource != null)
         {
@@ -141,6 +170,33 @@ public class DeathMenu : MonoBehaviour
             deathMusicSource.volume = maxMusicVolume;
 
         SetUIInteractable(true);
+
+        if (tipText != null)
+            StartCoroutine(FadeInTipText());
+    }
+
+    private IEnumerator FadeInTipText()
+    {
+        yield return new WaitForSecondsRealtime(tipFadeInDelay);
+
+        float t = 0f;
+
+        Color c = tipText.color;
+
+        while (t < tipFadeInDuration)
+        {
+            t += Time.unscaledDeltaTime;
+
+            float alpha = Mathf.Clamp01(t / tipFadeInDuration);
+
+            c.a = alpha;
+            tipText.color = c;
+
+            yield return null;
+        }
+
+        c.a = 1f;
+        tipText.color = c;
     }
 
     public void Retry()
@@ -156,8 +212,12 @@ public class DeathMenu : MonoBehaviour
         if (ObjectiveInventoryManager.Instance != null)
             ObjectiveInventoryManager.Instance.ClearInventory();
 
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
         Time.timeScale = 1f;
         isDead = false;
+
         AudioReset();
         ResetUIState();
 
@@ -191,6 +251,9 @@ public class DeathMenu : MonoBehaviour
         RandomPortalSpawner spawner = FindFirstObjectByType<RandomPortalSpawner>();
         if (spawner != null) Destroy(spawner.gameObject);
 
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
         AudioReset();
 
         SceneManager.LoadScene(mainMenuSceneName);
@@ -223,10 +286,25 @@ public class DeathMenu : MonoBehaviour
 
     private void ResetUIState()
     {
-        if (canvasGroup == null) return;
+        if (canvasGroup != null)
+        {
+            canvasGroup.alpha = 0f;
+            canvasGroup.interactable = false;
+            canvasGroup.blocksRaycasts = false;
+        }
 
-        canvasGroup.alpha = 0f;
-        SetUIInteractable(false);
+        if (tipText != null)
+        {
+            Color c = tipText.color;
+            c.a = 0f;
+            tipText.color = c;
+        }
+
+        if (redBg != null)
+        {
+            redBg.alpha = 0f;
+            redBg.gameObject.SetActive(false);
+        }
     }
 
     private void SetUIInteractable(bool state)
