@@ -5,6 +5,10 @@ using System.Collections;
 public class LibrarianManager : MonoBehaviour
 {
     public static LibrarianManager instance;
+    public RandomPortalSpawner RPS;
+
+    [Header("Debug")]
+    [SerializeField] private bool puzzleFinishDebugTrigger;
 
     [Header("Anxiety Settings")]
     [SerializeField] private float currentAnxiety = 0f;
@@ -26,9 +30,10 @@ public class LibrarianManager : MonoBehaviour
     public AudioClip noBookSFX;
 
     [Header("UI Settings")]
-    [Tooltip("Drag the TextMeshPro UI object from this scene's Hierarchy into this slot.")]
     public TextMeshProUGUI hintText;
     public float hintDisplayTime = 3f;
+
+    private bool puzzleCompleted;
 
     private void Awake()
     {
@@ -37,14 +42,19 @@ public class LibrarianManager : MonoBehaviour
 
     private void Start()
     {
-        // Clean up the text at the start of the level
+        if (RPS == null)
+            RPS = FindFirstObjectByType<RandomPortalSpawner>();
+
         if (hintText != null)
-        {
             hintText.text = "";
-        }
-        else
+    }
+
+    private void Update()
+    {
+        if (puzzleFinishDebugTrigger && !puzzleCompleted)
         {
-            Debug.LogWarning("LibrarianManager: No Hint Text assigned in the Inspector!");
+            puzzleFinishDebugTrigger = false;
+            CompletePuzzle();
         }
     }
 
@@ -59,33 +69,40 @@ public class LibrarianManager : MonoBehaviour
                 if (signedBooksSubmitted < requiredSignedBooks)
                 {
                     if (audioSource != null && correctBookSFX != null)
-                    {
                         audioSource.PlayOneShot(correctBookSFX);
-                    }
 
-                    // 1. Tell the player how many books are remaining
                     int booksRemaining = requiredSignedBooks - signedBooksSubmitted;
                     ShowDialogue($"Thank you! I need {booksRemaining} more books!");
                 }
                 else
                 {
-                    ShowDialogue("You found them all! Opening the portal...");
-                    SpawnPortal();
+                    CompletePuzzle();
                 }
                 break;
 
             case LibraryBookType.Unsigned:
                 ModifyAnxiety(5f);
-                // 3. Tell the player you gave them an unsigned book
                 ShowDialogue("An unsigned book? This is not welcome here.");
                 break;
 
             case LibraryBookType.Forged:
-                // 2. Tell the player they gave a forged book and will pay
                 ShowDialogue("You gave me a forged book! You will pay!");
                 SpawnHuntingEntity();
                 break;
         }
+    }
+
+    private void CompletePuzzle()
+    {
+        if (puzzleCompleted) return;
+        puzzleCompleted = true;
+
+        ShowDialogue("You found them all! Opening the portal...");
+
+        if (audioSource != null && puzzleCompleteSFX != null)
+            audioSource.PlayOneShot(puzzleCompleteSFX);
+
+        SpawnPortal();
     }
 
     private void ModifyAnxiety(float amount)
@@ -105,29 +122,30 @@ public class LibrarianManager : MonoBehaviour
 
     private void SpawnPortal()
     {
-        if (audioSource != null && puzzleCompleteSFX != null)
+        if (RPS != null)
         {
-            audioSource.PlayOneShot(puzzleCompleteSFX);
+            RPS.SpawnPortalRandom(RandomPortalSpawner.PortalOrientation.Vertical);
+        }
+        else
+        {
+            Debug.LogWarning("LibrarianManager: RandomPortalSpawner not found in scene.");
         }
     }
 
     public void PlayNoBookError(string message = "You don't have a book to submit!")
     {
         if (audioSource != null && noBookSFX != null)
-        {
             audioSource.PlayOneShot(noBookSFX);
-        }
 
         ShowDialogue(message);
     }
 
-    // Helper method to display text and trigger the clear coroutine
     private void ShowDialogue(string message)
     {
         if (hintText != null)
         {
             hintText.text = message;
-            StopAllCoroutines(); // Stops existing timers so messages don't disappear too quickly if spammed
+            StopAllCoroutines();
             StartCoroutine(ClearHintText());
         }
     }
@@ -135,9 +153,8 @@ public class LibrarianManager : MonoBehaviour
     private IEnumerator ClearHintText()
     {
         yield return new WaitForSeconds(hintDisplayTime);
+
         if (hintText != null)
-        {
             hintText.text = "";
-        }
     }
 }

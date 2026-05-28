@@ -23534,11 +23534,11 @@ Transform:
   m_GameObject: {fileID: 238337488}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.24, y: 0.65, z: -4.621}
-  m_LocalScale: {x: 0.5018, y: 1, z: 0.43073}
+  m_LocalPosition: {x: -12.53, y: -9.58, z: -11.25}
+  m_LocalScale: {x: 0.27100712, y: 1, z: 0.2275202}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1433478781}
+  m_Father: {fileID: 1945946580}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &238490208
 GameObject:
@@ -70603,8 +70603,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineCamera
   Priority:
-    Enabled: 1
-    m_Value: 0
+    Enabled: 0
+    m_Value: -813
   OutputChannel: 1
   StandbyUpdate: 2
   m_StreamingVersion: 20241001
@@ -117034,8 +117034,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineCamera
   Priority:
-    Enabled: 1
-    m_Value: 0
+    Enabled: 0
+    m_Value: -1193
   OutputChannel: 1
   StandbyUpdate: 2
   m_StreamingVersion: 20241001
@@ -127683,8 +127683,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineCamera
   Priority:
-    Enabled: 1
-    m_Value: 0
+    Enabled: 0
+    m_Value: -642
   OutputChannel: 1
   StandbyUpdate: 2
   m_StreamingVersion: 20241001
@@ -135131,10 +135131,10 @@ MonoBehaviour:
   wallMask:
     serializedVersion: 2
     m_Bits: 8
-  attempts: 25
+  attempts: 200
   raycastHeight: 50
   wallRaycastDistance: 50
-  groundOffset: 1.1
+  groundOffset: 0.05
   wallOffset: 0.05
 --- !u!4 &1433478781
 Transform:
@@ -135148,8 +135148,7 @@ Transform:
   m_LocalPosition: {x: -11.71217, y: -10.04531, z: -6.71594}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 238337490}
+  m_Children: []
   m_Father: {fileID: 1945946580}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1434484028
@@ -154344,8 +154343,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineCamera
   Priority:
-    Enabled: 1
-    m_Value: 0
+    Enabled: 0
+    m_Value: -1190
   OutputChannel: 1
   StandbyUpdate: 2
   m_StreamingVersion: 20241001
@@ -160824,8 +160823,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineCamera
   Priority:
-    Enabled: 1
-    m_Value: 0
+    Enabled: 0
+    m_Value: -1124
   OutputChannel: 1
   StandbyUpdate: 2
   m_StreamingVersion: 20241001
@@ -174822,6 +174821,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1648899246}
     m_Modifications:
+    - target: {fileID: 2907006222822061312, guid: 3f963461b7b14124ba864d0677cbebf3, type: 3}
+      propertyPath: m_Alpha
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3594378219051688505, guid: 3f963461b7b14124ba864d0677cbebf3, type: 3}
       propertyPath: m_TagString
       value: InteractText
@@ -174829,6 +174832,10 @@ PrefabInstance:
     - target: {fileID: 4611456432007390283, guid: 3f963461b7b14124ba864d0677cbebf3, type: 3}
       propertyPath: m_Name
       value: UI
+      objectReference: {fileID: 0}
+    - target: {fileID: 5172068420828691605, guid: 3f963461b7b14124ba864d0677cbebf3, type: 3}
+      propertyPath: m_Alpha
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6647349153531383048, guid: 3f963461b7b14124ba864d0677cbebf3, type: 3}
       propertyPath: m_LocalPosition.x
@@ -174873,6 +174880,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: 2672128866819022977, guid: 3f963461b7b14124ba864d0677cbebf3, type: 3}
+    - {fileID: 1406160297014499160, guid: 3f963461b7b14124ba864d0677cbebf3, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3f963461b7b14124ba864d0677cbebf3, type: 3}
@@ -185013,6 +185021,7 @@ Transform:
   - {fileID: 143017655}
   - {fileID: 603432231}
   - {fileID: 1688744273}
+  - {fileID: 238337490}
   - {fileID: 1433478781}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
