@@ -82,8 +82,14 @@ public class TutorialManager : MonoBehaviour
 
         var data = DialogueDatabase.Instance.GetDialogue(dialogueID);
 
+        // LOCK CONTROLS BEFORE DIALOGUE STARTS
+        ToggleAllPlayerControls(false);
+
         DialogueManager.Instance.StartDialogue(data, false, () =>
         {
+            // UNLOCK CONTROLS WHEN DIALOGUE FINISHES
+            UnlockPlayerControls();
+
             currentState = nextState;
             if (activeUICoroutine != null) StopCoroutine(activeUICoroutine);
             activeUICoroutine = StartCoroutine(ShowMessage(nextMessage));

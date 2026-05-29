@@ -233,4 +233,13 @@ public class PlayerMovement : MonoBehaviour
 
         Debug.Log("Standing values locked in! Your SFX and Bobbing should work perfectly now.");
     }
+
+    private void OnDisable()
+    {
+        // Instantly kill all horizontal momentum when the script is turned off (e.g. during tutorials)
+        if (rb != null)
+        {
+            rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
+        }
+    }
 }
