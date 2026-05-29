@@ -14,7 +14,6 @@ public class RandomPortalSpawner : MonoBehaviour
         Horizontal
     }
 
-    [Header("Portal Orientation")]
     private PortalOrientation portalOrientation = PortalOrientation.Vertical;
 
     [Header("Portal Sequence Settings")]
@@ -24,13 +23,13 @@ public class RandomPortalSpawner : MonoBehaviour
     [SerializeField] private float fadeStart = 0.6f;
     [SerializeField] private float fadeSpeed = 1f;
 
-    [Header("Level Progress (PERSISTENT)")]
+    [Header("Level Progress")]
     [SerializeField] private int levelCounter = 0;
 
     [Header("Scene Exclusions")]
     [SerializeField] private string[] excludedScenes;
 
-    [Header("Manual Boss Scenes (IN ORDER)")]
+    [Header("Boss Scenes")]
     [SerializeField] private string[] bossScenes;
 
     [Header("Spawn Areas")]
@@ -48,6 +47,7 @@ public class RandomPortalSpawner : MonoBehaviour
 
     private bool spawned;
     private static RandomPortalSpawner instance;
+    private string forcedSceneOverride;
 
     private void Awake()
     {
@@ -73,16 +73,18 @@ public class RandomPortalSpawner : MonoBehaviour
         spawnAreas = FindObjectsByType<BoxCollider>(FindObjectsSortMode.None);
     }
 
+    public void SetForcedSceneOverride(string sceneName)
+    {
+        forcedSceneOverride = sceneName;
+    }
+
     private Quaternion BuildRotation(Vector3 normal)
     {
         Vector3 up = normal;
-
         Vector3 forward = Vector3.Cross(Vector3.up, up);
         if (forward.sqrMagnitude < 0.001f)
             forward = Vector3.Cross(Vector3.forward, up);
-
         forward.Normalize();
-
         return Quaternion.LookRotation(forward, up);
     }
 
@@ -97,7 +99,6 @@ public class RandomPortalSpawner : MonoBehaviour
         if (validScenes.Count == 0) return;
 
         GameObject portalInstance = Instantiate(portalPrefab, position, Quaternion.Euler(90f, 0f, 0f));
-
         ApplyPortalSetup(portalInstance, validScenes);
         spawned = true;
     }
@@ -161,9 +162,7 @@ public class RandomPortalSpawner : MonoBehaviour
                 }
 
                 GameObject portalInstance = Instantiate(portalPrefab, spawnPos, rot);
-
                 ApplyPortalSetup(portalInstance, validScenes);
-
                 spawned = true;
                 return;
             }
@@ -173,31 +172,35 @@ public class RandomPortalSpawner : MonoBehaviour
     private void ApplyPortalSetup(GameObject portalInstance, List<string> validScenes)
     {
         PortalNextStage portal = portalInstance.GetComponentInChildren<PortalNextStage>();
+        if (portal == null) return;
 
-        if (portal != null)
+        portal.SetOrientation(portalOrientation == PortalOrientation.Horizontal
+            ? PortalNextStage.PortalOrientation.Horizontal
+            : PortalNextStage.PortalOrientation.Vertical);
+
+        portal.SetSequenceSettings(duration, liftHeight, lookHeight, fadeStart, fadeSpeed);
+        portal.SetLevel(levelCounter);
+        portal.SetExcludedScenes(excludedScenes);
+
+        if (!string.IsNullOrEmpty(forcedSceneOverride))
         {
-            portal.SetOrientation(portalOrientation == PortalOrientation.Horizontal
-                ? PortalNextStage.PortalOrientation.Horizontal
-                : PortalNextStage.PortalOrientation.Vertical);
-
-            portal.SetSequenceSettings(duration, liftHeight, lookHeight, fadeStart, fadeSpeed);
-            portal.SetLevel(levelCounter);
-            portal.SetExcludedScenes(excludedScenes);
-
-            bool isBoss = (levelCounter % 10 == 0);
-
-            if (isBoss)
-                portal.SetForcedScene(GetBossScene(levelCounter));
-            else
-                portal.SetForcedScene(validScenes[Random.Range(0, validScenes.Count)]);
+            portal.SetForcedScene(forcedSceneOverride);
+            forcedSceneOverride = null;
+            return;
         }
+
+        if (levelCounter % 10 == 0)
+        {
+            portal.SetForcedScene(GetBossScene(levelCounter));
+            return;
+        }
+
+        portal.SetForcedScene(validScenes[Random.Range(0, validScenes.Count)]);
     }
 
     private string GetBossScene(int level)
     {
-        if (bossScenes == null || bossScenes.Length == 0)
-            return "";
-
+        if (bossScenes == null || bossScenes.Length == 0) return "";
         int index = Mathf.Clamp((level / 10) - 1, 0, bossScenes.Length - 1);
         return bossScenes[index];
     }
@@ -211,9 +214,7 @@ public class RandomPortalSpawner : MonoBehaviour
         {
             string path = SceneUtility.GetScenePathByBuildIndex(i);
             string name = System.IO.Path.GetFileNameWithoutExtension(path);
-
             if (IsExcluded(name)) continue;
-
             scenes.Add(name);
         }
 
@@ -223,13 +224,10 @@ public class RandomPortalSpawner : MonoBehaviour
     private bool IsExcluded(string sceneName)
     {
         if (excludedScenes == null) return false;
-
         foreach (var s in excludedScenes)
         {
-            if (s == sceneName)
-                return true;
+            if (s == sceneName) return true;
         }
-
         return false;
     }
 

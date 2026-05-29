@@ -17,7 +17,6 @@ public class PortalNextStage : MonoBehaviour
     public float fadeOutDuration = 1f;
 
     public enum PortalOrientation { Vertical, Horizontal }
-
     private PortalOrientation orientation = PortalOrientation.Vertical;
 
     [SerializeField] private string[] excludedScenes;
@@ -62,9 +61,8 @@ public class PortalNextStage : MonoBehaviour
             if (isLookUp)
             {
                 lookUpCam = cam;
-                lookUpCam.Priority = 0;
+                lookUpCam.Priority = -10;
                 lookUpCam.LookAt = null;
-                lookUpCam.gameObject.SetActive(false);
                 continue;
             }
 
@@ -175,9 +173,10 @@ public class PortalNextStage : MonoBehaviour
         }
 
         ForceFade();
-        ResetCameras();
 
-        yield return new WaitForSeconds(0.1f);
+        yield return new WaitForSeconds(0.2f);
+
+        ResetCameras();
 
         SceneManager.sceneLoaded += OnSceneLoaded;
         LoadScene();
@@ -203,6 +202,7 @@ public class PortalNextStage : MonoBehaviour
             look.canLook = true;
 
         fadeObject = GameObject.Find("FadeScreen");
+
         if (fadeObject != null)
         {
             fadeImage = fadeObject.GetComponentInChildren<Image>();
@@ -214,11 +214,9 @@ public class PortalNextStage : MonoBehaviour
                 fadeImage.color = c;
 
                 fadeObject.SetActive(true);
+                FadeOutHelper.Run(fadeImage, fadeOutDuration);
             }
         }
-
-        if (fadeImage != null)
-            FadeOutHelper.Run(fadeImage, fadeOutDuration);
     }
 
     private void UpdateFade(float t)
@@ -249,7 +247,7 @@ public class PortalNextStage : MonoBehaviour
         foreach (var cam in cams)
         {
             cam.LookAt = null;
-            cam.Priority = 10;
+            cam.Priority = -100;
         }
 
         if (mainCam != null)
@@ -257,7 +255,7 @@ public class PortalNextStage : MonoBehaviour
 
         if (lookUpCam != null)
         {
-            lookUpCam.Priority = 0;
+            lookUpCam.Priority = -10;
             lookUpCam.LookAt = null;
             lookUpCam.gameObject.SetActive(false);
         }

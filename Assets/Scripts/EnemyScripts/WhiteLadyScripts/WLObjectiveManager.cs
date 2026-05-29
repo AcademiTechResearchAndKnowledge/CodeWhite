@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -9,24 +10,21 @@ public class WLObjectiveManager : MonoBehaviour
     public static WLObjectiveManager Instance;
     public RandomPortalSpawner RPS;
 
-    [Header("Mirror Progress")]
     public int totalMirrorPieces = 6;
     public int collectedMirrorPieces = 0;
     private bool hasFixedMirror = false;
 
-    [Header("Inventory Data Link")]
     public ObjectiveItemData brokenMirrorPieceData;
     public ObjectiveItemData fixedMirrorData;
 
-    [Header("Flower Progress")]
     public bool flowerCollected = false;
-
-    [Header("Rewards / Progression")]
     public GameObject fixedMirrorObject;
     public bool progressionUnlocked = false;
 
-    [Header("Entity Reference")]
     public WhiteLady whiteLadyEntity;
+    public string overridePortalDestination;
+
+    private string lastScene;
 
     private void Awake()
     {
@@ -38,10 +36,37 @@ public class WLObjectiveManager : MonoBehaviour
 
         Instance = this;
 
-        if (RPS == null)
+        RPS = FindFirstObjectByType<RandomPortalSpawner>();
+
+        lastScene = SceneManager.GetActiveScene().name;
+
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDestroy()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.name != lastScene)
         {
-            RPS = FindFirstObjectByType<RandomPortalSpawner>();
+            ResetAll();
         }
+
+        lastScene = scene.name;
+    }
+
+    private void ResetAll()
+    {
+        collectedMirrorPieces = 0;
+        hasFixedMirror = false;
+        flowerCollected = false;
+        progressionUnlocked = false;
+
+        if (fixedMirrorObject != null)
+            fixedMirrorObject.SetActive(false);
     }
 
     public void CollectMirrorPiece()
@@ -84,7 +109,6 @@ public class WLObjectiveManager : MonoBehaviour
     public void SubmitFixedMirror()
     {
         if (progressionUnlocked) return;
-
         if (!hasFixedMirror) return;
 
         if (ObjectiveInventoryManager.Instance != null && fixedMirrorData != null)
@@ -108,6 +132,11 @@ public class WLObjectiveManager : MonoBehaviour
 
         if (RPS != null)
         {
+            if (!string.IsNullOrEmpty(overridePortalDestination))
+            {
+                RPS.SetForcedSceneOverride(overridePortalDestination);
+            }
+
             RPS.SpawnPortalRandom(RandomPortalSpawner.PortalOrientation.Vertical);
         }
     }

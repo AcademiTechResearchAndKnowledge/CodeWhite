@@ -29,7 +29,7 @@ public class ClosetHidingSystem : MonoBehaviour
         if (playerRefs != null && playerRefs.playerCam != null && closetCam != null)
         {
             playerRefs.playerCam.Priority = 100;
-            closetCam.Priority = 10;
+            closetCam.Priority = -10;
         }
 
         if (stalkerFollowTarget != null)
@@ -88,7 +88,7 @@ public class ClosetHidingSystem : MonoBehaviour
         ResetCameraOrientation();
 
         closetCam.Priority = 100;
-        playerRefs.playerCam.Priority = 10;
+        playerRefs.playerCam.Priority = -10;
 
         if (playerRefs.rb != null)
         {
@@ -136,14 +136,14 @@ public class ClosetHidingSystem : MonoBehaviour
         player.rotation = exitPoint.rotation;
 
         playerRefs.playerCam.Priority = 100;
-        closetCam.Priority = 10;
+        closetCam.Priority = -10;
 
         InsideCloset = false;
         if (ActiveCloset == this) ActiveCloset = null;
 
         if (stalkerFollowTarget != null) stalkerFollowTarget.SetActive(false);
 
-        // „Ÿ„Ÿ„Ÿ THE FIX: SMART DOOR CLOSING „Ÿ„Ÿ„Ÿ
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ THE FIX: SMART DOOR CLOSING ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         if (wasJumpscared)
         {
             // The stalker already opened and unpaused the door. 
@@ -183,7 +183,7 @@ public class ClosetHidingSystem : MonoBehaviour
         isTransitioning = false;
     }
 
-    // „Ÿ„Ÿ„Ÿ STALKER JUMPSCARE INTEGRATION METHODS „Ÿ„Ÿ„Ÿ
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ STALKER JUMPSCARE INTEGRATION METHODS ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
     public void ForceOpenDoorsForJumpscare()
     {
