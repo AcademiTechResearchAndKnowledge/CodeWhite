@@ -19,7 +19,6 @@ public class PortalNextStage : MonoBehaviour
     public enum PortalOrientation { Vertical, Horizontal }
 
     private PortalOrientation orientation = PortalOrientation.Vertical;
-    private Transform portalMesh;
 
     [SerializeField] private string[] excludedScenes;
 
@@ -40,7 +39,6 @@ public class PortalNextStage : MonoBehaviour
     public void SetExcludedScenes(string[] scenes) => excludedScenes = scenes;
     public void SetForcedScene(string scene) => chosenScene = scene;
     public void SetOrientation(PortalOrientation value) => orientation = value;
-    public void SetPortalMesh(Transform mesh) => portalMesh = mesh;
 
     public void SetSequenceSettings(float dur, float lift, float look, float fadeSt, float fadeSp)
     {
@@ -66,6 +64,7 @@ public class PortalNextStage : MonoBehaviour
                 lookUpCam = cam;
                 lookUpCam.Priority = 0;
                 lookUpCam.LookAt = null;
+                lookUpCam.gameObject.SetActive(false);
                 continue;
             }
 
@@ -140,12 +139,6 @@ public class PortalNextStage : MonoBehaviour
         }
         else
         {
-            if (lookUpCam != null)
-            {
-                lookUpCam.Priority = 0;
-                lookUpCam.LookAt = null;
-            }
-
             if (mainCam != null)
                 mainCam.LookAt = null;
         }
@@ -263,7 +256,11 @@ public class PortalNextStage : MonoBehaviour
             mainCam.Priority = 20;
 
         if (lookUpCam != null)
+        {
             lookUpCam.Priority = 0;
+            lookUpCam.LookAt = null;
+            lookUpCam.gameObject.SetActive(false);
+        }
     }
 
     private void LoadScene()
