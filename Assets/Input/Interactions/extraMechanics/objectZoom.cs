@@ -78,7 +78,10 @@ public class objectZoom : MonoBehaviour
     }
 
     void Update()
-    {
+    {   
+        if (isInPuzzle && outline != null)
+            outline.enabled = false;
+            
         if (PauseMenu.GameIsPaused)
             return;
 
