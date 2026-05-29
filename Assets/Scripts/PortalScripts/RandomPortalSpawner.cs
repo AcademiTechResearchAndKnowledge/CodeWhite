@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
+using System.IO;
 
 public class RandomPortalSpawner : MonoBehaviour
 {
@@ -82,8 +83,10 @@ public class RandomPortalSpawner : MonoBehaviour
     {
         Vector3 up = normal;
         Vector3 forward = Vector3.Cross(Vector3.up, up);
+
         if (forward.sqrMagnitude < 0.001f)
             forward = Vector3.Cross(Vector3.forward, up);
+
         forward.Normalize();
         return Quaternion.LookRotation(forward, up);
     }
@@ -213,8 +216,10 @@ public class RandomPortalSpawner : MonoBehaviour
         for (int i = 0; i < count; i++)
         {
             string path = SceneUtility.GetScenePathByBuildIndex(i);
-            string name = System.IO.Path.GetFileNameWithoutExtension(path);
+            string name = Path.GetFileNameWithoutExtension(path);
+
             if (IsExcluded(name)) continue;
+
             scenes.Add(name);
         }
 
@@ -224,10 +229,13 @@ public class RandomPortalSpawner : MonoBehaviour
     private bool IsExcluded(string sceneName)
     {
         if (excludedScenes == null) return false;
-        foreach (var s in excludedScenes)
+
+        for (int i = 0; i < excludedScenes.Length; i++)
         {
-            if (s == sceneName) return true;
+            if (string.Equals(excludedScenes[i].Trim(), sceneName.Trim(), System.StringComparison.OrdinalIgnoreCase))
+                return true;
         }
+
         return false;
     }
 
