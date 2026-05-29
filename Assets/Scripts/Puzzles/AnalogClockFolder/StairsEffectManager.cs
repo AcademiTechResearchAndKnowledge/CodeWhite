@@ -23,11 +23,14 @@ public class StairsEffectManager : MonoBehaviour
     {
         Instance = this;
 
-
+        if (RPS == null)
+            RPS = FindFirstObjectByType<RandomPortalSpawner>();
+            
         playerStats = FindFirstObjectByType<PlayerStats>();
 
         if (playerStats == null)
             Debug.LogWarning("PlayerStats NOT FOUND in scene!");
+
     }
 
     public void Update()
@@ -36,7 +39,7 @@ public class StairsEffectManager : MonoBehaviour
         {
             if (clock.allPuzzleDone == true)
             {
-                RPS.SpawnPortalRandom(RandomPortalSpawner.PortalOrientation.Horizontal);
+                RPS.SpawnPortalRandom(RandomPortalSpawner.PortalOrientation.Vertical);
             }
         }
     }

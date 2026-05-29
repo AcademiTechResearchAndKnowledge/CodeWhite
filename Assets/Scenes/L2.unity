@@ -43841,8 +43841,8 @@ Transform:
   m_GameObject: {fileID: 396435405}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -1.88, y: 0.6499996, z: 8.23}
-  m_LocalScale: {x: 0.5018, y: 1, z: 0.43073}
+  m_LocalPosition: {x: -1.382, y: 3.46, z: 8.23}
+  m_LocalScale: {x: 0.33393788, y: 1, z: 0.30014557}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -110927,6 +110927,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 197955e9e7568a9418765605407aa374, type: 3}
   m_PrefabInstance: {fileID: 1002164195}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1002968422
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1002968424}
+  - component: {fileID: 1002968423}
+  m_Layer: 7
+  m_Name: PortalSpawnLocation_1 (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!65 &1002968423
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1002968422}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 5.987289, y: 0.16887093, z: 7.7780795}
+  m_Center: {x: -0.922518, y: -0.41556454, z: -2.1389592}
+--- !u!4 &1002968424
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1002968422}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.58, y: 3.46, z: 25.88}
+  m_LocalScale: {x: 0.33393788, y: 1, z: 0.30014557}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1002998073
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -186129,6 +186182,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: e481231453636544184439ad292a7c0a, type: 3}
   m_PrefabInstance: {fileID: 1691145642}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1691373712
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1691373714}
+  - component: {fileID: 1691373713}
+  m_Layer: 7
+  m_Name: PortalSpawnLocation_1 (2)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!65 &1691373713
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1691373712}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 5.987289, y: 0.16887093, z: 7.7780795}
+  m_Center: {x: -0.922518, y: -0.41556454, z: -2.1389592}
+--- !u!4 &1691373714
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1691373712}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -4.14, y: 3.46, z: -10.45}
+  m_LocalScale: {x: 0.33393788, y: 1, z: 0.30014557}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1692125692
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -240875,3 +240981,5 @@ SceneRoots:
   - {fileID: 1537105072}
   - {fileID: 947296205}
   - {fileID: 396435407}
+  - {fileID: 1002968424}
+  - {fileID: 1691373714}

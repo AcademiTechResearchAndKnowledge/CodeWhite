@@ -192,7 +192,7 @@ public class LaptopManager : MonoBehaviour, IZoomInteractable
 
         if (progressText != null)
             progressText.text = "Done!";
-        RPS.SpawnPortalRandom(RandomPortalSpawner.PortalOrientation.Horizontal);
+        RPS.SpawnPortalRandom(RandomPortalSpawner.PortalOrientation.Vertical);
         SetAnswerButtonsInteractable(false);
     }
 }
