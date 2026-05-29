@@ -10,13 +10,13 @@ public class TutorialManagerNew : MonoBehaviour
     public enum TutorialState
     {
         Intro,
-        Walk_Text,           // Showing WASD
-        Walk_Explore,        // Waiting to hit the Dark Barrier
-        Flashlight_Text,     // Showing Flashlight text
-        Flashlight_Explore,  // Waiting to hit the Tree Barrier
-        Crouch_Text,         // Showing Crouch text
-        Crouch_Explore,      // Waiting to hit Scream Barrier
-        Sprint_Text,         // Showing Sprint text
+        Walk_Text,        // Showing WASD
+        Walk_Explore,     // Waiting to hit the Dark Barrier
+        Flashlight_Text,  // Showing Flashlight text
+        Flashlight_Explore, // Waiting to hit the Tree Barrier
+        Crouch_Text,      // Showing Crouch text
+        Crouch_Explore,   // Waiting to hit Scream Barrier
+        Sprint_Text,      // Showing Sprint text
         Finished
     }
 
@@ -113,19 +113,23 @@ public class TutorialManagerNew : MonoBehaviour
     }
 
     // --- TRIGGER BARRIER HANDLER ---
+    // Updated to accept triggers even if the player skipped performing the input control action
     public void HandleBarrierTriggered(string triggerID, string dialogueID)
     {
-        if (triggerID == "DarkBarrier" && currentState == TutorialState.Walk_Explore)
+        if (triggerID == "DarkBarrier" &&
+            (currentState == TutorialState.Walk_Text || currentState == TutorialState.Walk_Explore))
         {
             PlayDialogueAndAdvance(dialogueID, TutorialState.Flashlight_Text, "[Right Click] to turn on flashlight");
             UnlockMechanic(TutorialState.Flashlight_Text);
         }
-        else if (triggerID == "TreeBarrier" && currentState == TutorialState.Flashlight_Explore)
+        else if (triggerID == "TreeBarrier" &&
+                 (currentState == TutorialState.Flashlight_Text || currentState == TutorialState.Flashlight_Explore))
         {
             PlayDialogueAndAdvance(dialogueID, TutorialState.Crouch_Text, "Press [Left Ctrl] to crouch");
             UnlockMechanic(TutorialState.Crouch_Text);
         }
-        else if (triggerID == "ScreamBarrier" && currentState == TutorialState.Crouch_Explore)
+        else if (triggerID == "ScreamBarrier" &&
+                 (currentState == TutorialState.Crouch_Text || currentState == TutorialState.Crouch_Explore))
         {
             PlayDialogueAndAdvance(dialogueID, TutorialState.Sprint_Text, "Press [Shift] to sprint");
             UnlockMechanic(TutorialState.Sprint_Text);
