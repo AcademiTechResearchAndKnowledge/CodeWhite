@@ -25,7 +25,7 @@ public class TutorialTrigger : MonoBehaviour
             // Fire off any custom events (like playing the scream audio)
             onTriggerEntered?.Invoke();
 
-            // Tell the TutorialManagerNew we hit this barrier
+            // Tell the TutorialMangerNew we hit this barrier
             if (TutorialManagerNew.Instance != null)
             {
                 TutorialManagerNew.Instance.HandleBarrierTriggered(triggerID, dialogueIDToPlay);
