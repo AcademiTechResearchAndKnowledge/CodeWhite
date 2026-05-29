@@ -6,6 +6,13 @@ public class CutsceneManager : MonoBehaviour
     [Tooltip("The disabled GameObject holding the Timeline (PlayableDirector).")]
     public GameObject timelineGameObject;
 
+    [Header("Dynamic Search Settings")]
+    [Tooltip("The Tag applied to your main UI Parent/Canvas so the script can find it across scenes.")]
+    public string uiTag = "MainUI";
+
+    [HideInInspector]
+    public GameObject uiParentGameObject;
+
     [Tooltip("Reference to the player to disable controls. (Will auto-find if left empty)")]
     public PlayerReferences playerRefs;
 
@@ -13,18 +20,27 @@ public class CutsceneManager : MonoBehaviour
 
     private void Start()
     {
-        FindPlayerReferences();
+        FindSceneDependencies();
     }
 
-    private void FindPlayerReferences()
+    private void FindSceneDependencies()
     {
-        if (playerRefs != null) return;
-
-        playerRefs = Object.FindFirstObjectByType<PlayerReferences>();
-
         if (playerRefs == null)
         {
-            Debug.LogWarning("CutsceneManager couldn't find a PlayerReferences component in the scene!");
+            playerRefs = Object.FindFirstObjectByType<PlayerReferences>();
+            if (playerRefs == null)
+            {
+                Debug.LogWarning("CutsceneManager couldn't find a PlayerReferences component in this scene!");
+            }
+        }
+
+        if (uiParentGameObject == null)
+        {
+            uiParentGameObject = GameObject.FindWithTag(uiTag);
+            if (uiParentGameObject == null)
+            {
+                Debug.LogWarning($"CutsceneManager couldn't find a UI GameObject with the tag '{uiTag}' in this scene!");
+            }
         }
     }
 
@@ -33,13 +49,12 @@ public class CutsceneManager : MonoBehaviour
         if (hasPlayed) return;
         hasPlayed = true;
 
-        FindPlayerReferences();
-
+        FindSceneDependencies();
         DisablePlayerControls();
 
-        if (PersistentUI.Instance != null)
+        if (uiParentGameObject != null)
         {
-            PersistentUI.Instance.SetUIVisibility(false);
+            uiParentGameObject.SetActive(false);
         }
 
         if (timelineGameObject != null)
@@ -59,9 +74,9 @@ public class CutsceneManager : MonoBehaviour
             timelineGameObject.SetActive(false);
         }
 
-        if (PersistentUI.Instance != null)
+        if (uiParentGameObject != null)
         {
-            PersistentUI.Instance.SetUIVisibility(true);
+            uiParentGameObject.SetActive(true);
         }
 
         EnablePlayerControls();
