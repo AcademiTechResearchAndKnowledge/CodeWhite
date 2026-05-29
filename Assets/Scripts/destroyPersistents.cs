@@ -41,8 +41,28 @@ public class DDOLCleanup : MonoBehaviour
 
         foreach (GameObject obj in rootObjects)
         {
-            if (obj != null)
-                Destroy(obj);
+            if (obj == null) continue;
+
+      
+            if (IsUIObject(obj))
+                continue;
+
+            Destroy(obj);
         }
+    }
+
+    private bool IsUIObject(GameObject obj)
+    {
+
+        if (obj.GetComponent<Canvas>() != null)
+            return true;
+
+        if (obj.GetComponent<RectTransform>() != null)
+            return true;
+
+        if (obj.GetComponentInChildren<Canvas>(true) != null)
+            return true;
+
+        return false;
     }
 }

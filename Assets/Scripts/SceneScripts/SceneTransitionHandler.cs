@@ -10,9 +10,11 @@ public class SceneTransitionHandler : MonoBehaviour
     public float fadeInSpeed = 2f;
     private Image fadeImage;
 
+    private Coroutine fadeCoroutine;
+
     void Awake()
     {
-        if (Instance != null)
+        if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
             return;
@@ -21,12 +23,17 @@ public class SceneTransitionHandler : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
         SceneManager.sceneLoaded += OnSceneLoaded;
-        Debug.Log("SceneTransitionHandler initialized");
+    }
+
+    void OnDestroy()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        Debug.Log("Scene loaded: " + scene.name);
+        if (this == null || gameObject == null) return;
+        if (Instance != this) return;
 
         GameObject fadeObj = GameObject.Find("FadeScreen");
 
@@ -46,12 +53,15 @@ public class SceneTransitionHandler : MonoBehaviour
                 look.canLook = true;
         }
 
-        StartCoroutine(FadeIn());
+        if (fadeCoroutine != null)
+            StopCoroutine(fadeCoroutine);
+
+        fadeCoroutine = StartCoroutine(FadeIn());
     }
 
     IEnumerator FadeIn()
     {
-        Debug.Log("Fade in started");
+        if (fadeImage == null) yield break;
 
         while (fadeImage != null && fadeImage.color.a > 0f)
         {
@@ -61,7 +71,5 @@ public class SceneTransitionHandler : MonoBehaviour
 
             yield return null;
         }
-
-        Debug.Log("Fade in complete");
     }
 }
