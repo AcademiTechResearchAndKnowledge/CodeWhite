@@ -30,6 +30,7 @@ public class TutorialManager : MonoBehaviour
 
     private TutorialState currentState = TutorialState.Intro;
     private Coroutine activeUICoroutine;
+    public RandomPortalSpawner RPS;
 
     private void Awake()
     {
@@ -40,6 +41,9 @@ public class TutorialManager : MonoBehaviour
             blackScreenCanvasGroup.gameObject.SetActive(true);
             blackScreenCanvasGroup.alpha = 1;
         }
+
+        if (RPS == null)
+            RPS = FindFirstObjectByType<RandomPortalSpawner>();
     }
 
     void Start()
@@ -66,6 +70,7 @@ public class TutorialManager : MonoBehaviour
         else if (triggerID == "DoorBarrier" && currentState == TutorialState.Door_Objective)
         {
             PlayDialogueAndAdvance(dialogueID, TutorialState.Portal_Objective, "Go through the portal");
+            RPS.SpawnPortalRandom(RandomPortalSpawner.PortalOrientation.Horizontal);
         }
         else if (triggerID == "PortalBarrier" && currentState == TutorialState.Portal_Objective)
         {
