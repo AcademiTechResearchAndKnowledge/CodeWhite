@@ -1,21 +1,17 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using TMPro;
 
 public class TutorialManager : MonoBehaviour
 {
+    public static TutorialManager Instance;
+
     public enum TutorialState
     {
         Intro,
-        Walk,
-        Flashlight,
-        Crouch,
-        Pickup,
-        UseItem,
-        Door,
-        Sprint,
-        Portal,
+        Explore_Start,       // Waiting to hit the first barrier
+        Door_Objective,      // Objective: Go to the door
+        Portal_Objective,    // Objective: Go through the portal
         Finished
     }
 
@@ -31,133 +27,68 @@ public class TutorialManager : MonoBehaviour
 
     [Header("Game Object References")]
     public PlayerReferences player;
-    public Outline itemOutline;
-    public Outline doorOutline;
 
-    // Start in the Intro state so inputs are ignored until the cinematic finishes
     private TutorialState currentState = TutorialState.Intro;
-
-    // Tracks the current UI animation so we can interrupt it if the player is fast
     private Coroutine activeUICoroutine;
+
+    private void Awake()
+    {
+        Instance = this;
+
+        if (blackScreenCanvasGroup != null)
+        {
+            blackScreenCanvasGroup.gameObject.SetActive(true);
+            blackScreenCanvasGroup.alpha = 1;
+        }
+    }
 
     void Start()
     {
-        // Ensure outlines are off at the start
-        if (itemOutline != null) itemOutline.enabled = false;
-        if (doorOutline != null) doorOutline.enabled = false;
-
         textCanvasGroup.alpha = 0;
 
-        // Start the cinematic intro!
         if (blackScreenCanvasGroup != null)
         {
-            blackScreenCanvasGroup.alpha = 1;
             StartCoroutine(IntroSequence());
         }
         else
         {
-            LockAdvancedControls();
-
-            // Bypass intro directly to walk state
-            currentState = TutorialState.Walk;
-            if (activeUICoroutine != null) StopCoroutine(activeUICoroutine);
-            activeUICoroutine = StartCoroutine(ShowMessage("[WASD] to walk"));
+            UnlockPlayerControls();
+            currentState = TutorialState.Explore_Start;
         }
     }
 
-    void Update()
+    public void HandleBarrierTriggered(string triggerID, string dialogueID)
     {
-        bool hasKeyboard = Keyboard.current != null;
-        bool hasMouse = Mouse.current != null;
-
-        switch (currentState)
+        if (triggerID == "StartBarrier" && currentState == TutorialState.Explore_Start)
         {
-            case TutorialState.Walk:
-                if (hasKeyboard && (Keyboard.current.wKey.wasPressedThisFrame ||
-                                    Keyboard.current.aKey.wasPressedThisFrame ||
-                                    Keyboard.current.sKey.wasPressedThisFrame ||
-                                    Keyboard.current.dKey.wasPressedThisFrame))
-                {
-                    AdvanceTutorial(TutorialState.Flashlight, "[Right Click] to turn on flashlight");
-                }
-                break;
-
-            case TutorialState.Flashlight:
-                if (hasMouse && Mouse.current.rightButton.wasPressedThisFrame)
-                {
-                    AdvanceTutorial(TutorialState.Crouch, "Press [Left Ctrl] to crouch");
-                }
-                break;
-
-            case TutorialState.Crouch:
-                if (hasKeyboard && Keyboard.current.leftCtrlKey.wasPressedThisFrame)
-                {
-                    if (itemOutline != null) itemOutline.enabled = true;
-                    AdvanceTutorial(TutorialState.Pickup, "Press [F] to pick-up the item");
-                }
-                break;
-
-            case TutorialState.Sprint:
-                if (hasKeyboard && Keyboard.current.leftShiftKey.wasPressedThisFrame)
-                {
-                    AdvanceTutorial(TutorialState.Portal, "Go through the portal");
-                }
-                break;
+            PlayDialogueAndAdvance(dialogueID, TutorialState.Door_Objective, "Go to the door");
         }
-    }
-
-    private void AdvanceTutorial(TutorialState nextState, string nextMessage)
-    {
-        currentState = nextState;
-
-        UnlockMechanic(nextState);
-
-        // Stop any currently playing text fades and start the new one
-        if (activeUICoroutine != null) StopCoroutine(activeUICoroutine);
-        activeUICoroutine = StartCoroutine(TransitionMessage(nextMessage));
-    }
-
-    // --- PUBLIC METHODS FOR EXTERNAL SCRIPTS ---
-
-    public void ItemPickedUp()
-    {
-        if (currentState == TutorialState.Pickup)
+        else if (triggerID == "DoorBarrier" && currentState == TutorialState.Door_Objective)
         {
-            if (itemOutline != null) itemOutline.enabled = false;
-            AdvanceTutorial(TutorialState.UseItem, "Use [Scroll Wheel] or [Numbers] to select the item and press [E] to use");
+            PlayDialogueAndAdvance(dialogueID, TutorialState.Portal_Objective, "Go through the portal");
         }
-    }
-
-    public void ItemUsed()
-    {
-        if (currentState == TutorialState.UseItem)
-        {
-            if (doorOutline != null) doorOutline.enabled = true;
-            AdvanceTutorial(TutorialState.Door, "Go to the door and press [F] to interact");
-        }
-    }
-
-    public void DoorInteracted()
-    {
-        if (currentState == TutorialState.Door)
-        {
-            if (doorOutline != null) doorOutline.enabled = false;
-            AdvanceTutorial(TutorialState.Sprint, "Press [Shift] to sprint");
-        }
-    }
-
-    public void PortalEntered()
-    {
-        if (currentState == TutorialState.Portal)
+        else if (triggerID == "PortalBarrier" && currentState == TutorialState.Portal_Objective)
         {
             currentState = TutorialState.Finished;
-
             if (activeUICoroutine != null) StopCoroutine(activeUICoroutine);
             activeUICoroutine = StartCoroutine(HideMessage());
         }
     }
 
-    // --- CONTROL LOCKING / UNLOCKING ---
+    private void PlayDialogueAndAdvance(string dialogueID, TutorialState nextState, string nextMessage)
+    {
+        if (activeUICoroutine != null) StopCoroutine(activeUICoroutine);
+        activeUICoroutine = StartCoroutine(HideMessage());
+
+        var data = DialogueDatabase.Instance.GetDialogue(dialogueID);
+
+        DialogueManager.Instance.StartDialogue(data, false, () =>
+        {
+            currentState = nextState;
+            if (activeUICoroutine != null) StopCoroutine(activeUICoroutine);
+            activeUICoroutine = StartCoroutine(ShowMessage(nextMessage));
+        });
+    }
 
     private void ToggleAllPlayerControls(bool state)
     {
@@ -167,39 +98,18 @@ public class TutorialManager : MonoBehaviour
         if (player.playerLook != null) player.playerLook.canLook = state;
     }
 
-    private void LockAdvancedControls()
+    private void UnlockPlayerControls()
     {
         if (player == null) return;
-        if (player.movementScript != null) player.movementScript.enabled = true;
-        if (player.playerLook != null) player.playerLook.canLook = true;
-        if (player.flashlightScript != null) player.flashlightScript.enabled = false;
-
         if (player.movementScript != null)
         {
-            player.movementScript.canCrouch = false;
-            player.movementScript.canSprint = false;
+            player.movementScript.enabled = true;
+            player.movementScript.canCrouch = true;
+            player.movementScript.canSprint = true;
         }
+        if (player.playerLook != null) player.playerLook.canLook = true;
+        if (player.flashlightScript != null) player.flashlightScript.enabled = true;
     }
-
-    private void UnlockMechanic(TutorialState state)
-    {
-        if (player == null) return;
-
-        switch (state)
-        {
-            case TutorialState.Flashlight:
-                if (player.flashlightScript != null) player.flashlightScript.enabled = true;
-                break;
-            case TutorialState.Crouch:
-                if (player.movementScript != null) player.movementScript.canCrouch = true;
-                break;
-            case TutorialState.Sprint:
-                if (player.movementScript != null) player.movementScript.canSprint = true;
-                break;
-        }
-    }
-
-    // --- COROUTINES FOR SEQUENCES AND UI ---
 
     private IEnumerator IntroSequence()
     {
@@ -218,13 +128,8 @@ public class TutorialManager : MonoBehaviour
         blackScreenCanvasGroup.alpha = 0;
         blackScreenCanvasGroup.gameObject.SetActive(false);
 
-        LockAdvancedControls();
-
-        // Unlock the walk state now that the cinematic is over
-        currentState = TutorialState.Walk;
-
-        if (activeUICoroutine != null) StopCoroutine(activeUICoroutine);
-        activeUICoroutine = StartCoroutine(ShowMessage("[WASD] to walk"));
+        UnlockPlayerControls();
+        currentState = TutorialState.Explore_Start;
     }
 
     private IEnumerator ShowMessage(string message)
@@ -257,36 +162,5 @@ public class TutorialManager : MonoBehaviour
         }
 
         textCanvasGroup.alpha = 0;
-    }
-
-    // FIXED: Flattened the coroutine. No more nested StartCoroutines. 
-    // Now if this is stopped mid-way, the entire process safely aborts.
-    private IEnumerator TransitionMessage(string nextMessage)
-    {
-        // 1. Hide current text
-        float timer = 0;
-        float startAlpha = textCanvasGroup.alpha;
-
-        while (timer < fadeDuration)
-        {
-            timer += Time.deltaTime;
-            textCanvasGroup.alpha = Mathf.Lerp(startAlpha, 0, timer / fadeDuration);
-            yield return null;
-        }
-        textCanvasGroup.alpha = 0;
-
-        yield return new WaitForSeconds(0.2f);
-
-        // 2. Show next text
-        tutorialText.text = nextMessage;
-        timer = 0;
-
-        while (timer < fadeDuration)
-        {
-            timer += Time.deltaTime;
-            textCanvasGroup.alpha = Mathf.Lerp(0, 1, timer / fadeDuration);
-            yield return null;
-        }
-        textCanvasGroup.alpha = 1;
     }
 }

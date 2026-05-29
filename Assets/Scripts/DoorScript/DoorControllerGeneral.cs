@@ -23,12 +23,9 @@ public class DoorControllerGeneral : Interactable
     private bool isBusy = false;
 
     private int aiInZone = 0;
-    private TutorialManager tutorialManager;
 
     private void Start()
     {
-        tutorialManager = FindAnyObjectByType<TutorialManager>();
-
         if (audioSource == null)
         {
             audioSource = GetComponent<AudioSource>();
@@ -49,11 +46,6 @@ public class DoorControllerGeneral : Interactable
         if (isBusy) return;
 
         base.Interact();
-
-        if (tutorialManager != null)
-        {
-            tutorialManager.DoorInteracted();
-        }
 
         if (doorAnimator == null)
         {

@@ -191,7 +191,6 @@ public class ObjectiveInventoryManager : MonoBehaviour
         if (visualScript != null)
         {
             visualScript.selectedVisualIndex = itemToDrop.visualIndex;
-
             visualScript.UpdateVisuals();
         }
 
@@ -259,12 +258,6 @@ public class ObjectiveInventoryManager : MonoBehaviour
             }
 
             RefreshUI();
-        }
-
-        TutorialManager tutorial = FindFirstObjectByType<TutorialManager>();
-        if (tutorial != null)
-        {
-            tutorial.ItemUsed();
         }
     }
 
