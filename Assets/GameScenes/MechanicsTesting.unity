@@ -149,8 +149,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Entity1Spawn
   playerRef: {fileID: 8951522033556788330}
-  enemyPrefab: {fileID: 5676473115568672394, guid: f5466ca267787ee44b650e53cd61aac5, type: 3}
-  spawnDelay: 10
+  enemyPrefab: {fileID: 6128637140465417577, guid: 8b8e641f44e0adb41bbdd7c32c66b19a, type: 3}
+  spawnDelay: 30
   spawnOnlyOnce: 1
   spawnAreas:
   - {fileID: 1071361658}
@@ -742,13 +742,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 41e570e1ad6dbed4e887a64d903a64e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WLObjectiveManager
+  RPS: {fileID: 0}
   totalMirrorPieces: 6
   collectedMirrorPieces: 0
   brokenMirrorPieceData: {fileID: 11400000, guid: 9f3960c19b755d945a191e6da30110ee, type: 2}
   fixedMirrorData: {fileID: 11400000, guid: f6d39613cd591db4d9753e144742a4fe, type: 2}
   flowerCollected: 0
   fixedMirrorObject: {fileID: 6131110864726957006, guid: 58a196cd8de7bb04ea1beb604c5eab25, type: 3}
-  portalToOpen: {fileID: 5588175437650982449, guid: 382ee694ce2f65341919b2b76bb093ef, type: 3}
   progressionUnlocked: 0
   whiteLadyEntity: {fileID: 1486479774}
 --- !u!4 &516154003
@@ -1392,8 +1392,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IdleOrClosetEnemySpawner
   enemyPrefab: {fileID: 2822117024503789482, guid: af616817420c8a140ae03b74070dd8d1, type: 3}
   playerRefs: {fileID: 0}
-  idleSpawnDelay: 5
-  closetSpawnDelay: 5
+  idleSpawnDelay: 30
+  closetSpawnDelay: 30
   idleSpeedThreshold: 0.1
   spawnAreas:
   - {fileID: 1178616168}
@@ -1600,7 +1600,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5300103149655111006, guid: 774d10637f580ed408cc76725bef2dd5, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8370143291716677077, guid: 774d10637f580ed408cc76725bef2dd5, type: 3}
       propertyPath: playerReference
@@ -2298,7 +2298,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2167260256710809841, guid: 4cc9c28fd41d073408e823d90d7f31ec, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8921600997528473694, guid: 4cc9c28fd41d073408e823d90d7f31ec, type: 3}
       propertyPath: m_LocalPosition.x
