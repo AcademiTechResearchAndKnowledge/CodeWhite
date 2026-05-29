@@ -27,6 +27,6 @@ public class TRIGGERTESTETETST : MonoBehaviour
 
         Debug.Log("Spawning portal");
 
-        RPS.SpawnPortalRandom(RandomPortalSpawner.PortalOrientation.Vertical);
+        RPS.SpawnPortalRandom(RandomPortalSpawner.PortalOrientation.Horizontal);
     }
 }

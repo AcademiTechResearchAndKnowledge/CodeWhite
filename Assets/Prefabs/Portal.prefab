@@ -29,7 +29,7 @@ Transform:
   m_GameObject: {fileID: 2580953019829981235}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.004, y: 0.013, z: -0.434}
+  m_LocalPosition: {x: -0.004, y: -0.04, z: -0.544}
   m_LocalScale: {x: 1, y: 25.067978, z: 0.5006201}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -126,11 +126,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PortalNextStage
   playerTag: Player
-  duration: 3
-  liftHeight: 3
-  lookHeight: 10
-  nextSceneName: 
-  fadeStartPoint: 0.3
+  fadeOutDuration: 1
+  excludedScenes: []
 --- !u!1 &5588175437650982449
 GameObject:
   m_ObjectHideFlags: 0
@@ -175,7 +172,7 @@ AudioSource:
   m_GameObject: {fileID: 5588175437650982449}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: 3023762586689866044, guid: c18ef9370e654aa4697400b1c81519c6, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 1

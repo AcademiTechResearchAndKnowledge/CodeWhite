@@ -59,14 +59,13 @@ public class PortalNextStage : MonoBehaviour
 
         foreach (var cam in cams)
         {
-            bool isLookUp = cam.name.ToLower().Contains("lookup");
+            bool isLookUp = cam.name.IndexOf("lookup", System.StringComparison.OrdinalIgnoreCase) >= 0;
 
             if (isLookUp)
             {
                 lookUpCam = cam;
-                cam.Priority = 0;
-                cam.gameObject.SetActive(false);
-                cam.LookAt = null;
+                lookUpCam.Priority = 0;
+                lookUpCam.LookAt = null;
                 continue;
             }
 
@@ -129,15 +128,15 @@ public class PortalNextStage : MonoBehaviour
 
         if (orientation == PortalOrientation.Vertical)
         {
+            if (mainCam != null)
+                mainCam.Priority = 0;
+
             if (lookUpCam != null)
             {
                 lookUpCam.gameObject.SetActive(true);
-                lookUpCam.Priority = 999;
                 lookUpCam.LookAt = lookTarget;
+                lookUpCam.Priority = 10000;
             }
-
-            if (mainCam != null)
-                mainCam.Priority = 0;
         }
         else
         {
@@ -145,12 +144,14 @@ public class PortalNextStage : MonoBehaviour
             {
                 lookUpCam.Priority = 0;
                 lookUpCam.LookAt = null;
-                lookUpCam.gameObject.SetActive(false);
             }
 
             if (mainCam != null)
                 mainCam.LookAt = null;
         }
+
+        yield return null;
+        yield return null;
 
         Vector3 startPos = player.position;
         Vector3 targetPos = transform.position;
@@ -254,9 +255,8 @@ public class PortalNextStage : MonoBehaviour
 
         foreach (var cam in cams)
         {
-            cam.Priority = 10;
             cam.LookAt = null;
-            cam.gameObject.SetActive(true);
+            cam.Priority = 10;
         }
 
         if (mainCam != null)
