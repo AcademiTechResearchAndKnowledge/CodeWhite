@@ -59,6 +59,7 @@ public class WhiteLady : MonoBehaviour
 
     [Header("SFX Settings")]
     public AudioSource audioSource;
+    public AudioSource weepingAudioSource; // NEW: Dedicated audio source for weeping
     public AudioClip teleportSfx;
     public AudioClip chasingSfx;
     public AudioClip weepingSfx;
@@ -99,6 +100,14 @@ public class WhiteLady : MonoBehaviour
         if (audioSource != null)
         {
             audioSource.spatialBlend = 0f;
+        }
+
+        if (weepingAudioSource != null)
+        {
+            weepingAudioSource.spatialBlend = 0f;
+            weepingAudioSource.rolloffMode = AudioRolloffMode.Linear;
+            weepingAudioSource.minDistance = 5f;
+            weepingAudioSource.maxDistance = 30f;
         }
 
         if (ambientAudioSource != null)
@@ -317,6 +326,7 @@ public class WhiteLady : MonoBehaviour
 
         bool wasChasing = (currentState == State.Chasing);
         bool wasFakeChasing = (currentState == State.Investigating && isWaitingToStopChaseMusic);
+        bool wasWeeping = (currentState == State.Weeping); // CHANGED: Track if exiting weep state
 
         currentState = next;
 
@@ -328,6 +338,14 @@ public class WhiteLady : MonoBehaviour
             audioSource.Stop();
             audioSource.clip = null;
             audioSource.loop = false;
+        }
+
+        // CHANGED: Cleanly stop the weeping audio source when transitioning away from Weeping
+        if (wasWeeping && weepingAudioSource != null)
+        {
+            weepingAudioSource.Stop();
+            weepingAudioSource.clip = null;
+            weepingAudioSource.loop = false;
         }
 
         if (submitHitbox != null) submitHitbox.SetActive(currentState == State.Weeping);
@@ -435,11 +453,12 @@ public class WhiteLady : MonoBehaviour
             ambientAudioSource.Stop();
         }
 
-        if (weepingSfx != null)
+        // CHANGED: Now references weepingAudioSource instead of the shared audioSource
+        if (weepingSfx != null && weepingAudioSource != null)
         {
-            audioSource.clip = weepingSfx;
-            audioSource.loop = true;
-            audioSource.Play();
+            weepingAudioSource.clip = weepingSfx;
+            weepingAudioSource.loop = true;
+            weepingAudioSource.Play();
         }
     }
 
@@ -496,7 +515,6 @@ public class WhiteLady : MonoBehaviour
     /// </summary>
     public void Despawn()
     {
-        // 1. Spawn the particles
         if (despawnParticlePrefab != null)
         {
             Instantiate(despawnParticlePrefab, transform.position, transform.rotation);
@@ -506,33 +524,24 @@ public class WhiteLady : MonoBehaviour
             Debug.LogWarning("Despawn Particle Prefab is not assigned on " + gameObject.name);
         }
 
-        // 2. Play the chase end music/sound safely as 2D Audio
         if (despawnSound != null)
         {
             Play2DAudio(despawnSound, despawnVolume);
         }
 
-        // 3. Destroy the White Lady GameObject
         Destroy(gameObject);
     }
 
     private void Play2DAudio(AudioClip clip, float volume)
     {
-        // Create an empty GameObject to act as our temporary record player
         GameObject tempAudioObject = new GameObject("TempDespawnAudio");
-
-        // Add an AudioSource component to it
         AudioSource source = tempAudioObject.AddComponent<AudioSource>();
 
-        // Configure it for 2D Sound
         source.clip = clip;
         source.volume = volume;
-        source.spatialBlend = 0f; // 0 means fully 2D (heard everywhere equally)
+        source.spatialBlend = 0f;
 
-        // Play the sound
         source.Play();
-
-        // Tell Unity to destroy this temporary object exactly when the clip finishes playing
         Destroy(tempAudioObject, clip.length);
     }
 }
