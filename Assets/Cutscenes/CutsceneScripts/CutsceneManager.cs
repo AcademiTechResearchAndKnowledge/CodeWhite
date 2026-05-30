@@ -10,6 +10,9 @@ public class CutsceneManager : MonoBehaviour
     [Tooltip("The Tag applied to your main UI Parent/Canvas so the script can find it across scenes.")]
     public string uiTag = "MainUI";
 
+    [Tooltip("Check this if the cutscene should play immediately when the player spawns into this scene.")]
+    public bool playOnSpawn = false;
+
     [HideInInspector]
     public GameObject uiParentGameObject;
 
@@ -21,6 +24,12 @@ public class CutsceneManager : MonoBehaviour
     private void Start()
     {
         FindSceneDependencies();
+
+        // Triggers automatically if you want it to play right when you enter the level
+        if (playOnSpawn)
+        {
+            ActivateCutscene();
+        }
     }
 
     private void FindSceneDependencies()

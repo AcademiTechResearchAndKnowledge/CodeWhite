@@ -78,6 +78,12 @@ public class RainbowDoorInteractable : Interactable
         {
             hasInteracted = true;
 
+            // Failsafe: If the cutscene manager wasn't found during Start() because of teleporting, find it now.
+            if (cutsceneManager == null)
+            {
+                CacheCutsceneManager();
+            }
+
             if (cutsceneManager != null)
             {
                 cutsceneManager.ActivateCutscene();

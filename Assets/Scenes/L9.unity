@@ -341,7 +341,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &375729728
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -355,8 +355,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineCamera
   Priority:
-    Enabled: 0
-    m_Value: 0
+    Enabled: 1
+    m_Value: 99
   OutputChannel: 1
   StandbyUpdate: 2
   m_StreamingVersion: 20241001
@@ -808,6 +808,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CutsceneManager
   timelineGameObject: {fileID: 1858177191}
+  uiTag: MainUI
+  playOnSpawn: 0
+  uiParentGameObject: {fileID: 0}
   playerRefs: {fileID: 0}
 --- !u!4 &1758168837
 Transform:
@@ -860,6 +863,8 @@ PlayableDirector:
     value: {fileID: 0}
   - key: {fileID: -1666387917824880931, guid: 311a00ef5ece8c34abc906b96314f1b8, type: 2}
     value: {fileID: 1758168835}
+  - key: {fileID: 395129888518929586, guid: 311a00ef5ece8c34abc906b96314f1b8, type: 2}
+    value: {fileID: 375729727}
   m_ExposedReferences:
     m_References:
     - 2a2f0bd92462f064c8dcfb188824a2dd: {fileID: 375729728}

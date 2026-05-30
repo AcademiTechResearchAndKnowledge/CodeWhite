@@ -5,7 +5,7 @@ using TMPro;
 
 public class TutorialManagerNew : MonoBehaviour
 {
-    public static TutorialManagerNew Instance; // Singleton added for trigger access
+    public static TutorialManagerNew Instance;
 
     public enum TutorialState
     {
@@ -17,6 +17,8 @@ public class TutorialManagerNew : MonoBehaviour
         Crouch_Text,         // Showing Crouch text
         Crouch_Explore,      // Waiting to hit Scream Barrier
         Sprint_Text,         // Showing Sprint text
+        Sprint_Explore,      // NEW: Waiting to hit the "What is that" barrier
+        Panic_Explore,       // NEW: Waiting to hit the final abduction/help barrier
         Finished
     }
 
@@ -104,7 +106,7 @@ public class TutorialManagerNew : MonoBehaviour
             case TutorialState.Sprint_Text:
                 if (hasKeyboard && Keyboard.current.leftShiftKey.wasPressedThisFrame)
                 {
-                    currentState = TutorialState.Finished;
+                    currentState = TutorialState.Sprint_Explore;
                     if (activeUICoroutine != null) StopCoroutine(activeUICoroutine);
                     activeUICoroutine = StartCoroutine(HideMessage());
                 }
@@ -112,7 +114,6 @@ public class TutorialManagerNew : MonoBehaviour
         }
     }
 
-    // --- TRIGGER BARRIER HANDLER ---
     public void HandleBarrierTriggered(string triggerID, string dialogueID)
     {
         if (triggerID == "DarkBarrier" && currentState == TutorialState.Walk_Explore)
@@ -130,26 +131,35 @@ public class TutorialManagerNew : MonoBehaviour
             PlayDialogueAndAdvance(dialogueID, TutorialState.Sprint_Text, "Press [Shift] to sprint");
             UnlockMechanic(TutorialState.Sprint_Text);
         }
+        else if (triggerID == "WhatIsThatBarrier" && currentState == TutorialState.Sprint_Explore)
+        {
+            PlayDialogueAndAdvance(dialogueID, TutorialState.Panic_Explore, "");
+        }
+        else if (triggerID == "AbductionBarrier" && currentState == TutorialState.Panic_Explore)
+        {
+            PlayDialogueAndAdvance(dialogueID, TutorialState.Finished, "");
+        }
     }
 
     private void PlayDialogueAndAdvance(string dialogueID, TutorialState nextState, string nextMessage)
     {
-        // Instantly hide any remaining UI tutorial text
         if (activeUICoroutine != null) StopCoroutine(activeUICoroutine);
         activeUICoroutine = StartCoroutine(HideMessage());
 
         var data = DialogueDatabase.Instance.GetDialogue(dialogueID);
 
-        // Pass the callback to run the next stage when dialogue closes
         DialogueManager.Instance.StartDialogue(data, false, () =>
         {
             currentState = nextState;
             if (activeUICoroutine != null) StopCoroutine(activeUICoroutine);
-            activeUICoroutine = StartCoroutine(ShowMessage(nextMessage));
+
+            if (!string.IsNullOrEmpty(nextMessage))
+            {
+                activeUICoroutine = StartCoroutine(ShowMessage(nextMessage));
+            }
         });
     }
 
-    // --- CONTROL LOCKING / UNLOCKING ---
     private void ToggleAllPlayerControls(bool state)
     {
         if (player == null) return;
@@ -190,7 +200,6 @@ public class TutorialManagerNew : MonoBehaviour
         }
     }
 
-    // --- COROUTINES FOR SEQUENCES AND UI ---
     private IEnumerator IntroSequence()
     {
         ToggleAllPlayerControls(false);

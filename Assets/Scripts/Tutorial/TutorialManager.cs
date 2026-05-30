@@ -40,6 +40,8 @@ public class TutorialManager : MonoBehaviour
         {
             blackScreenCanvasGroup.gameObject.SetActive(true);
             blackScreenCanvasGroup.alpha = 1;
+
+            ToggleAllPlayerControls(false);
         }
 
         if (RPS == null)
@@ -87,12 +89,10 @@ public class TutorialManager : MonoBehaviour
 
         var data = DialogueDatabase.Instance.GetDialogue(dialogueID);
 
-        // LOCK CONTROLS BEFORE DIALOGUE STARTS
         ToggleAllPlayerControls(false);
 
         DialogueManager.Instance.StartDialogue(data, false, () =>
         {
-            // UNLOCK CONTROLS WHEN DIALOGUE FINISHES
             UnlockPlayerControls();
 
             currentState = nextState;
@@ -104,6 +104,7 @@ public class TutorialManager : MonoBehaviour
     private void ToggleAllPlayerControls(bool state)
     {
         if (player == null) return;
+
         if (player.movementScript != null) player.movementScript.enabled = state;
         if (player.flashlightScript != null) player.flashlightScript.enabled = state;
         if (player.playerLook != null) player.playerLook.canLook = state;
@@ -112,6 +113,7 @@ public class TutorialManager : MonoBehaviour
     private void UnlockPlayerControls()
     {
         if (player == null) return;
+
         if (player.movementScript != null)
         {
             player.movementScript.enabled = true;
@@ -141,6 +143,33 @@ public class TutorialManager : MonoBehaviour
 
         UnlockPlayerControls();
         currentState = TutorialState.Explore_Start;
+    }
+
+    public IEnumerator FadeBlackScreenInOut()
+    {
+        ToggleAllPlayerControls(false);
+        blackScreenCanvasGroup.gameObject.SetActive(true);
+
+        float timer = 0;
+        while (timer < blackScreenFadeDuration)
+        {
+            timer += Time.deltaTime;
+            blackScreenCanvasGroup.alpha = Mathf.Lerp(0, 1, timer / blackScreenFadeDuration);
+            yield return null;
+        }
+
+        yield return new WaitForSeconds(1f); // Hold black screen
+
+        timer = 0;
+        while (timer < blackScreenFadeDuration)
+        {
+            timer += Time.deltaTime;
+            blackScreenCanvasGroup.alpha = Mathf.Lerp(1, 0, timer / blackScreenFadeDuration);
+            yield return null;
+        }
+
+        blackScreenCanvasGroup.gameObject.SetActive(false);
+        UnlockPlayerControls();
     }
 
     private IEnumerator ShowMessage(string message)
