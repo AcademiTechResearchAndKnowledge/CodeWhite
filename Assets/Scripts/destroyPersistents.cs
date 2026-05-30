@@ -5,6 +5,7 @@ using System.Collections;
 public class DDOLCleanup : MonoBehaviour
 {
     [SerializeField] private float cleanupDelay = 5f;
+    [SerializeField] private bool deletePersistentUI = false;
 
     private void Awake()
     {
@@ -43,8 +44,7 @@ public class DDOLCleanup : MonoBehaviour
         {
             if (obj == null) continue;
 
-      
-            if (IsUIObject(obj))
+            if (!deletePersistentUI && IsUIObject(obj))
                 continue;
 
             Destroy(obj);
@@ -53,7 +53,6 @@ public class DDOLCleanup : MonoBehaviour
 
     private bool IsUIObject(GameObject obj)
     {
-
         if (obj.GetComponent<Canvas>() != null)
             return true;
 
