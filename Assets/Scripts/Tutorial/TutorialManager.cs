@@ -26,6 +26,7 @@ public class TutorialManager : MonoBehaviour
     public float startDelay = 1.0f;
 
     [Header("Game Object References")]
+    [Tooltip("Can be left blank in Inspector; will find automatically at runtime.")]
     public PlayerReferences player;
 
     private TutorialState currentState = TutorialState.Intro;
@@ -36,11 +37,23 @@ public class TutorialManager : MonoBehaviour
     {
         Instance = this;
 
+        // NEW: Automatically find the player in the current scene
+        if (player == null)
+        {
+            player = FindFirstObjectByType<PlayerReferences>();
+
+            if (player == null)
+            {
+                Debug.LogError("TutorialManager: Could not find a PlayerReferences component in the scene!");
+            }
+        }
+
         if (blackScreenCanvasGroup != null)
         {
             blackScreenCanvasGroup.gameObject.SetActive(true);
             blackScreenCanvasGroup.alpha = 1;
 
+            // This will now work properly because the player reference was found above
             ToggleAllPlayerControls(false);
         }
 

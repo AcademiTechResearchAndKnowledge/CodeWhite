@@ -152,7 +152,7 @@ public class LighterPuzzleManager : MonoBehaviour
                     audioSource.PlayOneShot(entitySpawnSFX, spawnVolume);
                 }
 
-                ShowDialogue($"Something is here... {candlesRemaining} candles remain)");
+                ShowDialogue($"Something is here... {candlesRemaining} candles remain");
             }
             else
             {

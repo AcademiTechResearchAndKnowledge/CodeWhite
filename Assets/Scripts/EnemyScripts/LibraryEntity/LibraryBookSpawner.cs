@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class LibraryBookSpawner : MonoBehaviour
@@ -14,7 +14,7 @@ public class LibraryBookSpawner : MonoBehaviour
     public ObjectiveItemData forgedBookData;
 
     [Header("Spawn Points")]
-    [Tooltip("Drag all your Empty GameObjects here. You need AT LEAST 20.")]
+    [Tooltip("Drag all your Empty GameObjects here. You need AT LEAST 21.")]
     public List<Transform> spawnPoints;
 
     private void Start()
@@ -24,9 +24,10 @@ public class LibraryBookSpawner : MonoBehaviour
 
     private void SpawnBooks()
     {
-        if (spawnPoints.Count < 20)
+        // Updated check to require 21 spawn points
+        if (spawnPoints.Count < 21)
         {
-            Debug.LogError($"[Book Spawner] Failed! Only {spawnPoints.Count} spawn points. You need at least 20.");
+            Debug.LogError($"[Book Spawner] Failed! Only {spawnPoints.Count} spawn points. You need at least 21.");
             return;
         }
 
@@ -38,14 +39,16 @@ public class LibraryBookSpawner : MonoBehaviour
 
         List<ObjectiveItemData> dataToSpawn = new List<ObjectiveItemData>();
 
-        for (int i = 0; i < 10; i++) dataToSpawn.Add(signedBookData);
+        // Total is now exactly 21
+        for (int i = 0; i < 11; i++) dataToSpawn.Add(signedBookData);
         for (int i = 0; i < 5; i++) dataToSpawn.Add(unsignedBookData);
         for (int i = 0; i < 5; i++) dataToSpawn.Add(forgedBookData);
 
         ShuffleList(dataToSpawn);
         ShuffleList(spawnPoints);
 
-        for (int i = 0; i < 20; i++)
+        // Updated loop to spawn exactly 21 books
+        for (int i = 0; i < 21; i++)
         {
             if (spawnPoints[i] == null)
             {
@@ -62,11 +65,8 @@ public class LibraryBookSpawner : MonoBehaviour
             {
                 ObjectiveItemData uniqueItemData = Instantiate(dataToSpawn[i]);
 
-                // -------------------------------------------------------------
-                // THE FIX: The Spawner rolls the dice to pick the color!
-                // -------------------------------------------------------------
                 int randomColorIndex = Random.Range(0, 4); // Rolls 0, 1, 2, or 3
-                uniqueItemData.visualIndex = randomColorIndex;
+                uniqueItemData.visualIndex = randomColorIndex;
 
                 if (uniqueItemData.bookIcons != null && randomColorIndex < uniqueItemData.bookIcons.Length)
                 {
@@ -75,13 +75,12 @@ public class LibraryBookSpawner : MonoBehaviour
 
                 pickupScript.itemData = uniqueItemData;
 
-                // Tell the book to immediately update its 3D model to match!
                 visualScript.selectedVisualIndex = randomColorIndex;
                 visualScript.UpdateVisuals();
             }
         }
 
-        Debug.Log("[Book Spawner] Successfully spawned 20 books with truly random colors.");
+        Debug.Log("[Book Spawner] Successfully spawned 21 books (11 signed).");
     }
 
     private void ShuffleList<T>(List<T> list)
