@@ -192,7 +192,7 @@ public class RandomPortalSpawner : MonoBehaviour
             return;
         }
 
-        if (levelCounter % 10 == 0)
+        if (levelCounter > 0 && levelCounter % 10 == 0)
         {
             portal.SetForcedScene(GetBossScene(levelCounter));
             return;
@@ -212,6 +212,7 @@ public class RandomPortalSpawner : MonoBehaviour
     {
         List<string> scenes = new List<string>();
         int count = SceneManager.sceneCountInBuildSettings;
+        string currentScene = SceneManager.GetActiveScene().name;
 
         for (int i = 0; i < count; i++)
         {
@@ -219,6 +220,7 @@ public class RandomPortalSpawner : MonoBehaviour
             string name = Path.GetFileNameWithoutExtension(path);
 
             if (IsExcluded(name)) continue;
+            if (string.Equals(name, currentScene, System.StringComparison.OrdinalIgnoreCase)) continue;
 
             scenes.Add(name);
         }
