@@ -29,6 +29,8 @@ public class AnalogClock : MonoBehaviour
     {
         allClocks.Add(this);
 
+        puzzleDone = false;
+
         if (RPS == null)
         {
             RPS = FindFirstObjectByType<RandomPortalSpawner>();

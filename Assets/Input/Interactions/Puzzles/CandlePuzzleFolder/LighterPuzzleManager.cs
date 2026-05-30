@@ -19,7 +19,11 @@ public class LighterPuzzleManager : MonoBehaviour
     public GameObject entity_1;
     public Transform entity_1_spawn;
 
-    [Header("Entity Spawn Effects")] // <-- NEW SECTION
+    [Header("Inventory Settings")] // <-- NEW SECTION
+    [Tooltip("Assign the ObjectiveItemData for the lighter here so it can be removed from the inventory.")]
+    public ObjectiveItemData lighterItemData;
+
+    [Header("Entity Spawn Effects")]
     [Tooltip("The sound to play when the entity is summoned into the room.")]
     public AudioClip entitySpawnSFX;
     [Tooltip("Volume for the spawn sound.")]
@@ -134,6 +138,9 @@ public class LighterPuzzleManager : MonoBehaviour
         currentLighterState = LighterState.Hidden;
         ResetAllDrawers();
 
+        // --- NEW: Remove lighter upon successful use to prevent desync ---
+        RemoveLighterFromInventory();
+
         if (candlesLit >= candlesToFinish)
         {
             PuzzleFinished();
@@ -146,7 +153,6 @@ public class LighterPuzzleManager : MonoBehaviour
             {
                 currentActiveEntity = Instantiate(entity_1, entity_1_spawn.position, entity_1_spawn.rotation);
 
-                // --- NEW: PLAY SPAWN AUDIO ---
                 if (entitySpawnSFX != null && audioSource != null)
                 {
                     audioSource.PlayOneShot(entitySpawnSFX, spawnVolume);
@@ -182,6 +188,21 @@ public class LighterPuzzleManager : MonoBehaviour
 
         currentLighterState = LighterState.Hidden;
         ResetAllDrawers();
+
+        // --- NEW: Remove lighter upon jumpscare penalty to prevent softlock ---
+        RemoveLighterFromInventory();
+    }
+
+    // --- NEW HELPER METHOD ---
+    private void RemoveLighterFromInventory()
+    {
+        if (lighterItemData != null && ObjectiveInventoryManager.Instance != null)
+        {
+            ObjectiveInventoryManager.Instance.RemoveItem(lighterItemData, 1);
+
+            // Force the inventory to deselect so the HandController unequips the visual model
+            ObjectiveInventoryManager.Instance.DeselectAll();
+        }
     }
 
     private void ResetAllDrawers()
