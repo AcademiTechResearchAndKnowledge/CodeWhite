@@ -16,7 +16,7 @@ public class UIAudioManager : MonoBehaviour
         }
 
         Instance = this;
-        DontDestroyOnLoad(gameObject); 
+        DontDestroyOnLoad(gameObject);
 
         audioSource = GetComponent<AudioSource>();
         audioSource.spatialBlend = 0f;
@@ -25,7 +25,7 @@ public class UIAudioManager : MonoBehaviour
 
     public void PlaySound(AudioClip clip)
     {
-        if (clip == null) return;
+        if (clip == null || audioSource == null) return;
         audioSource.PlayOneShot(clip);
     }
 }
