@@ -14,19 +14,18 @@ public class UIAudioManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+
         Instance = this;
+        DontDestroyOnLoad(gameObject); 
 
         audioSource = GetComponent<AudioSource>();
         audioSource.spatialBlend = 0f;
-
         audioSource.ignoreListenerPause = true;
     }
 
     public void PlaySound(AudioClip clip)
     {
-        if (clip != null)
-        {
-            audioSource.PlayOneShot(clip);
-        }
+        if (clip == null) return;
+        audioSource.PlayOneShot(clip);
     }
 }
