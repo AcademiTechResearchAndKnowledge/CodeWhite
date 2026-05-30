@@ -188,7 +188,7 @@ public class LaptopManager : MonoBehaviour, IZoomInteractable
             laptopCanvas.SetActive(true);
 
         questionText.text = "Objective complete!";
-        feedbackText.text = "You solved all five rounds. Well done.";
+        feedbackText.text = "You solved all three rounds. Well done.";
 
         if (progressText != null)
             progressText.text = "Done!";

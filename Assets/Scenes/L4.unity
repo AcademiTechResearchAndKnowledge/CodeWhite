@@ -6222,7 +6222,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Entity1Spawn
   playerRef: {fileID: 0}
   enemyPrefab: {fileID: 6128637140465417577, guid: 8b8e641f44e0adb41bbdd7c32c66b19a, type: 3}
-  spawnDelay: 300
+  spawnDelay: 500
   spawnOnlyOnce: 1
   spawnAreas:
   - {fileID: 677480403}
@@ -6272,7 +6272,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 606338781512266764, guid: 550c7bd8391f06e4894fc0c95b0bfdaf, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.16966
+      value: -0.19702
       objectReference: {fileID: 0}
     - target: {fileID: 606338781512266764, guid: 550c7bd8391f06e4894fc0c95b0bfdaf, type: 3}
       propertyPath: m_LocalPosition.y
@@ -6280,7 +6280,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 606338781512266764, guid: 550c7bd8391f06e4894fc0c95b0bfdaf, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.01276
+      value: -0.03583
       objectReference: {fileID: 0}
     - target: {fileID: 606338781512266764, guid: 550c7bd8391f06e4894fc0c95b0bfdaf, type: 3}
       propertyPath: m_LocalRotation.w
@@ -6353,7 +6353,7 @@ MonoBehaviour:
   correctButtonIndex: 0
   completedCount: 0
   puzzleComplete: 0
-  requiredCount: 5
+  requiredCount: 3
   jumpscarePrefab: {fileID: 5269476774467995173, guid: 943bfb97e3c73ab4fa16337404ed6af8, type: 3}
   audioSource: {fileID: 550536146}
   correctSFX: {fileID: 8300000, guid: fe596f8e0d0877d4aaf9940731e6d467, type: 3}
@@ -7268,7 +7268,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -12587,7 +12587,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 0
   serializedVersion: 3
@@ -13117,7 +13117,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 1000
+  m_SortingOrder: 2000
   m_TargetDisplay: 0
 --- !u!43 &1025347503
 Mesh:
@@ -19690,7 +19690,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 197955e9e7568a9418765605407aa374, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -292.631
+      value: -296.17
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 197955e9e7568a9418765605407aa374, type: 3}
       propertyPath: m_LocalPosition.y
@@ -19698,7 +19698,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 197955e9e7568a9418765605407aa374, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 107.293
+      value: 109.666
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 197955e9e7568a9418765605407aa374, type: 3}
       propertyPath: m_LocalRotation.w
@@ -20668,8 +20668,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: e465a86c6bfec5448b479a0c49fcc61f, type: 2}
+  m_sharedMaterial: {fileID: -5628365422750491017, guid: e465a86c6bfec5448b479a0c49fcc61f, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -20732,7 +20732,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 36.204998, y: 23.981922, z: 78.010796, w: -9.459787}
+  m_margin: {x: 36.204998, y: 15.906276, z: 78.010796, w: -4.3624096}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -22454,7 +22454,7 @@ MonoBehaviour:
 
 
 
-    Get 5 correct runs. Flip two switches here in the hut, then
+    Get 3 correct runs. Flip two switches here in the hut, then
     use the laptop outside. Touching the light bulb might help you. Best of luck...'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 62147ab319a578a4c8a27b112a4e2b82, type: 2}
