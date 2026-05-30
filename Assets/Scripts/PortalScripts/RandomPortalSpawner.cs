@@ -71,7 +71,8 @@ public class RandomPortalSpawner : MonoBehaviour
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         spawned = false;
-        spawnAreas = FindObjectsByType<BoxCollider>(FindObjectsSortMode.None);
+        var all = FindObjectsByType<BoxCollider>(FindObjectsSortMode.None);
+        spawnAreas = System.Array.FindAll(all, c => c != null);
     }
 
     public void SetForcedSceneOverride(string sceneName)
@@ -112,7 +113,12 @@ public class RandomPortalSpawner : MonoBehaviour
 
         if (portalPrefab == null) return;
         if (spawned && spawnOnlyOnce) return;
-        if (spawnAreas == null || spawnAreas.Length == 0) return;
+
+        var validAreas = spawnAreas != null
+            ? System.Array.FindAll(spawnAreas, c => c != null)
+            : new BoxCollider[0];
+
+        if (validAreas.Length == 0) return;
 
         levelCounter++;
 
@@ -121,7 +127,7 @@ public class RandomPortalSpawner : MonoBehaviour
 
         for (int i = 0; i < attempts; i++)
         {
-            BoxCollider area = spawnAreas[Random.Range(0, spawnAreas.Length)];
+            BoxCollider area = validAreas[Random.Range(0, validAreas.Length)];
             Vector3 randomPoint = RandomPointInBox(area.bounds);
             Vector3 rayOrigin = randomPoint + Vector3.up * raycastHeight;
 
@@ -220,6 +226,7 @@ public class RandomPortalSpawner : MonoBehaviour
             string name = Path.GetFileNameWithoutExtension(path);
 
             if (IsExcluded(name)) continue;
+            if (IsBossScene(name)) continue;
             if (string.Equals(name, currentScene, System.StringComparison.OrdinalIgnoreCase)) continue;
 
             scenes.Add(name);
@@ -235,6 +242,19 @@ public class RandomPortalSpawner : MonoBehaviour
         for (int i = 0; i < excludedScenes.Length; i++)
         {
             if (string.Equals(excludedScenes[i].Trim(), sceneName.Trim(), System.StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+
+        return false;
+    }
+
+    private bool IsBossScene(string sceneName)
+    {
+        if (bossScenes == null) return false;
+
+        for (int i = 0; i < bossScenes.Length; i++)
+        {
+            if (string.Equals(bossScenes[i].Trim(), sceneName.Trim(), System.StringComparison.OrdinalIgnoreCase))
                 return true;
         }
 
