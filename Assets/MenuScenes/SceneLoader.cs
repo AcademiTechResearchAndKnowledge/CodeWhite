@@ -1,10 +1,13 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
-public class SceneLoader : MonoBehaviour
+public class GameQuitter : MonoBehaviour
 {
-    public void LoadScene(string sceneName)
+    public void QuitGame()
     {
-        SceneManager.LoadScene(sceneName);
+        #if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+        #else
+            Application.Quit();
+        #endif
     }
 }

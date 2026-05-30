@@ -37,7 +37,6 @@ public class DDOLCleanup : MonoBehaviour
         DontDestroyOnLoad(temp);
 
         Scene dontDestroyScene = temp.scene;
-
         Destroy(temp);
 
         GameObject[] rootObjects = dontDestroyScene.GetRootGameObjects();
@@ -45,25 +44,35 @@ public class DDOLCleanup : MonoBehaviour
         foreach (GameObject obj in rootObjects)
         {
             if (obj == null) continue;
-
-            if (exclusions.Contains(obj.name)) continue;
-
+            if (obj == gameObject) continue;
+            if (IsExcluded(obj)) continue;
             if (!deletePersistentUI && IsUIObject(obj)) continue;
 
             Destroy(obj);
         }
     }
 
+    private bool IsExcluded(GameObject obj)
+    {
+        foreach (string exclusion in exclusions)
+        {
+            if (string.IsNullOrEmpty(exclusion)) continue;
+
+            if (obj.name.Equals(exclusion, System.StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            if (obj.transform.Find(exclusion) != null)
+                return true;
+        }
+
+        return false;
+    }
+
     private bool IsUIObject(GameObject obj)
     {
-        if (obj.GetComponent<Canvas>() != null)
-            return true;
-
-        if (obj.GetComponent<RectTransform>() != null)
-            return true;
-
-        if (obj.GetComponentInChildren<Canvas>(true) != null)
-            return true;
+        if (obj.GetComponent<Canvas>() != null) return true;
+        if (obj.GetComponent<RectTransform>() != null) return true;
+        if (obj.GetComponentInChildren<Canvas>(true) != null) return true;
 
         return false;
     }
