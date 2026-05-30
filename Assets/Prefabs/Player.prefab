@@ -159,7 +159,7 @@ Transform:
   m_GameObject: {fileID: 2482385671022945450}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -12.602825, y: 0.38, z: 14.87204}
+  m_LocalPosition: {x: 0, y: 0.5999999, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1270,6 +1270,9 @@ MonoBehaviour:
   maxStamina: 100
   staminaDrainRate: 25
   staminaRegenRate: 12
+  audioSource: {fileID: 4367849117072449756}
+  exhaustionClip: {fileID: 8300000, guid: e82d6bc1638b3c847a71c538ae982dec, type: 3}
+  exhaustionRecoveryThreshold: 25
 --- !u!114 &4092489343370994279
 MonoBehaviour:
   m_ObjectHideFlags: 0

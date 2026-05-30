@@ -15,13 +15,13 @@ public class LibrarianManager : MonoBehaviour
     private const float maxAnxiety = 100f;
     private const float anxietyThreshold = 70f;
 
+    [Header("Level Progress")]
+    [SerializeField] private int signedBooksSubmitted = 0;
+    private const int requiredSignedBooks = 7;
+
     [Header("Entity Spawning")]
     public GameObject huntingEntityPrefab;
     public Transform[] entitySpawnPoints;
-
-    [Header("Level Progress")]
-    [SerializeField] private int signedBooksSubmitted = 0;
-    private const int requiredSignedBooks = 10;
 
     [Header("Audio Settings")]
     public AudioSource audioSource;
@@ -132,12 +132,20 @@ public class LibrarianManager : MonoBehaviour
         }
     }
 
-    public void PlayNoBookError(string message = "You don't have a book to submit!")
+    public void PlayNoBookError(string customMessage = "")
     {
         if (audioSource != null && noBookSFX != null)
             audioSource.PlayOneShot(noBookSFX);
 
-        ShowDialogue(message);
+        if (string.IsNullOrEmpty(customMessage))
+        {
+            int booksRemaining = requiredSignedBooks - signedBooksSubmitted;
+            ShowDialogue($"You don't have a book! You need to give me {booksRemaining} books.");
+        }
+        else
+        {
+            ShowDialogue(customMessage);
+        }
     }
 
     private void ShowDialogue(string message)
