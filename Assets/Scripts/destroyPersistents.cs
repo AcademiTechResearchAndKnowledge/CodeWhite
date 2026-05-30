@@ -1,11 +1,13 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections;
+using System.Collections.Generic;
 
 public class DDOLCleanup : MonoBehaviour
 {
     [SerializeField] private float cleanupDelay = 5f;
     [SerializeField] private bool deletePersistentUI = false;
+    [SerializeField] private List<string> exclusions = new List<string>();
 
     private void Awake()
     {
@@ -44,8 +46,9 @@ public class DDOLCleanup : MonoBehaviour
         {
             if (obj == null) continue;
 
-            if (!deletePersistentUI && IsUIObject(obj))
-                continue;
+            if (exclusions.Contains(obj.name)) continue;
+
+            if (!deletePersistentUI && IsUIObject(obj)) continue;
 
             Destroy(obj);
         }
