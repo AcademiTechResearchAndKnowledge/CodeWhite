@@ -3002,8 +3002,6 @@ MonoBehaviour:
   mainCamera: {fileID: 0}
   hourCollider: {fileID: 1857252494}
   minuteCollider: {fileID: 887407390}
-  audioSource: {fileID: 773972647}
-  puzzleCompleteSFX: {fileID: 8300000, guid: fd9eccd16600dc440afbe88389cddf09, type: 3}
   hours: 3
   minutes: 0
   objzoom: {fileID: 23399955}
@@ -3588,8 +3586,6 @@ MonoBehaviour:
   mainCamera: {fileID: 0}
   hourCollider: {fileID: 1466699003}
   minuteCollider: {fileID: 166894630}
-  audioSource: {fileID: 773972647}
-  puzzleCompleteSFX: {fileID: 8300000, guid: fd9eccd16600dc440afbe88389cddf09, type: 3}
   hours: 3
   minutes: 0
   objzoom: {fileID: 24572171}
@@ -19771,8 +19767,6 @@ MonoBehaviour:
   mainCamera: {fileID: 0}
   hourCollider: {fileID: 2137279249}
   minuteCollider: {fileID: 840688895}
-  audioSource: {fileID: 773972647}
-  puzzleCompleteSFX: {fileID: 8300000, guid: fd9eccd16600dc440afbe88389cddf09, type: 3}
   hours: 3
   minutes: 0
   objzoom: {fileID: 189397819}
@@ -59428,6 +59422,7 @@ GameObject:
   m_Component:
   - component: {fileID: 603432231}
   - component: {fileID: 603432230}
+  - component: {fileID: 603432232}
   m_Layer: 0
   m_Name: Puzzle_Manager
   m_TagString: Untagged
@@ -59456,6 +59451,7 @@ MonoBehaviour:
   - {fileID: 617588348}
   entityPrefab: {fileID: 1654247917549989870, guid: a97fc41d5c5f08f4497334096bdaab50, type: 3}
   oroStepCount: 0
+  puzzleCompleteSFX: {fileID: 8300000, guid: fd9eccd16600dc440afbe88389cddf09, type: 3}
 --- !u!4 &603432231
 Transform:
   m_ObjectHideFlags: 0
@@ -59471,6 +59467,103 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1945946580}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!82 &603432232
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 603432229}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &604117768
 GameObject:
   m_ObjectHideFlags: 0
@@ -61322,8 +61415,6 @@ MonoBehaviour:
   mainCamera: {fileID: 0}
   hourCollider: {fileID: 1713728190}
   minuteCollider: {fileID: 17131835}
-  audioSource: {fileID: 773972647}
-  puzzleCompleteSFX: {fileID: 8300000, guid: fd9eccd16600dc440afbe88389cddf09, type: 3}
   hours: 3
   minutes: 0
   objzoom: {fileID: 617588347}
@@ -75196,135 +75287,6 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -1515144191993293674, guid: 282e7b165d7aa7b478e0df8157c95283, type: 3}
---- !u!1 &773972645
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 773972646}
-  - component: {fileID: 773972647}
-  m_Layer: 0
-  m_Name: AUDIOSOURCE
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &773972646
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 773972645}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -2.4578304, y: 3.3853102, z: -1.24406}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!82 &773972647
-AudioSource:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 773972645}
-  m_Enabled: 1
-  serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 3023762586689866044, guid: c18ef9370e654aa4697400b1c81519c6, type: 2}
-  m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 0}
-  m_PlayOnAwake: 0
-  m_Volume: 1
-  m_Pitch: 1
-  Loop: 0
-  Mute: 0
-  Spatialize: 0
-  SpatializePostEffects: 0
-  Priority: 128
-  DopplerLevel: 1
-  MinDistance: 17.007872
-  MaxDistance: 500
-  Pan2D: 0
-  rolloffMode: 0
-  BypassEffects: 0
-  BypassListenerEffects: 0
-  BypassReverbZones: 0
-  rolloffCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 1
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  panLevelCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  spreadCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  reverbZoneMixCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
 --- !u!1 &774067534
 GameObject:
   m_ObjectHideFlags: 0
@@ -93174,8 +93136,6 @@ MonoBehaviour:
   mainCamera: {fileID: 0}
   hourCollider: {fileID: 883013600}
   minuteCollider: {fileID: 1186711267}
-  audioSource: {fileID: 773972647}
-  puzzleCompleteSFX: {fileID: 8300000, guid: fd9eccd16600dc440afbe88389cddf09, type: 3}
   hours: 3
   minutes: 0
   objzoom: {fileID: 946512876}
@@ -210159,7 +210119,6 @@ GameObject:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 773972646}
   - {fileID: 1945946580}
   - {fileID: 1648899246}
   - {fileID: 198073097}

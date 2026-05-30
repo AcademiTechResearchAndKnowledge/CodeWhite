@@ -9,8 +9,6 @@ public class AnalogClock : MonoBehaviour
     public Camera mainCamera;
     public Collider hourCollider;
     public Collider minuteCollider;
-     public AudioSource audioSource;
-     public AudioClip puzzleCompleteSFX;
 
     private bool draggingHour = false;
     private bool draggingMinute = false;
@@ -24,7 +22,6 @@ public class AnalogClock : MonoBehaviour
     public static bool puzzleDone = false;
 
     public bool allPuzzleDone = false;
-    private int debounce = 0;
 
     private static RandomPortalSpawner RPS;
 
@@ -56,7 +53,6 @@ public class AnalogClock : MonoBehaviour
 
     void Update()
     {
-        
         if (!objzoom.isInPuzzle)
             return;
 
@@ -65,12 +61,6 @@ public class AnalogClock : MonoBehaviour
         if (Keyboard.current.escapeKey.wasPressedThisFrame)
         {
             objzoom.ExitPuzzle();
-        }
-
-        if (allPuzzleDone == true && debounce == 0)
-        {
-            debounce = 1;
-            audioSource.PlayOneShot(puzzleCompleteSFX);
         }
     }
 
@@ -162,9 +152,10 @@ public class AnalogClock : MonoBehaviour
         allPuzzleDone = true;
         puzzleDone = true;
 
-        audioSource.PlayOneShot(puzzleCompleteSFX);
-        RPS.SpawnPortalRandom(RandomPortalSpawner.PortalOrientation.Horizontal);
-        
+        if (RPS != null)
+        {
+            RPS.SpawnPortalRandom(RandomPortalSpawner.PortalOrientation.Horizontal);
+        }
     }
 
     public void UpdateClockVisuals()

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(AudioSource))]
 public class StairsEffectManager : MonoBehaviour
 {
     public static StairsEffectManager Instance;
@@ -16,8 +17,12 @@ public class StairsEffectManager : MonoBehaviour
     private StairsTriggerState currentState = StairsTriggerState.None;
     private bool canTrigger = true;
 
-
     private PlayerStats playerStats;
+
+    [Header("Audio Settings")]
+    public AudioClip puzzleCompleteSFX;
+    private AudioSource audioSource;
+    private bool puzzleCompletedTriggered = false;
 
     private void Awake()
     {
@@ -25,22 +30,41 @@ public class StairsEffectManager : MonoBehaviour
 
         if (RPS == null)
             RPS = FindFirstObjectByType<RandomPortalSpawner>();
-            
+
         playerStats = FindFirstObjectByType<PlayerStats>();
 
         if (playerStats == null)
             Debug.LogWarning("PlayerStats NOT FOUND in scene!");
 
+        audioSource = GetComponent<AudioSource>();
     }
 
     public void Update()
     {
+        if (puzzleCompletedTriggered) return;
+
         foreach (AnalogClock clock in allAnalaogClocks)
         {
             if (clock.allPuzzleDone == true)
             {
-                RPS.SpawnPortalRandom(RandomPortalSpawner.PortalOrientation.Vertical);
+                HandlePuzzleCompletion();
+                break;
             }
+        }
+    }
+
+    private void HandlePuzzleCompletion()
+    {
+        puzzleCompletedTriggered = true;
+
+        if (RPS != null)
+        {
+            RPS.SpawnPortalRandom(RandomPortalSpawner.PortalOrientation.Vertical);
+        }
+
+        if (audioSource != null && puzzleCompleteSFX != null)
+        {
+            audioSource.PlayOneShot(puzzleCompleteSFX);
         }
     }
 
@@ -62,7 +86,6 @@ public class StairsEffectManager : MonoBehaviour
     {
         if (!TrySetState(StairsTriggerState.Oro))
             return;
-
 
         if (playerStats != null)
         {
@@ -97,9 +120,12 @@ public class StairsEffectManager : MonoBehaviour
             clock.hours = 3;
             clock.minutes = 0;
             clock.UpdateClockVisuals();
+            clock.allPuzzleDone = false;
         }
 
         AnalogClock.puzzleDone = false;
+
+        puzzleCompletedTriggered = false;
 
         canTrigger = true;
     }
