@@ -1,0 +1,201 @@
+using UnityEngine;
+using System.Collections;
+
+public class ChestLoot : Interactable
+{
+    [Header("Animation")]
+    public Animator chestAnimator;
+    public float animationStepDelay = 0.5f;
+
+    [Header("Spawn Point")]
+    public Transform itemSpawnPoint;
+
+    [Header("Jumpscare Entity Settings")]
+    [Tooltip("Drag the Entity Prefab here.")]
+    public GameObject entityPrefab;
+    [Range(0f, 1f)]
+    [Tooltip("Independent chance to spawn the entity (0.1 = 10% chance)")]
+    public float chanceToSpawnEntity = 0.1f;
+
+    [Header("Possible Loot")]
+    public GameObject[] possibleItems;
+
+    [Header("Timing")]
+    public float lootSpawnDelay = 0.2f;
+
+    [Range(0f, 1f)]
+    public float chanceToSpawnNothing = 0.3f;
+
+    [Header("Loot Options")]
+    public bool spawnOnlyOnce = true;
+
+    // --- ADDED: Audio Settings ---
+    [Header("Audio Settings")]
+    public AudioSource audioSource;
+    public AudioClip chestOpenSound;
+    [Tooltip("Delay in seconds before the open sound plays.")]
+    public float openSoundDelay = 0f;
+
+    public AudioClip chestCloseSound;
+    [Tooltip("Delay in seconds before the close sound plays.")]
+    public float closeSoundDelay = 0f;
+    // -----------------------------
+
+    private bool isOpen = false;
+    private bool isBusy = false;
+    private bool hasSpawned = false;
+    private GameObject currentSpawnedItem;
+
+    // --- ADDED: Grab AudioSource on Start ---
+    void Start()
+    {
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+        }
+    }
+
+    public override void Interact()
+    {
+        if (isBusy)
+            return;
+
+        base.Interact();
+
+        if (chestAnimator == null)
+        {
+            Debug.LogWarning("No Animator assigned on " + gameObject.name);
+            return;
+        }
+
+        if (!isOpen)
+        {
+            StartCoroutine(OpenChestRoutine());
+        }
+        else
+        {
+            StartCoroutine(CloseChestRoutine());
+        }
+    }
+
+    IEnumerator OpenChestRoutine()
+    {
+        isBusy = true;
+
+        // --- ADDED: Play Open Sound ---
+        PlaySound(chestOpenSound, openSoundDelay);
+
+        chestAnimator.SetInteger("C", 1);
+
+        if (!spawnOnlyOnce || !hasSpawned)
+        {
+            yield return new WaitForSeconds(lootSpawnDelay);
+            SpawnContent();
+            hasSpawned = true;
+        }
+
+        yield return new WaitForSeconds(animationStepDelay - lootSpawnDelay);
+
+        chestAnimator.SetInteger("C", 2);
+
+        isOpen = true;
+        isBusy = false;
+    }
+
+    IEnumerator CloseChestRoutine()
+    {
+        isBusy = true;
+
+        // --- ADDED: Play Close Sound ---
+        PlaySound(chestCloseSound, closeSoundDelay);
+
+        chestAnimator.SetInteger("C", 3);
+
+        yield return new WaitForSeconds(animationStepDelay);
+
+        chestAnimator.SetInteger("C", 4);
+
+        isOpen = false;
+        isBusy = false;
+    }
+
+    void SpawnContent()
+    {
+        if (itemSpawnPoint == null)
+        {
+            Debug.LogWarning("No itemSpawnPoint assigned on " + gameObject.name);
+            return;
+        }
+
+        if (entityPrefab != null && Random.value < chanceToSpawnEntity)
+        {
+            InstantiateAndSetupObject(entityPrefab);
+            Debug.Log(gameObject.name + " spawned the Entity!");
+            return;
+        }
+
+        if (Random.value < chanceToSpawnNothing)
+        {
+            Debug.Log(gameObject.name + " spawned nothing.");
+            return;
+        }
+
+        if (possibleItems == null || possibleItems.Length == 0)
+        {
+            Debug.LogWarning("No possibleItems assigned on " + gameObject.name);
+            return;
+        }
+
+        int randomIndex = Random.Range(0, possibleItems.Length);
+        InstantiateAndSetupObject(possibleItems[randomIndex]);
+        Debug.Log(gameObject.name + " spawned " + possibleItems[randomIndex].name);
+    }
+
+    void InstantiateAndSetupObject(GameObject prefabToSpawn)
+    {
+        currentSpawnedItem = Instantiate(prefabToSpawn, itemSpawnPoint.position, itemSpawnPoint.rotation);
+        currentSpawnedItem.transform.SetParent(itemSpawnPoint, true);
+
+        Rigidbody rb = currentSpawnedItem.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.isKinematic = true;
+            rb.useGravity = false;
+        }
+
+        Collider itemCollider = currentSpawnedItem.GetComponent<Collider>();
+        Collider chestCollider = GetComponent<Collider>();
+
+        if (itemCollider != null && chestCollider != null)
+        {
+            Physics.IgnoreCollision(itemCollider, chestCollider, true);
+        }
+    }
+
+    // --- ADDED: Helper Methods for Audio ---
+    private void PlaySound(AudioClip clip, float delay = 0f)
+    {
+        if (audioSource != null && clip != null)
+        {
+            if (delay > 0f)
+            {
+                StartCoroutine(PlaySoundCO(clip, delay));
+            }
+            else
+            {
+                audioSource.PlayOneShot(clip);
+            }
+        }
+    }
+
+    private IEnumerator PlaySoundCO(AudioClip clip, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (audioSource != null && clip != null)
+        {
+            audioSource.PlayOneShot(clip);
+        }
+    }
+}

@@ -26,28 +26,37 @@ public class PlayerBobble : MonoBehaviour
 
     void Update()
     {
+        // 1. Prevent silent failures
         if (playerMovement == null)
+        {
+            Debug.LogWarning("PlayerBobble is missing a reference to PlayerMovement!");
             return;
+        }
 
         bool grounded = playerMovement.IsGrounded;
         float speed = playerMovement.HorizontalSpeed;
         bool moving = speed > 0.1f;
 
-        // Only bob when moving on ground
-        if (!grounded || !moving)
+        Vector3 targetPos = startLocalPos;
+
+        // 2. Only bob when moving on ground
+        if (grounded && moving)
         {
+            timer += Time.deltaTime * walkBobSpeed;
+
+            float y = Mathf.Sin(timer) * walkBobAmount;
+            float x = Mathf.Cos(timer * 0.5f) * swayX;
+            float z = Mathf.Sin(timer * 0.5f) * swayZ;
+
+            // Apply directly instead of lerping the moving target, preventing amplitude dampening
+            targetPos = startLocalPos + new Vector3(x, y, z);
+            transform.localPosition = targetPos;
+        }
+        else
+        {
+            // 3. Smoothly return to the start position when stopped
             timer = 0f;
             transform.localPosition = Vector3.Lerp(transform.localPosition, startLocalPos, Time.deltaTime * smooth);
-            return;
         }
-
-        timer += Time.deltaTime * walkBobSpeed;
-
-        float y = Mathf.Sin(timer) * walkBobAmount;
-        float x = Mathf.Cos(timer * 0.5f) * swayX;
-        float z = Mathf.Sin(timer * 0.5f) * swayZ;
-
-        Vector3 target = startLocalPos + new Vector3(x, y, z);
-        transform.localPosition = Vector3.Lerp(transform.localPosition, target, Time.deltaTime * smooth);
     }
 }

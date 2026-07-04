@@ -5,7 +5,19 @@ using UnityEngine.Events;
 public class Interactable : MonoBehaviour
 {
     private Outline outline;
-    public string message;
+
+    [Header("UI Prompts")]
+    [Tooltip("The key/button to press (e.g., E, F, Mouse1)")]
+    public string buttonText = "F";
+
+    [Tooltip("What is this object? (e.g., Door, Closet, Document)")]
+    public string objectName = "Object";
+
+    [Tooltip("What happens when interacted with? (e.g., Open, Hide, Read)")]
+    public string actionName = "Interact";
+
+    [Header("Interaction Event")]
+    [Tooltip("Drag the script/method here that should run when the player interacts.")]
     public UnityEvent onInteraction;
 
     private void Awake()
@@ -21,7 +33,7 @@ public class Interactable : MonoBehaviour
         DisableOutline();
     }
 
-    public void Interact()
+    public virtual void Interact()
     {
         onInteraction?.Invoke();
     }

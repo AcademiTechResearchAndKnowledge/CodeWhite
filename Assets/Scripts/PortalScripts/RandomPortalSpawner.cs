@@ -1,4 +1,7 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using System.Collections.Generic;
+using System.IO;
 
 public class RandomPortalSpawner : MonoBehaviour
 {
@@ -6,52 +9,259 @@ public class RandomPortalSpawner : MonoBehaviour
     [SerializeField] private GameObject portalPrefab;
     [SerializeField] private bool spawnOnlyOnce = true;
 
-    [Header("Where it can spawn")]
-    [SerializeField] private BoxCollider[] spawnAreas;   // set these as trigger boxes in the world
-    [SerializeField] private LayerMask portalspawnMask;       // ground layer(s)
+    public enum PortalOrientation
+    {
+        Vertical,
+        Horizontal
+    }
 
-    [Header("Spawn search")]
-    [SerializeField] private int attempts = 25;          // attempts until portal tries to spawn
-    [SerializeField] private float raycastHeight = 50f;  // how high above the point we raycast from
-    [SerializeField] private float groundOffset = 0.05f; // raise portal a tiny bit above ground
+    private PortalOrientation portalOrientation = PortalOrientation.Vertical;
+
+    [Header("Portal Sequence Settings")]
+    [SerializeField] private float duration = 6f;
+    [SerializeField] private float liftHeight = 2f;
+    [SerializeField] private float lookHeight = 10f;
+    [SerializeField] private float fadeStart = 0.6f;
+    [SerializeField] private float fadeSpeed = 1f;
+
+    [Header("Level Progress")]
+    [SerializeField] private int levelCounter = 0;
+
+    [Header("Scene Exclusions")]
+    [SerializeField] private string[] excludedScenes;
+
+    [Header("Boss Scenes")]
+    [SerializeField] private string[] bossScenes;
+    [Tooltip("How many levels a player must complete before hitting a boss level.")]
+    [SerializeField] private int bossLevelInterval = 5;
+
+    [Header("Spawn Areas")]
+    [SerializeField] private BoxCollider[] spawnAreas;
+    [SerializeField] private LayerMask portalspawnMask;
+    [SerializeField] private LayerMask ceilingMask;
+    [SerializeField] private LayerMask wallMask;
+
+    [Header("Spawn Search")]
+    [SerializeField] private int attempts = 25;
+    [SerializeField] private float raycastHeight = 50f;
+    [SerializeField] private float wallRaycastDistance = 50f;
+    [SerializeField] private float groundOffset = 0.05f;
+    [SerializeField] private float wallOffset = 0.05f;
 
     private bool spawned;
+    private static RandomPortalSpawner instance;
+    private string forcedSceneOverride;
 
-    public void SpawnPortalRandom()
+    private void Awake()
     {
-        if (portalPrefab == null)
+        if (instance != null && instance != this)
         {
-            Debug.LogError("[RandomPortalSpawner] portalPrefab not assigned.");
+            Destroy(gameObject);
             return;
         }
 
-        if (spawnOnlyOnce && spawned) return;
+        instance = this;
+        DontDestroyOnLoad(gameObject);
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
 
-        if (spawnAreas == null || spawnAreas.Length == 0)
-        {
-            Debug.LogError("[RandomPortalSpawner] Assign at least 1 BoxCollider in spawnAreas.");
-            return;
-        }
+    private void OnDestroy()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        spawned = false;
+        var all = FindObjectsByType<BoxCollider>(FindObjectsSortMode.None);
+        spawnAreas = System.Array.FindAll(all, c => c != null);
+    }
+
+    public void SetForcedSceneOverride(string sceneName)
+    {
+        forcedSceneOverride = sceneName;
+    }
+
+    private Quaternion BuildRotation(Vector3 normal)
+    {
+        Vector3 up = normal;
+        Vector3 forward = Vector3.Cross(Vector3.up, up);
+
+        if (forward.sqrMagnitude < 0.001f)
+            forward = Vector3.Cross(Vector3.forward, up);
+
+        forward.Normalize();
+        return Quaternion.LookRotation(forward, up);
+    }
+
+    public void SpawnPortalAt(Vector3 position, PortalOrientation orientation)
+    {
+        if (portalPrefab == null) return;
+
+        portalOrientation = orientation;
+        levelCounter++;
+
+        List<string> validScenes = GetValidScenes();
+        if (validScenes.Count == 0) return;
+
+        GameObject portalInstance = Instantiate(portalPrefab, position, Quaternion.Euler(90f, 0f, 0f));
+        ApplyPortalSetup(portalInstance, validScenes);
+        spawned = true;
+    }
+
+    public void SpawnPortalRandom(PortalOrientation orientation)
+    {
+        portalOrientation = orientation;
+
+        if (portalPrefab == null) return;
+        if (spawned && spawnOnlyOnce) return;
+
+        var validAreas = spawnAreas != null
+            ? System.Array.FindAll(spawnAreas, c => c != null)
+            : new BoxCollider[0];
+
+        if (validAreas.Length == 0) return;
+
+        levelCounter++;
+
+        List<string> validScenes = GetValidScenes();
+        if (validScenes.Count == 0) return;
 
         for (int i = 0; i < attempts; i++)
         {
-            // pick a random area
-            BoxCollider area = spawnAreas[Random.Range(0, spawnAreas.Length)];
+            BoxCollider area = validAreas[Random.Range(0, validAreas.Length)];
             Vector3 randomPoint = RandomPointInBox(area.bounds);
-
-            // raycast down to find ground
             Vector3 rayOrigin = randomPoint + Vector3.up * raycastHeight;
+
             if (Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, raycastHeight * 2f, portalspawnMask))
             {
-                Vector3 spawnPos = hit.point + Vector3.up * groundOffset;
+                Vector3 spawnPos;
+                Quaternion rot;
 
-                Instantiate(portalPrefab, spawnPos, Quaternion.identity);
+                if (portalOrientation == PortalOrientation.Horizontal)
+                {
+                    Vector3[] dirs = { Vector3.forward, Vector3.back, Vector3.left, Vector3.right };
+                    Vector3 wallOrigin = hit.point + Vector3.up * 1f;
+
+                    spawnPos = hit.point + hit.normal * groundOffset;
+                    rot = BuildRotation(hit.normal);
+
+                    foreach (Vector3 dir in dirs)
+                    {
+                        if (Physics.Raycast(wallOrigin, dir, out RaycastHit wallHit, wallRaycastDistance, wallMask))
+                        {
+                            spawnPos = wallHit.point + wallHit.normal * wallOffset;
+                            rot = BuildRotation(wallHit.normal);
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    Vector3 ceilingOrigin = hit.point + Vector3.down * 0.5f;
+
+                    if (Physics.Raycast(ceilingOrigin, Vector3.up, out RaycastHit ceilingHit, raycastHeight * 2f, ceilingMask))
+                    {
+                        spawnPos = ceilingHit.point + ceilingHit.normal * groundOffset;
+                        rot = BuildRotation(ceilingHit.normal);
+                    }
+                    else
+                    {
+                        spawnPos = hit.point + hit.normal * groundOffset;
+                        rot = BuildRotation(hit.normal);
+                    }
+                }
+
+                GameObject portalInstance = Instantiate(portalPrefab, spawnPos, rot);
+                ApplyPortalSetup(portalInstance, validScenes);
                 spawned = true;
                 return;
             }
         }
+    }
 
-        Debug.LogWarning("[RandomPortalSpawner] Failed to find valid ground point. Increase attempts or fix portalspawnMask/spawnAreas.");
+    private void ApplyPortalSetup(GameObject portalInstance, List<string> validScenes)
+    {
+        PortalNextStage portal = portalInstance.GetComponentInChildren<PortalNextStage>();
+        if (portal == null) return;
+
+        portal.SetOrientation(portalOrientation == PortalOrientation.Horizontal
+            ? PortalNextStage.PortalOrientation.Horizontal
+            : PortalNextStage.PortalOrientation.Vertical);
+
+        portal.SetSequenceSettings(duration, liftHeight, lookHeight, fadeStart, fadeSpeed);
+        portal.SetLevel(levelCounter);
+        portal.SetExcludedScenes(excludedScenes);
+
+        if (!string.IsNullOrEmpty(forcedSceneOverride))
+        {
+            portal.SetForcedScene(forcedSceneOverride);
+            forcedSceneOverride = null;
+            return;
+        }
+
+        if (levelCounter > 0 && levelCounter % bossLevelInterval == 0)
+        {
+            portal.SetForcedScene(GetBossScene(levelCounter));
+            return;
+        }
+
+        portal.SetForcedScene(validScenes[Random.Range(0, validScenes.Count)]);
+    }
+
+    private string GetBossScene(int level)
+    {
+        if (bossScenes == null || bossScenes.Length == 0) return "";
+
+        int index = Mathf.Clamp((level / bossLevelInterval) - 1, 0, bossScenes.Length - 1);
+        return bossScenes[index];
+    }
+
+    private List<string> GetValidScenes()
+    {
+        List<string> scenes = new List<string>();
+        int count = SceneManager.sceneCountInBuildSettings;
+        string currentScene = SceneManager.GetActiveScene().name;
+
+        for (int i = 0; i < count; i++)
+        {
+            string path = SceneUtility.GetScenePathByBuildIndex(i);
+            string name = Path.GetFileNameWithoutExtension(path);
+
+            if (IsExcluded(name)) continue;
+            if (IsBossScene(name)) continue;
+            if (string.Equals(name, currentScene, System.StringComparison.OrdinalIgnoreCase)) continue;
+
+            scenes.Add(name);
+        }
+
+        return scenes;
+    }
+
+    private bool IsExcluded(string sceneName)
+    {
+        if (excludedScenes == null) return false;
+
+        for (int i = 0; i < excludedScenes.Length; i++)
+        {
+            if (string.Equals(excludedScenes[i].Trim(), sceneName.Trim(), System.StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+
+        return false;
+    }
+
+    private bool IsBossScene(string sceneName)
+    {
+        if (bossScenes == null) return false;
+
+        for (int i = 0; i < bossScenes.Length; i++)
+        {
+            if (string.Equals(bossScenes[i].Trim(), sceneName.Trim(), System.StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+
+        return false;
     }
 
     private Vector3 RandomPointInBox(Bounds b)

@@ -1,52 +1,93 @@
 using UnityEngine;
+using UnityEngine.AI; // Required for NavMeshAgent
 
 public class SpriteDirectionalController : MonoBehaviour
 {
-    [SerializeField] float backAngle = 65f;
-    [SerializeField] float sideAngle = 155f;
-    [SerializeField] Transform mainTransform;
+    [Header("Angle Thresholds (Perfect 4-Way)")]
+    [SerializeField] float frontAngle = 45f;
+    [SerializeField] float backAngle = 135f;
+
+    [Header("References")]
+    [SerializeField] PlayerReferences playerReference;
+    [SerializeField] Transform body;
     [SerializeField] Animator animator;
     [SerializeField] SpriteRenderer spriteRenderer;
+    [SerializeField] NavMeshAgent navMeshAgent; // Added this reference!
 
-    private void LateUpdate()
+    private void Start()
     {
-        Vector3 camForwardVector = new Vector3(Camera.main.transform.forward.x, 0f, Camera.main.transform.forward.z);
-        Debug.DrawRay(Camera.main.transform.position, camForwardVector * 5f, Color.magenta);
-
-        float signedAngle = Vector3.SignedAngle(mainTransform.forward, camForwardVector, Vector3.up);
-
-        Vector2 animationDirection = new Vector2(0f, -1f);
-
-        float angle = Mathf.Abs(signedAngle);
-
-        if (angle < backAngle)
+        if (playerReference == null)
         {
-            // Back animation
-            animationDirection = new Vector2(0f, -1f);
-        }
-        else if (angle < sideAngle)
-        {
-            // Side animation (right animation in this case)
-            animationDirection = new Vector2(1f, 0f);
-
-            if (signedAngle < 0f)
-            {
-                spriteRenderer.flipX = true;
-            }
-            else
-            {
-                spriteRenderer.flipX = false;
-            }
-        }
-        else
-        {
-            // Front animation
-            animationDirection = new Vector2(0f, 1f);
+            playerReference = Object.FindFirstObjectByType<PlayerReferences>();
         }
 
-        animator.SetFloat("moveX", animationDirection.x);
-        animator.SetFloat("moveY", animationDirection.y);
+        // Auto-assign NavMeshAgent if you forget to drag it in
+        if (navMeshAgent == null)
+        {
+            navMeshAgent = GetComponent<NavMeshAgent>();
+            if (navMeshAgent == null) navMeshAgent = GetComponentInParent<NavMeshAgent>();
+        }
     }
 
+    private void Update()
+    {
+        if (playerReference == null)
+        {
+            playerReference = Object.FindFirstObjectByType<PlayerReferences>();
+            if (playerReference == null)
+            {
+                animator.SetBool("isWalking", false);
+                return;
+            }
+        }
+        // --- 1. DETERMINE DIRECTION TO PLAYER ---
+        Vector3 directionToPlayer = playerReference.transform.position - body.position;
+        directionToPlayer.y = 0f;
+        directionToPlayer.Normalize();
 
+        Vector3 bodyForwardVector = body.forward;
+        bodyForwardVector.y = 0f;
+        bodyForwardVector.Normalize();
+
+        float signedAngle = Vector3.SignedAngle(bodyForwardVector, directionToPlayer, Vector3.up);
+        float angle = Mathf.Abs(signedAngle);
+
+        Vector2 animationDirection = Vector2.zero;
+
+        // Front
+        if (angle <= frontAngle)
+        {
+            animationDirection = new Vector2(0f, 1f);
+            spriteRenderer.transform.localScale = new Vector3(1f, 1f, 1f);
+        }
+        // Side
+        else if (angle < backAngle)
+        {
+            animationDirection = new Vector2(1f, 0f);
+
+            if (signedAngle < -0.1f)
+            {
+                spriteRenderer.transform.localScale = new Vector3(1f, 1f, 1f);
+            }
+            else if (signedAngle > 0.1f)
+            {
+                spriteRenderer.transform.localScale = new Vector3(-1f, 1f, 1f);
+            }
+        }
+        // Back
+        else
+        {
+            animationDirection = new Vector2(0f, -1f);
+            spriteRenderer.transform.localScale = new Vector3(1f, 1f, 1f);
+        }
+
+        // --- 2. SEND DIRECTION TO ANIMATOR ---
+        animator.SetFloat("moveX", animationDirection.x);
+        animator.SetFloat("moveY", animationDirection.y);
+
+        // --- 3. SEND WALKING STATE TO ANIMATOR ---
+        // If the agent exists, is enabled, and is moving faster than 0.1, it's walking.
+        bool isMoving = navMeshAgent != null && navMeshAgent.enabled && navMeshAgent.velocity.magnitude > 0.1f;
+        animator.SetBool("isWalking", isMoving);
+    }
 }

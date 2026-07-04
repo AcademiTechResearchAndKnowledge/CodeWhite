@@ -13,11 +13,47 @@ public class PlayerStats : MonoBehaviour
     [SerializeField] private float staminaDrainRate = 20f;
     [SerializeField] private float staminaRegenRate = 12f;
 
+    [Header("Audio Settings")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip exhaustionClip;
+    [SerializeField] private float exhaustionRecoveryThreshold = 25f;
+
+    // We use this to prevent the sound from restarting every frame while at 0 stamina
+    private bool isExhausted = false;
+
     public float Anxiety => anxiety;
     public float MaxAnxiety => maxAnxiety;
     public float Stamina => stamina;
     public float SpeedStat => speedStat;
     public float MaxStamina => maxStamina;
+
+    private void Update()
+    {
+        HandleExhaustionAudio();
+    }
+
+    private void HandleExhaustionAudio()
+    {
+        if (audioSource == null || exhaustionClip == null) return;
+
+        if (stamina <= 0f && !isExhausted)
+        {
+            isExhausted = true;
+            audioSource.clip = exhaustionClip;
+            audioSource.loop = true;
+            audioSource.Play();
+        }
+        else if (stamina >= exhaustionRecoveryThreshold && isExhausted)
+        {
+            isExhausted = false;
+            audioSource.Stop();
+        }
+    }
+
+    public void ResetAnxiety()
+    {
+        anxiety = 0f;
+    }
 
     public void AddStat(StatType type, float amount)
     {
