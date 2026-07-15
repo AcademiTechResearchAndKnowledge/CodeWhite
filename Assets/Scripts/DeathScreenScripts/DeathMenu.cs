@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections;
@@ -5,6 +6,8 @@ using TMPro;
 
 public class DeathMenu : MonoBehaviour
 {
+    public static Action OnPlayerRestart;
+
     [Header("UI")]
     [SerializeField] private GameObject deathUI;
     [SerializeField] private CanvasGroup canvasGroup;
@@ -104,6 +107,13 @@ public class DeathMenu : MonoBehaviour
 
         isDead = true;
 
+        AudioListener.pause = true;
+
+        if (deathMusicSource != null)
+        {
+            deathMusicSource.ignoreListenerPause = true;
+        }
+
         StopAllCoroutines();
         StartCoroutine(DeathSequence());
 
@@ -201,6 +211,8 @@ public class DeathMenu : MonoBehaviour
 
     public void Retry()
     {
+        OnPlayerRestart?.Invoke();
+
         StopDeathMusic();
 
         if (playerStats != null)

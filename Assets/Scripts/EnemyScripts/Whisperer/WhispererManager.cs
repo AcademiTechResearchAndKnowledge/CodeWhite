@@ -61,11 +61,17 @@ public class WhispererManager : MonoBehaviour
         Flashlight.onFlashlightOn -= StartFlashTimer;
         Flashlight.onFlashlightOff -= StopFlashTimer;
         SimpleCandleInteract.onSimpleCandleLit -= rollForTrigger;
+
+        onWhisperFlicker = null;
+        onWhispererSpawned = null;
     }
 
     private void Awake()
     {
         audioSource = GetComponent<AudioSource>();
+
+        IsWhispererActive = false;
+        whispererSpawned = false;
 
         resetState();
 
