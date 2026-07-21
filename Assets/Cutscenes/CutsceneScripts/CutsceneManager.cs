@@ -116,4 +116,19 @@ public class CutsceneManager : MonoBehaviour
             if (playerRefs.flashlightScript != null) playerRefs.flashlightScript.enabled = true;
         }
     }
+    private void OnEnable()
+    {
+        DeathMenu.OnPlayerRestart += ResetCutsceneState;
+    }
+
+    private void OnDisable()
+    {
+        DeathMenu.OnPlayerRestart -= ResetCutsceneState;
+    }
+
+    private void ResetCutsceneState()
+    {
+        hasPlayed = false;
+        DeactivateCutscene();
+    }
 }

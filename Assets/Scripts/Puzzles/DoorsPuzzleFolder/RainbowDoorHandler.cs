@@ -250,4 +250,28 @@ public class RainbowDoorInteractable : Interactable
         source.Play();
         Destroy(tempAudioObject, clip.length);
     }
+
+    private void OnEnable()
+    {
+        DeathMenu.OnPlayerRestart += ResetInteractionState;
+    }
+
+    private void OnDisable()
+    {
+        DeathMenu.OnPlayerRestart -= ResetInteractionState;
+    }
+
+    private void ResetInteractionState()
+    {
+        hasInteracted = false;
+
+        isOpened = false;
+        entitySpawned = false;
+
+        if (spawnedEntity != null)
+        {
+            Destroy(spawnedEntity);
+            spawnedEntity = null;
+        }
+    }
 }
