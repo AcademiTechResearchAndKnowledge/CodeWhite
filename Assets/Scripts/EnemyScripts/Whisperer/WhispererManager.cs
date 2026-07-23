@@ -10,6 +10,10 @@ public class WhispererManager : MonoBehaviour
     public delegate void OnWhispererSpawned();
     public static event OnWhispererSpawned onWhispererSpawned;
 
+    // Added event for when the Whisperer despawns or is cleared
+    public delegate void OnWhispererDespawned();
+    public static event OnWhispererDespawned onWhispererDespawned;
+
     private bool isFlashlightOn = false;
 
     public static bool IsWhispererActive { get; private set; } = false;
@@ -62,8 +66,15 @@ public class WhispererManager : MonoBehaviour
         Flashlight.onFlashlightOff -= StopFlashTimer;
         SimpleCandleInteract.onSimpleCandleLit -= rollForTrigger;
 
+        // Force despawn and state reset if disabled/destroyed during scene transition
+        if (whispererSpawned || IsWhispererActive)
+        {
+            Despawn();
+        }
+
         onWhisperFlicker = null;
         onWhispererSpawned = null;
+        onWhispererDespawned = null;
     }
 
     private void Awake()
@@ -85,8 +96,7 @@ public class WhispererManager : MonoBehaviour
     {
         if (whispererSpawned && spawnedEntity == null)
         {
-            whispererSpawned = false;
-            IsWhispererActive = false;
+            Despawn();
             Debug.Log("Whisperer has despawned. Lights are unlocked.");
         }
     }
@@ -104,8 +114,11 @@ public class WhispererManager : MonoBehaviour
             switch (Stage)
             {
                 case 1:
-                    audioSource.clip = Whisper;
-                    audioSource.Play();
+                    if (audioSource != null && Whisper != null)
+                    {
+                        audioSource.clip = Whisper;
+                        audioSource.Play();
+                    }
                     Stage++;
                     break;
                 case 2:
@@ -222,12 +235,20 @@ public class WhispererManager : MonoBehaviour
     [ContextMenu("Despawn Whisperer")]
     public void Despawn()
     {
+        bool wasActive = whispererSpawned || IsWhispererActive;
+
         whispererSpawned = false;
         IsWhispererActive = false;
 
         if (spawnedEntity != null)
         {
             Destroy(spawnedEntity);
+            spawnedEntity = null;
+        }
+
+        if (wasActive)
+        {
+            onWhispererDespawned?.Invoke();
         }
     }
 

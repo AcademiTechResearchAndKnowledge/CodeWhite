@@ -263,6 +263,12 @@ public class PortalNextStage : MonoBehaviour
 
     private void LoadScene()
     {
+        WhispererManager whisperer = Object.FindFirstObjectByType<WhispererManager>();
+        if (whisperer != null)
+        {
+            whisperer.Despawn();
+        }
+
         if (!string.IsNullOrEmpty(chosenScene))
             SceneManager.LoadScene(chosenScene);
         else
