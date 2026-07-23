@@ -23,7 +23,7 @@ RenderSettings:
   m_AmbientSkyColor: {r: 0, g: 0, b: 0, a: 1}
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
-  m_AmbientIntensity: 1.1
+  m_AmbientIntensity: 0.45
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
   m_SkyboxMaterial: {fileID: 2100000, guid: 2c0b59d3918d538418ca471aac04d9f3, type: 2}
@@ -6941,11 +6941,11 @@ PrefabInstance:
     - target: {fileID: 3938071007854526283, guid: 153e19c42caa435479a4e2b08471de43, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: 9d43a276140379d42bcc510d1d1f8e95, type: 2}
+      objectReference: {fileID: 2100000, guid: f96821bbefeea864b9b418af4b8615ac, type: 2}
     - target: {fileID: 4511171629549578287, guid: 153e19c42caa435479a4e2b08471de43, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 1487326494852860731, guid: 14c0b98a13f436b4cb468379c26d5330, type: 3}
+      objectReference: {fileID: 2100000, guid: f96821bbefeea864b9b418af4b8615ac, type: 2}
     - target: {fileID: 6412929194752974402, guid: 153e19c42caa435479a4e2b08471de43, type: 3}
       propertyPath: m_LocalPosition.y
       value: -0
@@ -6957,7 +6957,11 @@ PrefabInstance:
     - target: {fileID: 8058511322385818485, guid: 153e19c42caa435479a4e2b08471de43, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: 2e3160422d2dc4241b10d3d0828461b1, type: 2}
+      objectReference: {fileID: 2100000, guid: f96821bbefeea864b9b418af4b8615ac, type: 2}
+    - target: {fileID: 8217928894602945484, guid: 153e19c42caa435479a4e2b08471de43, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.622
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 3154386023716624562, guid: 153e19c42caa435479a4e2b08471de43, type: 3}
     m_RemovedGameObjects: []
