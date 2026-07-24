@@ -46,47 +46,51 @@ public class doorsGen : MonoBehaviour
     {
         List<GameObject> blackDoors = new List<GameObject>();
 
-        int rainbowIndex = Random.Range(0, totalDoors);
-        int whiteIndex = Random.Range(0, totalDoors);
 
-        while (whiteIndex == rainbowIndex)
-            whiteIndex = Random.Range(0, totalDoors);
+        Vector3 rainbowPos = GetValidRandomPosition();
+        if (rainbowPos == Vector3.zero)
+            rainbowPos = GetFallbackPosition();
+        rainbowPos.y = floorTop;
 
-        for (int i = 0; i < totalDoors; i++)
+        GameObject rainbow = Instantiate(rainbowDoorPrefab, rainbowPos, Quaternion.Euler(0, Random.Range(0f, 360f), 0), doorsParent);
+        AdjustToFloor(rainbow);
+        usedPositions.Add(rainbow.transform.position);
+
+        rainbowDoor = rainbow;
+
+        RainbowDoorInteractable rd = rainbow.GetComponent<RainbowDoorInteractable>();
+        if (rd != null)
+        {
+            rd.onPuzzleComplete = OnRainbowDoorOpened;
+
+            if (rd.doorAnimator == null)
+                rd.doorAnimator = rainbow.GetComponentInChildren<Animator>();
+        }
+
+     
+        Vector3 whitePos = GetValidRandomPosition();
+        if (whitePos == Vector3.zero)
+            whitePos = GetFallbackPosition();
+        whitePos.y = floorTop;
+
+        GameObject white = Instantiate(whiteDoorPrefab, whitePos, Quaternion.Euler(0, Random.Range(0f, 360f), 0), doorsParent);
+        AdjustToFloor(white);
+        usedPositions.Add(white.transform.position);
+
+        int remaining = totalDoors - 2;
+
+        for (int i = 0; i < remaining; i++)
         {
             Vector3 pos = GetValidRandomPosition();
             if (pos == Vector3.zero) continue;
 
             pos.y = floorTop;
 
-            GameObject prefabToSpawn = blackDoorPrefab;
-
-            if (i == rainbowIndex) prefabToSpawn = rainbowDoorPrefab;
-            else if (i == whiteIndex) prefabToSpawn = whiteDoorPrefab;
-
-            GameObject door = Instantiate(prefabToSpawn, pos, Quaternion.Euler(0, Random.Range(0f, 360f), 0), doorsParent);
-
+            GameObject door = Instantiate(blackDoorPrefab, pos, Quaternion.Euler(0, Random.Range(0f, 360f), 0), doorsParent);
             AdjustToFloor(door);
-
             usedPositions.Add(door.transform.position);
 
-            if (prefabToSpawn == rainbowDoorPrefab)
-            {
-                rainbowDoor = door;
-
-                RainbowDoorInteractable rd = door.GetComponent<RainbowDoorInteractable>();
-                if (rd != null)
-                {
-                    rd.onPuzzleComplete = OnRainbowDoorOpened;
-
-                    if (rd.doorAnimator == null)
-                        rd.doorAnimator = door.GetComponentInChildren<Animator>();
-                }
-            }
-            else if (prefabToSpawn == blackDoorPrefab)
-            {
-                blackDoors.Add(door);
-            }
+            blackDoors.Add(door);
         }
 
         for (int i = 0; i < blackDoors.Count; i += 2)
