@@ -828,6 +828,7 @@ MonoBehaviour:
   levelCounter: 0
   excludedScenes: []
   bossScenes: []
+  bossLevelInterval: 5
   spawnAreas:
   - {fileID: 987547883}
   portalspawnMask:
@@ -2589,17 +2590,21 @@ PrefabInstance:
       propertyPath: playerReference
       value: 
       objectReference: {fileID: 8951522033556788330}
+    - target: {fileID: 3326810911531359156, guid: d0730ed0b07c4014bb1b8ed2ddff4f6b, type: 3}
+      propertyPath: m_Volume
+      value: 0.5
+      objectReference: {fileID: 0}
     - target: {fileID: 6508504866725617351, guid: d0730ed0b07c4014bb1b8ed2ddff4f6b, type: 3}
       propertyPath: m_Name
       value: WhiteLady
       objectReference: {fileID: 0}
     - target: {fileID: 6508504866725617351, guid: d0730ed0b07c4014bb1b8ed2ddff4f6b, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6784065674680064044, guid: d0730ed0b07c4014bb1b8ed2ddff4f6b, type: 3}
       propertyPath: m_Speed
-      value: 3
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7873738004595871847, guid: d0730ed0b07c4014bb1b8ed2ddff4f6b, type: 3}
       propertyPath: m_LocalPosition.x
@@ -2640,6 +2645,10 @@ PrefabInstance:
     - target: {fileID: 7873738004595871847, guid: d0730ed0b07c4014bb1b8ed2ddff4f6b, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9030680213463595197, guid: d0730ed0b07c4014bb1b8ed2ddff4f6b, type: 3}
+      propertyPath: anxietySpikePercentage
+      value: 100
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -3196,6 +3205,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4335931957978498964, guid: f70b2793a1e3bae4e97cb334af19507d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7587743193427179702, guid: f70b2793a1e3bae4e97cb334af19507d, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7587743193427179702, guid: f70b2793a1e3bae4e97cb334af19507d, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.5999999
+      objectReference: {fileID: 0}
+    - target: {fileID: 7587743193427179702, guid: f70b2793a1e3bae4e97cb334af19507d, type: 3}
+      propertyPath: m_LocalPosition.z
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7629738588920685599, guid: f70b2793a1e3bae4e97cb334af19507d, type: 3}

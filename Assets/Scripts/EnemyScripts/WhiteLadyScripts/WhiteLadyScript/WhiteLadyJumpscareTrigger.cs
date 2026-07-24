@@ -18,49 +18,47 @@ public class WhiteLadyJumpscareTrigger : MonoBehaviour
     [Tooltip("Drag the specific Jumpscare Canvas PREFAB for this entity here.")]
     [SerializeField] private JumpscareMechanic jumpscarePrefab;
 
-    private Transform playerTransform;
-    private PlayerStats playerStats;
-    private AnxietyHandler anxietyHandler;
     private bool hasCaughtPlayer = false;
-
     private WhiteLady whiteLady;
 
     private void Start()
     {
         whiteLady = GetComponent<WhiteLady>();
-
-        // REMOVED: FindAnyObjectByType so it doesn't grab the wrong canvas!
-
-        GameObject playerObj = GameObject.FindGameObjectWithTag("PlayerFollow");
-        if (playerObj != null) playerTransform = playerObj.transform;
-
-        GameObject actualPlayer = GameObject.FindGameObjectWithTag("Player");
-        if (actualPlayer != null)
-        {
-            playerStats = actualPlayer.GetComponent<PlayerStats>();
-            anxietyHandler = actualPlayer.GetComponent<AnxietyHandler>();
-        }
+        // We removed the GameObject.Find calls. 
+        // We will safely rely on the master WhiteLady script's playerRef instead!
     }
 
     private void Update()
     {
-        if (playerTransform == null || hasCaughtPlayer || whiteLady == null) return;
+        // Bail if she is missing, already caught the player, or hasn't found the player yet
+        if (hasCaughtPlayer || whiteLady == null || whiteLady.playerRef == null) return;
 
-        float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
+        // 1. Get the EXACT target she is chasing from the master script
+        Transform targetTransform = whiteLady.playerRef.transform;
 
-        // Note: We do NOT need the spatial anxiety aura logic here, 
-        // because your WhiteLady.cs already has UpdateAnxietyAura() built into her state machine!
+        // 2. Calculate Flat Distance (Ignore Y-axis height differences)
+        Vector3 enemyPos = transform.position;
+        Vector3 playerPos = targetTransform.position;
 
-        // Check if she is close enough AND actively chasing you
+        enemyPos.y = 0f;
+        playerPos.y = 0f;
+
+        float distanceToPlayer = Vector3.Distance(enemyPos, playerPos);
+
+        // 3. Check if she is close enough AND actively chasing
         if (distanceToPlayer <= catchRadius && whiteLady.CurrentState == WhiteLady.State.Chasing)
         {
-            StartCoroutine(JumpscareRoutine());
+            StartCoroutine(JumpscareRoutine(targetTransform.gameObject));
         }
     }
 
-    private IEnumerator JumpscareRoutine()
+    private IEnumerator JumpscareRoutine(GameObject playerObj)
     {
         hasCaughtPlayer = true;
+
+        // Grab stats dynamically so we don't have to rely on string tags
+        PlayerStats playerStats = playerObj.GetComponent<PlayerStats>();
+        AnxietyHandler anxietyHandler = playerObj.GetComponent<AnxietyHandler>();
 
         // 1. Shut down her master state machine and supporting scripts
         if (whiteLady != null) whiteLady.enabled = false;
@@ -83,14 +81,13 @@ public class WhiteLadyJumpscareTrigger : MonoBehaviour
         SpriteDirectionalController dirController = GetComponentInChildren<SpriteDirectionalController>();
         if (dirController != null) dirController.enabled = false;
 
-        Vector3 lookPos = playerTransform.position - transform.position;
+        Vector3 lookPos = playerObj.transform.position - transform.position;
         lookPos.y = 0f;
         if (lookPos != Vector3.zero) transform.rotation = Quaternion.LookRotation(lookPos);
 
         // 4. Trigger UI Canvas using the Prefab approach
         float waitTime = 2.0f;
 
-        // --- NEW LOGIC: Spawn the specific jumpscare prefab! ---
         if (jumpscarePrefab != null)
         {
             JumpscareMechanic spawnedJumpscare = Instantiate(jumpscarePrefab);
