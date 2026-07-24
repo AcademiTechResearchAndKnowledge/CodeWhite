@@ -60,10 +60,10 @@ public class AnalogClock : MonoBehaviour
 
         HandleDragging();
 
-        if (Keyboard.current.escapeKey.wasPressedThisFrame)
-        {
-            objzoom.ExitPuzzle();
-        }
+        //if (Keyboard.current.escapeKey.wasPressedThisFrame)
+        //{
+        //    objzoom.ExitPuzzle();
+        //}
     }
 
     private void HandleDragging()

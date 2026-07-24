@@ -35,7 +35,7 @@ public class BookInspectionUI : MonoBehaviour
 
         if (Keyboard.current != null)
         {
-            if (Keyboard.current.eKey.wasPressedThisFrame || Keyboard.current.escapeKey.wasPressedThisFrame)
+            if (Keyboard.current.eKey.wasPressedThisFrame)
             {
                 CloseInspection();
             }

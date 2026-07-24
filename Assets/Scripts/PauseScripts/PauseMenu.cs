@@ -51,7 +51,10 @@ public class PauseMenu : MonoBehaviour
         }
 
         var zoom = FindFirstObjectByType<objectZoom>();
-        if (zoom != null && zoom.isInPuzzle)
+        var bookUI = FindFirstObjectByType<BookInspectionUI>();
+
+        // Check if either a puzzle is active OR the book is open
+        if ((zoom != null && zoom.isInPuzzle) || (bookUI != null && bookUI.IsOpen()))
         {
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
@@ -65,11 +68,7 @@ public class PauseMenu : MonoBehaviour
 
     void Pause()
     {
-        var bookUI = FindFirstObjectByType<BookInspectionUI>();
-        if (bookUI != null && bookUI.IsOpen())
-        {
-            bookUI.CloseInspectionFromPause();
-        }
+        // Removed the BookInspectionUI forcing logic here so it stays open in the background
 
         var hintBook = FindFirstObjectByType<HintBookController>();
         if (hintBook != null && hintBook.IsOpen())

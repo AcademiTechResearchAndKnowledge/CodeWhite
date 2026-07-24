@@ -37,6 +37,8 @@ public class WhiteLady : MonoBehaviour
 
     [Header("Weep Settings")]
     public float weepDuration = 20f;
+    [Tooltip("If true, line of sight during Weeping forces her back into Chasing state.")]
+    public bool canBeDisturbedWhileWeeping = false;
 
     private NavMeshAgent navMeshAgent;
     private WhiteLadyDetection detection;
@@ -49,7 +51,7 @@ public class WhiteLady : MonoBehaviour
 
     [Header("SFX Settings")]
     public AudioSource audioSource;
-    public AudioSource weepingAudioSource; // NEW: Dedicated audio source for weeping
+    public AudioSource weepingAudioSource;
     public AudioClip teleportSfx;
     public AudioClip chasingSfx;
     public AudioClip weepingSfx;
@@ -72,13 +74,15 @@ public class WhiteLady : MonoBehaviour
     [Tooltip("The sound to play when the entity despawns (e.g., chase end music).")]
     public AudioClip despawnSound;
     [Tooltip("Volume for the despawn sound.")]
-    [Range(0f, 1f)]
-    public float despawnVolume = 1.0f;
+    [Range(0f, 1f)] public float despawnVolume = 1.0f;
 
     private float noiseTimer;
 
     private bool isCurrentlyIgnoringHiddenPlayer = false;
     private bool isWaitingToStopChaseMusic = false;
+
+    private float visibleTimer = 0f;
+    public float detectionDelay = 0.3f;
 
     void Awake()
     {
@@ -111,6 +115,12 @@ public class WhiteLady : MonoBehaviour
 
     void Start()
     {
+        // FIX: Force NavMeshAgent stopping distance low so it doesn't stop outside catchRadius
+        if (navMeshAgent != null)
+        {
+            navMeshAgent.stoppingDistance = 0.5f;
+        }
+
         if (submitHitbox != null) submitHitbox.SetActive(false);
         isCurrentlyIgnoringHiddenPlayer = false;
         isWaitingToStopChaseMusic = false;
@@ -123,10 +133,10 @@ public class WhiteLady : MonoBehaviour
     {
         HandleAmbientNoises();
 
-        if (playerRef == null)
+        if (playerRef == null || playerRef.transform == null)
         {
             TryFindPlayer();
-            if (playerRef == null) return;
+            if (playerRef == null || playerRef.transform == null) return;
         }
 
         bool isHiding = detection.IsPlayerHiding();
@@ -214,9 +224,6 @@ public class WhiteLady : MonoBehaviour
         }
     }
 
-    private float visibleTimer = 0f;
-    public float detectionDelay = 0.3f;
-
     void UpdateWandering()
     {
         bool playerVisible = detection.distanceToPlayer <= detection.detectRange
@@ -250,8 +257,11 @@ public class WhiteLady : MonoBehaviour
 
     void UpdateChasing()
     {
-        if (navMeshAgent.enabled)
+        // FIX: Safeguarded playerRef.transform against null reference exceptions
+        if (navMeshAgent != null && navMeshAgent.enabled && playerRef != null && playerRef.transform != null)
+        {
             navMeshAgent.destination = playerRef.transform.position;
+        }
 
         if (detection.distanceToPlayer > detection.loseRange)
         {
@@ -261,7 +271,6 @@ public class WhiteLady : MonoBehaviour
 
     void UpdateInvestigating()
     {
-        // 1. Add the visibility check so she can re-aggro while investigating
         bool playerVisible = detection.distanceToPlayer <= detection.detectRange
                  && !isCurrentlyIgnoringHiddenPlayer
                  && !detection.IsPlayerSneakingSuccessfully()
@@ -270,10 +279,9 @@ public class WhiteLady : MonoBehaviour
         if (playerVisible)
         {
             ChangeState(State.Chasing);
-            return; // Stop running the rest of the investigate logic
+            return;
         }
 
-        // 2. Original search logic
         if (wander != null && wander.HasFinishedLocalSearch)
         {
             ChangeState(State.Teleporting);
@@ -291,6 +299,12 @@ public class WhiteLady : MonoBehaviour
     {
         weepTimer += Time.deltaTime;
 
+        if (canBeDisturbedWhileWeeping && detection.distanceToPlayer <= detection.detectRange && detection.HasLineOfSight())
+        {
+            ChangeState(State.Chasing);
+            return;
+        }
+
         if (weepTimer >= weepDuration)
             ChangeState(State.Wandering);
     }
@@ -301,7 +315,7 @@ public class WhiteLady : MonoBehaviour
 
         bool wasChasing = (currentState == State.Chasing);
         bool wasFakeChasing = (currentState == State.Investigating && isWaitingToStopChaseMusic);
-        bool wasWeeping = (currentState == State.Weeping); // CHANGED: Track if exiting weep state
+        bool wasWeeping = (currentState == State.Weeping);
 
         currentState = next;
 
@@ -315,7 +329,6 @@ public class WhiteLady : MonoBehaviour
             audioSource.loop = false;
         }
 
-        // CHANGED: Cleanly stop the weeping audio source when transitioning away from Weeping
         if (wasWeeping && weepingAudioSource != null)
         {
             weepingAudioSource.Stop();
@@ -348,21 +361,30 @@ public class WhiteLady : MonoBehaviour
     void OnEnterWandering()
     {
         SetNav(enabled: true);
-        wander.enabled = true;
-        wander.currentState = WhiteLadyWander.WanderState.Normal;
+        if (wander != null)
+        {
+            wander.enabled = true;
+            wander.currentState = WhiteLadyWander.WanderState.Normal;
+        }
     }
 
     void OnEnterChasing()
     {
         SetNav(enabled: true);
-        wander.enabled = false;
+        if (wander != null) wander.enabled = false;
+
+        // FIX: Re-enforce stopping distance override when chasing starts
+        if (navMeshAgent != null)
+        {
+            navMeshAgent.stoppingDistance = 0.5f;
+        }
 
         if (ambientAudioSource != null)
         {
             ambientAudioSource.Stop();
         }
 
-        if (chasingSfx != null && audioSource.clip != chasingSfx)
+        if (chasingSfx != null && audioSource != null && audioSource.clip != chasingSfx)
         {
             audioSource.clip = chasingSfx;
             audioSource.loop = true;
@@ -373,17 +395,20 @@ public class WhiteLady : MonoBehaviour
     void OnEnterInvestigating()
     {
         SetNav(enabled: true);
-        wander.enabled = true;
-        wander.InvestigateLocation(detection.GetLastKnownPosition());
+        if (wander != null)
+        {
+            wander.enabled = true;
+            wander.InvestigateLocation(detection.GetLastKnownPosition());
+        }
     }
 
     void OnEnterTeleporting()
     {
         teleportIdleTimer = 0f;
-        wander.enabled = false;
+        if (wander != null) wander.enabled = false;
         SetNav(enabled: true);
 
-        if (navMeshAgent.isOnNavMesh)
+        if (navMeshAgent != null && navMeshAgent.isOnNavMesh)
         {
             navMeshAgent.Warp(FindTeleportPoint());
             navMeshAgent.ResetPath();
@@ -402,13 +427,13 @@ public class WhiteLady : MonoBehaviour
             flashlight?.Flicker();
         }
 
-        if (teleportSfx != null) audioSource.PlayOneShot(teleportSfx);
+        if (teleportSfx != null && audioSource != null) audioSource.PlayOneShot(teleportSfx);
     }
 
     void OnEnterWeeping()
     {
         weepTimer = 0f;
-        wander.enabled = false;
+        if (wander != null) wander.enabled = false;
 
         SetNav(enabled: false);
 
@@ -436,6 +461,8 @@ public class WhiteLady : MonoBehaviour
         Vector3 best = transform.position;
         float bestDistance = -1f;
 
+        if (playerRef == null || playerRef.transform == null) return best;
+
         for (int i = 0; i < teleportSampleCount; i++)
         {
             Vector2 randomRing = Random.insideUnitCircle * teleportSearchRadius;
@@ -456,6 +483,8 @@ public class WhiteLady : MonoBehaviour
 
     void SetNav(bool enabled)
     {
+        if (navMeshAgent == null) return;
+
         if (enabled)
         {
             navMeshAgent.enabled = true;
@@ -475,13 +504,6 @@ public class WhiteLady : MonoBehaviour
         else if (roll < (teleportChance + weepChance)) ChangeState(State.Weeping);
     }
 
-    // ==========================================
-    // --- NEW DESPAWN LOGIC INTEGRATED HERE ---
-    // ==========================================
-
-    /// <summary>
-    /// Call this method whenever the puzzle is finished and the White Lady needs to vanish.
-    /// </summary>
     public void Despawn()
     {
         if (despawnParticlePrefab != null)
