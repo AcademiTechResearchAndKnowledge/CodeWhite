@@ -3,6 +3,7 @@ using UnityEngine;
 public class TRIGGERTESTETETST : MonoBehaviour
 {
     [SerializeField] private RandomPortalSpawner RPS;
+    public EyeTransition ET;
 
     private void Awake()
     {
@@ -11,13 +12,6 @@ public class TRIGGERTESTETETST : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log("Trigger hit: " + other.name);
-
-        if (!other.CompareTag("Player"))
-        {
-            Debug.Log("Not player");
-            return;
-        }
 
         if (RPS == null)
         {
@@ -26,7 +20,7 @@ public class TRIGGERTESTETETST : MonoBehaviour
         }
 
         Debug.Log("Spawning portal");
-
+        ET.TriggerEyeTransition();
         RPS.SpawnPortalRandom(RandomPortalSpawner.PortalOrientation.Horizontal);
     }
 }

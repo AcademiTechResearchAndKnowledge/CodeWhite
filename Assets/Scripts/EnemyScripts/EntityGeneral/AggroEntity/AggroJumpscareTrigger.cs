@@ -41,7 +41,7 @@ public class AggroJumpscareTrigger : MonoBehaviour
         if (entityDetector == null)
             Debug.LogError("AggroJumpscareTrigger: Cannot find AggroEntityDetector script!");
 
-        // REMOVED: FindAnyObjectByType so it doesn't grab the wrong canvas!
+
 
         GameObject playerObj = GameObject.FindGameObjectWithTag("PlayerFollow");
         if (playerObj != null) playerTransform = playerObj.transform;
@@ -60,22 +60,22 @@ public class AggroJumpscareTrigger : MonoBehaviour
 
         float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
 
-        // „Ÿ„Ÿ„Ÿ NEW: Simplified Spatial Distance Anxiety „Ÿ„Ÿ„Ÿ
+
         if (anxietyHandler != null)
         {
             if (distanceToPlayer <= anxietyAuraRadius)
             {
-                // Constantly tell the AnxietyHandler what the absolute minimum anxiety should be
+                
                 float targetAnxiety = anxietyDistanceCurve.Evaluate(distanceToPlayer);
                 anxietyHandler.externalProximityFloor = targetAnxiety;
             }
             else
             {
-                // If out of range, clear the floor
+ 
                 anxietyHandler.externalProximityFloor = 0f;
             }
         }
-        // „Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ„Ÿ
+       
 
         if (distanceToPlayer <= catchRadius && entityDetector.isLookingPlayer)
         {
@@ -104,7 +104,7 @@ public class AggroJumpscareTrigger : MonoBehaviour
 
         float waitTime = 2.0f;
 
-        // --- NEW LOGIC: Spawn the specific jumpscare prefab! ---
+
         if (jumpscarePrefab != null)
         {
             JumpscareMechanic spawnedJumpscare = Instantiate(jumpscarePrefab);
@@ -129,9 +129,7 @@ public class AggroJumpscareTrigger : MonoBehaviour
 
     private void OnDestroy()
     {
-        // „Ÿ„Ÿ„Ÿ THE FIX: Clean up the floor when destroyed „Ÿ„Ÿ„Ÿ
-        // If the entity dies (like after a jumpscare), it must remove its floor, 
-        // otherwise the player stays anxious forever!
+
         if (anxietyHandler != null)
         {
             anxietyHandler.externalProximityFloor = 0f;
