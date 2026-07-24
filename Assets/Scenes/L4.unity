@@ -23,7 +23,7 @@ RenderSettings:
   m_AmbientSkyColor: {r: 0.24855182, g: 0.24855182, b: 0.24855182, a: 1}
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
-  m_AmbientIntensity: 0.2
+  m_AmbientIntensity: 1
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
   m_SkyboxMaterial: {fileID: 2100000, guid: 2c0b59d3918d538418ca471aac04d9f3, type: 2}
@@ -12998,7 +12998,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IdleOrClosetEnemySpawner
   enemyPrefab: {fileID: 2822117024503789482, guid: af616817420c8a140ae03b74070dd8d1, type: 3}
   playerRefs: {fileID: 0}
-  idleSpawnDelay: 10
+  idleSpawnDelay: 60
   closetSpawnDelay: 20
   idleSpeedThreshold: 0.1
   spawnAreas:

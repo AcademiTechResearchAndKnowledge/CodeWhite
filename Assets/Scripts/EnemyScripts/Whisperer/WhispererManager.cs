@@ -10,7 +10,6 @@ public class WhispererManager : MonoBehaviour
     public delegate void OnWhispererSpawned();
     public static event OnWhispererSpawned onWhispererSpawned;
 
-    // Added event for when the Whisperer despawns or is cleared
     public delegate void OnWhispererDespawned();
     public static event OnWhispererDespawned onWhispererDespawned;
 
@@ -66,15 +65,10 @@ public class WhispererManager : MonoBehaviour
         Flashlight.onFlashlightOff -= StopFlashTimer;
         SimpleCandleInteract.onSimpleCandleLit -= rollForTrigger;
 
-        // Force despawn and state reset if disabled/destroyed during scene transition
         if (whispererSpawned || IsWhispererActive)
         {
             Despawn();
         }
-
-        onWhisperFlicker = null;
-        onWhispererSpawned = null;
-        onWhispererDespawned = null;
     }
 
     private void Awake()

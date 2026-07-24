@@ -261,6 +261,19 @@ public class WhiteLady : MonoBehaviour
 
     void UpdateInvestigating()
     {
+        // 1. Add the visibility check so she can re-aggro while investigating
+        bool playerVisible = detection.distanceToPlayer <= detection.detectRange
+                 && !isCurrentlyIgnoringHiddenPlayer
+                 && !detection.IsPlayerSneakingSuccessfully()
+                 && detection.HasLineOfSight();
+
+        if (playerVisible)
+        {
+            ChangeState(State.Chasing);
+            return; // Stop running the rest of the investigate logic
+        }
+
+        // 2. Original search logic
         if (wander != null && wander.HasFinishedLocalSearch)
         {
             ChangeState(State.Teleporting);

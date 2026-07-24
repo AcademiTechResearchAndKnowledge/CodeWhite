@@ -64,6 +64,13 @@ public class Flashlight : MonoBehaviour
             }
             else
             {
+                // FIX: If the player manually turns the light off mid-flicker, stop the flicker.
+                if (flickerRoutine != null)
+                {
+                    StopCoroutine(flickerRoutine);
+                    flickerRoutine = null;
+                }
+
                 PlaySound(turnOffSound);
                 onFlashlightOff?.Invoke();
             }
@@ -72,7 +79,6 @@ public class Flashlight : MonoBehaviour
 
     public void Flicker()
     {
-        // --- ADDED: Only flicker if the flashlight is actually turned on ---
         if (torchLight == null || !torchLight.enabled)
         {
             return;
@@ -108,13 +114,17 @@ public class Flashlight : MonoBehaviour
 
     public void ForceTurnOff()
     {
-        if (flickerRoutine != null)
+        bool wasFlickering = flickerRoutine != null;
+
+        if (wasFlickering)
         {
             StopCoroutine(flickerRoutine);
             flickerRoutine = null;
         }
 
-        if (torchLight.enabled)
+        // FIX: Check if it was flickering to guarantee it forces off 
+        // even if it was currently on a "dark" flicker frame.
+        if (torchLight.enabled || wasFlickering)
         {
             torchLight.enabled = false;
             PlaySound(turnOffSound);
