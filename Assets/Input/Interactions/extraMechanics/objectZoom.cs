@@ -78,10 +78,10 @@ public class objectZoom : MonoBehaviour
     }
 
     void Update()
-    {   
+    {
         if (isInPuzzle && outline != null)
             outline.enabled = false;
-            
+
         if (PauseMenu.GameIsPaused)
             return;
 
@@ -96,7 +96,8 @@ public class objectZoom : MonoBehaviour
 
         if (isInPuzzle &&
             Time.time - puzzleEnterTime > 0.2f &&
-            Keyboard.current.fKey.wasPressedThisFrame)
+            Keyboard.current != null &&
+            (Keyboard.current.fKey.wasPressedThisFrame || Keyboard.current.spaceKey.wasPressedThisFrame))
         {
             ExitPuzzle();
 

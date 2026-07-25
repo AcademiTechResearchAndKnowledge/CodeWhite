@@ -38,15 +38,6 @@ public class PlayerMovement : MonoBehaviour
     public LayerMask groundMask;
     public LayerMask ceilingMask;
 
-    [Header("Colliders")]
-    [SerializeField] private SphereCollider sphereCol;
-
-    [Header("Sphere Collider Settings")]
-    [SerializeField] private float crouchSphereRadius = 0.05f;
-
-    private float originalSphereRadius;
-    private Vector3 originalSphereCenter;
-
     private Rigidbody rb;
     private CapsuleCollider col;
 
@@ -63,12 +54,6 @@ public class PlayerMovement : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         col = GetComponent<CapsuleCollider>();
         playerStats = GetComponent<PlayerStats>();
-
-        if (sphereCol != null)
-        {
-            originalSphereRadius = sphereCol.radius;
-            originalSphereCenter = sphereCol.center;
-        }
     }
 
     void Update()
@@ -133,13 +118,6 @@ public class PlayerMovement : MonoBehaviour
             float targetRadius = Mathf.Min(crouchCapsuleRadius, crouchHeight / 2f);
             col.radius = Mathf.Lerp(standCapsuleRadius, targetRadius, currentCrouchWeight);
             col.center = new Vector3(standCenter.x, standCenter.y - currentDrop, standCenter.z);
-        }
-
-        if (sphereCol != null)
-        {
-            sphereCol.radius = Mathf.Lerp(originalSphereRadius, crouchSphereRadius, currentCrouchWeight);
-            Vector3 targetSphereCenter = originalSphereCenter + new Vector3(0, -0.3f, 0);
-            sphereCol.center = Vector3.Lerp(originalSphereCenter, targetSphereCenter, currentCrouchWeight);
         }
 
         if (body != null)

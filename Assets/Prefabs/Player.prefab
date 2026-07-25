@@ -159,7 +159,7 @@ Transform:
   m_GameObject: {fileID: 2482385671022945450}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -31.928627, y: 5.1142697, z: 122.33918}
+  m_LocalPosition: {x: 0, y: 0.5999999, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -287,7 +287,7 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 0.3
+  m_Radius: 0.18
   m_Center: {x: 0, y: -0.10561001, z: -0.0107011795}
 --- !u!114 &7056102068585018066
 MonoBehaviour:
@@ -1209,8 +1209,6 @@ MonoBehaviour:
   ceilingMask:
     serializedVersion: 2
     m_Bits: 512
-  sphereCol: {fileID: 4267777501834807491}
-  crouchSphereRadius: 0.03
   isCrouching: 0
 --- !u!114 &4411646609755205160
 MonoBehaviour:
