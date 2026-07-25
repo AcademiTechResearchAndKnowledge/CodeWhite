@@ -49,6 +49,10 @@ public class AggroEntityWondering : MonoBehaviour
 
     private List<Vector3> breadcrumbs = new List<Vector3>();
 
+    // Helper property to safely check if the agent has arrived, preventing low-FPS miscalculations
+    private bool IsAtDestination => !navMeshAgent.pathPending &&
+                                   (!navMeshAgent.hasPath || navMeshAgent.remainingDistance <= navMeshAgent.stoppingDistance);
+
     private void Awake()
     {
         navMeshAgent = GetComponent<NavMeshAgent>();
@@ -69,12 +73,9 @@ public class AggroEntityWondering : MonoBehaviour
     public void StartWanderingInstantly()
     {
         currentState = WanderState.Normal;
-
         timer = wanderTimer;
-
         stagnationCenter = transform.position;
         currentStagnationTime = 0f;
-
         breadcrumbs.Clear();
     }
 
@@ -88,7 +89,7 @@ public class AggroEntityWondering : MonoBehaviour
                 break;
 
             case WanderState.Investigating:
-                if (!navMeshAgent.pathPending && navMeshAgent.remainingDistance <= navMeshAgent.stoppingDistance)
+                if (IsAtDestination)
                 {
                     currentState = WanderState.LocalSearch;
                     searchTimer = 0f;
@@ -110,7 +111,7 @@ public class AggroEntityWondering : MonoBehaviour
                 break;
 
             case WanderState.Relocating:
-                if (!navMeshAgent.pathPending && navMeshAgent.remainingDistance <= navMeshAgent.stoppingDistance)
+                if (IsAtDestination)
                 {
                     currentState = WanderState.Normal;
                     stagnationCenter = transform.position;
@@ -122,7 +123,7 @@ public class AggroEntityWondering : MonoBehaviour
 
     private void PerformWandering(float radius, float customTimer)
     {
-        if (!navMeshAgent.pathPending && navMeshAgent.remainingDistance <= navMeshAgent.stoppingDistance)
+        if (IsAtDestination)
         {
             timer += Time.deltaTime;
 
@@ -168,7 +169,6 @@ public class AggroEntityWondering : MonoBehaviour
         if (navMeshAgent != null)
         {
             Vector2 randomDir = Random.insideUnitCircle.normalized * investigationOffset;
-
             Vector3 offsetPosition = targetLocation + new Vector3(randomDir.x, 0, randomDir.y);
 
             if (NavMesh.SamplePosition(offsetPosition, out NavMeshHit hit, investigationOffset * 2f, NavMesh.AllAreas))
@@ -185,7 +185,6 @@ public class AggroEntityWondering : MonoBehaviour
     private void RelocateFarAway()
     {
         currentState = WanderState.Relocating;
-
         breadcrumbs.Clear();
 
         Vector3 newPos = GetValidWanderPosition(transform.position, relocateDistance, NavMesh.AllAreas);
